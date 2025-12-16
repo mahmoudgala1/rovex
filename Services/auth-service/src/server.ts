@@ -5,9 +5,33 @@ import morgan from "morgan";
 import compression from "compression";
 import { env } from "./config/environment";
 import { logger } from "./utils/logger";
-import { errorHandler, notFoundHandler } from "./middleware/errorHandler.middleware";
+import {
+  errorHandler,
+  notFoundHandler,
+} from "./middleware/errorHandler.middleware";
 import { connectDatabase } from "./config/database";
 import routes from "./routes";
+import swaggerUi from "swagger-ui-express";
+import { swaggerSpec } from "./config/swagger";
+
+const swaggerOptions = {
+  customCss: `
+    .swagger-ui .info { margin: 50px 0 }
+    .swagger-ui .info .title { color: #1f77b4 }
+  `,
+  customSiteTitle: "ROVEX Auth API Docs",
+  customfavIcon: "/favicon.ico",
+  swaggerOptions: {
+    persistAuthorization: true,
+    displayRequestDuration: true,
+    docExpansion: "none",
+    filter: true,
+    showExtensions: true,
+    showCommonExtensions: true,
+    defaultModelsExpandDepth: 1,
+    defaultModelExpandDepth: 1,
+  },
+};
 
 class Server {
   public app: Application;
@@ -38,6 +62,17 @@ class Server {
   }
 
   private configureRoutes(): void {
+    this.app.get("/api-docs.json", (req, res) => {
+      res.setHeader("Content-Type", "application/json");
+      res.send(swaggerSpec);
+    });
+
+    this.app.use(
+      "/api-docs",
+      swaggerUi.serve,
+      swaggerUi.setup(swaggerSpec, swaggerOptions)
+    );
+
     this.app.get("/health", (req, res) => {
       res.status(200).json({
         status: "OK",
