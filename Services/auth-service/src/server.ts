@@ -7,6 +7,7 @@ import { env } from "./config/environment";
 import { logger } from "./utils/logger";
 import { errorHandler, notFoundHandler } from "./middleware/errorHandler.middleware";
 import { connectDatabase } from "./config/database";
+import routes from "./routes";
 
 class Server {
   public app: Application;
@@ -45,6 +46,8 @@ class Server {
         service: "rovex-auth-service",
       });
     });
+
+    this.app.use(`/api/${env.API_VERSION}`, routes);
 
     this.app.use("*", (req, res) => {
       res.status(404).json({
