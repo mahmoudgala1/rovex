@@ -1,0 +1,29 @@
+version: "3.8"
+
+services:
+  api-gateway:
+    image: nginx:latest
+    container_name: rovex-api-gateway
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./nginx/logs:/var/log/nginx
+      - ./certs:/etc/nginx/certs
+    depends_on:
+      - auth-service
+    networks:
+      - rovex-backend
+
+  auth-service:
+    image: mahmoudgala1/rovex-auth-service:latest
+    container_name: rovex-auth-service
+    restart: unless-stopped
+    networks:
+    - rovex-backend
+    
+networks:
+  rovex-backend:
+    driver: bridge
