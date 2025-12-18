@@ -64,9 +64,9 @@ class AuthService {
       .join("");
   }
 
-  generateResetToken(): { token: string; hashedToken: string } {
+  async generateResetToken(): Promise<{ token: string; hashedToken: string }> {
     const token = crypto.randomBytes(32).toString("hex");
-    const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+    const hashedToken = await bcrypt.hash(token, 10);
     return { token, hashedToken };
   }
 
