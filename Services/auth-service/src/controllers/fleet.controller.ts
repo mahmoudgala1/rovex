@@ -8,6 +8,7 @@ import { getRolePermissions, PERMISSIONS } from "../config/permissions";
 import authService from "../services/auth.service";
 import { env } from "../config/environment";
 import notificationService from "../services/notification.service";
+import { paginationMeta, parsePagination } from "../utils/helpers";
 
 class FleetController {
   constructor() {
@@ -122,7 +123,7 @@ class FleetController {
       if (role) filter.role = role;
       if (status) filter.status = status;
 
-      const skip = (Number(page) - 1) * Number(limit);
+      const { skip } = parsePagination(Number(page), Number(limit));
 
       const [operators, total] = await Promise.all([
         FleetOperator.find(filter)
@@ -136,12 +137,7 @@ class FleetController {
 
       successResponse(res, {
         operators,
-        pagination: {
-          total,
-          page: Number(page),
-          limit: Number(limit),
-          pages: Math.ceil(total / Number(limit)),
-        },
+        pagination: paginationMeta(total, Number(page), Number(limit)),
       });
     } catch (error) {
       next(error);

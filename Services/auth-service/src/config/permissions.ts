@@ -17,6 +17,8 @@ export const PERMISSIONS = {
   FLEET_OPERATOR_DELETE: "fleet_operator.delete",
   FLEET_OPERATOR_ALL: "fleet_operator.*",
 
+  ROVER_DEPLOY: "rover.deploy",
+
   ALL: "*",
 };
 
