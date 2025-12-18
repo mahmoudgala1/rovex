@@ -174,3 +174,57 @@ export const updateSettingsSchema = Joi.object({
     webhook: Joi.boolean().optional(),
   }).optional(),
 });
+
+export const createUserSchema = Joi.object({
+  name: Joi.string().min(2).max(100).required().messages({
+    "string.empty": "Name is required",
+    "string.min": "Name must be at least 2 characters",
+  }),
+  email: Joi.string().email().required().messages({
+    "string.empty": "Email is required",
+    "string.email": "Invalid email format",
+  }),
+  phone: Joi.string()
+    .pattern(/^\+?[1-9]\d{1,14}$/)
+    .optional()
+    .messages({
+      "string.pattern.base": "Invalid phone number format",
+    }),
+  role: Joi.string()
+    .valid(
+      "company_admin",
+      "dispatcher",
+      "store_manager",
+      "customer_support",
+      "analyst"
+    )
+    .required()
+    .messages({
+      "any.only": "Invalid role",
+    }),
+});
+
+export const updateUserSchema = Joi.object({
+  name: Joi.string().min(2).max(100).optional(),
+  phone: Joi.string()
+    .pattern(/^\+?[1-9]\d{1,14}$/)
+    .optional(),
+  role: Joi.string()
+    .valid(
+      "company_admin",
+      "dispatcher",
+      "store_manager",
+      "customer_support",
+      "analyst"
+    )
+    .optional(),
+  permissions: Joi.array().items(Joi.string()).optional(),
+  status: Joi.string().valid("active", "inactive", "suspended").optional(),
+}).min(1);
+
+export const updateProfileSchema = Joi.object({
+  name: Joi.string().min(2).max(100).optional(),
+  phone: Joi.string()
+    .pattern(/^\+?[1-9]\d{1,14}$/)
+    .optional(),
+}).min(1);
