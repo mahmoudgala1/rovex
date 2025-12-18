@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    /* Base Options */
+    "target": "es2020",                                /* Convert to modern JS (ES2020) */
+    "module": "commonjs",                              /* Node uses CommonJS (require/module.exports) */
+    "outDir": "./dist",                                /* Redirect output structure to the directory. */
+    "rootDir": "./src",                                /* Specify the root directory of input files. */
+    "esModuleInterop": true,                           /* Enables cleaner imports (import x from 'y') */
+    
+    /* Strict Type-Checking Options (The Rules) */
+    "strict": true,                                    /* Enable all strict type-checking options. */
+    "noImplicitAny": true,                             /* Raise error on expressions and declarations with an implied 'any' type. */
+    "strictNullChecks": true,                          /* null and undefined are distinct types. */
+    
+    /* Module Resolution Options */
+    "moduleResolution": "node",                        /* Resolve modules like Node.js */
+    "baseUrl": ".",
+    "paths": {                                         /* Cleaner imports using aliases */
+      "*": ["node_modules/*"]
+    }
+  },
+  "include": ["src/**/*"],                             /* Only compile files in src */
+  "exclude": ["node_modules"]                          /* Ignore library files */
+}
