@@ -567,6 +567,30 @@ class AuthController {
     }
   }
 
+  async refreshToken(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const { refresh_token } = req.body;
+
+      if (!refresh_token) {
+        throw new AppError(
+          "Refresh token is required",
+          400,
+          "VALIDATION_ERROR"
+        );
+      }
+
+      const tokens = await authService.refreshAccessToken(refresh_token);
+
+      successResponse(res, tokens, "Token refreshed successfully");
+    } catch (error) {
+      next(error);
+    }
+  }
+
   private logAudit = async (data: any): Promise<void> => {
     try {
       await AuditLog.create(data);
