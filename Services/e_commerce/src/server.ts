@@ -3,14 +3,14 @@ import { connectDB } from "./config/db";
 import dotenv from "dotenv";
 dotenv.config();
 
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 8001;
 
 const startServer = async () => {
   try {
-    await connectDB();
+    // await connectDB();
 
     const server = app.listen(port, () => {
-      console.log(`Server running in ${process.env} mode on port ${port}`);
+      console.log(`Server running in ${process.env.NODE_ENV} mode on port ${port}`);
     });
 
     const shutdown = () => {

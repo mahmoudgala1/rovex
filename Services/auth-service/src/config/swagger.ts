@@ -57,7 +57,7 @@ Complete authentication and user management API for ROVEX fleet management platf
         description: "Staging development",
       },
       {
-        url: "https://100.48.4.149/auth/api/v1",
+        url: "https://rovex.duckdns.org/auth/api/v1",
         description: "Production environment",
       },
     ],

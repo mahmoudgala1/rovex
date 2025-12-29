@@ -5,9 +5,11 @@ import cartRoutes from "./routers/cart.routers";
 import { validateRequiredFields } from "./middlewares/globalValidation.middleware";
 import { AppError } from "./utils/AppError";
 import { globalErrorHandeler } from "./middlewares/globalerror.middleware";
+import cors from "cors";
 
 const app: Application = express();
 app.use(express.json());
+app.use(cors());
 app.use(LoggerMiddleware);
 
 app.get("/health", (req, res) => {
