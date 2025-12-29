@@ -154,9 +154,11 @@ export type FleetOperatorRole =
   | "support_engineer"
   | "analyst";
 
-export type UserRole = CompanyUserRole | FleetOperatorRole;
+export type CustomerRole = "customer";
 
-export type UserType = "company_user" | "fleet_operator";
+export type UserRole = CompanyUserRole | FleetOperatorRole | CustomerRole;
+
+export type UserType = "company_user" | "fleet_operator" | "customer";
 
 export interface JWTPayload {
   user_id: string;

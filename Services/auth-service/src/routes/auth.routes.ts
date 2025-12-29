@@ -10,6 +10,7 @@ import {
   resetPasswordSchema,
   changePasswordSchema,
   logoutSchema,
+  refreshTokenSchema
 } from "../utils/validators";
 
 const router = Router();
@@ -1243,7 +1244,11 @@ router.post(
  *                       type: string
  *                       example: INVALID_REFRESH_TOKEN
  */
-router.post("/refresh", authController.refreshToken);
+router.post(
+  "/refresh",
+  validate(refreshTokenSchema),
+  authController.refreshToken
+);
 
 
 export default router;

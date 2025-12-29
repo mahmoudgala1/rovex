@@ -228,3 +228,44 @@ export const updateProfileSchema = Joi.object({
     .pattern(/^\+?[1-9]\d{1,14}$/)
     .optional(),
 }).min(1);
+
+export const registerSchema = Joi.object({
+  name: Joi.string().min(2).max(100).required(),
+  email: Joi.string().email().required(),
+  password: Joi.string()
+    .min(8)
+    .max(128)
+    .pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/)
+    .required()
+    .messages({
+      "string.pattern.base":
+        "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character",
+    }),
+  phone: Joi.string()
+    .pattern(/^\+?[1-9]\d{1,14}$/)
+    .optional()
+    .messages({
+      "string.pattern.base": "Invalid phone number format",
+    }),
+});
+
+export const loginSchema = Joi.object({
+  email: Joi.string().email().required(),
+  password: Joi.string().required(),
+});
+
+export const verifyOTPSchema = Joi.object({
+  email: Joi.string().email().required(),
+  otp: Joi.string().length(6).pattern(/^\d+$/).required().messages({
+    "string.length": "OTP must be 6 digits",
+    "string.pattern.base": "OTP must contain only numbers",
+  }),
+});
+
+export const resendOTPSchema = Joi.object({
+  email: Joi.string().email().required(),
+});
+
+export const refreshTokenSchema = Joi.object({
+  refresh_token: Joi.string().required(),
+});

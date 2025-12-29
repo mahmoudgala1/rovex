@@ -1,0 +1,272 @@
+import { Request, Response, NextFunction } from "express";
+import Customer from "../models/Customer";
+import { AppError } from "../utils/errors";
+import { successResponse } from "../utils/responses";
+import authService from "../services/auth.service";
+import { logger } from "../utils/logger";
+import notificationService from "../services/notification.service";
+import {
+  generateOTP,
+  getOTPExpiry,
+  isOTPExpired,
+} from "../services/otp.service";
+
+export async function register(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    const { name, email, password, phone } = req.body;
+
+    const existingEmail = await Customer.findOne({ email });
+    if (existingEmail) {
+      throw new AppError("Email already registered", 400);
+    }
+
+    const verificationOTP = generateOTP();
+    const otpExpiry = getOTPExpiry(10);
+
+    const newCustomer = await Customer.create({
+      name,
+      email,
+      phone,
+      password_hash: password,
+      auth_provider: "local",
+      status: "active",
+      is_verified: false,
+      verification_otp: verificationOTP,
+      verification_otp_expires: otpExpiry,
+    });
+
+    try {
+      await notificationService.sendEmail({
+        to: email,
+        subject: "Verify Your Email - ROVEX",
+        template: "customer_verification_otp",
+        data: {
+          name,
+          otp: verificationOTP,
+          expires_in: "10 minutes",
+        },
+      });
+    } catch (emailError) {
+      logger.error("Failed to send verification OTP:", emailError);
+    }
+
+    const tokens = authService.generateTokens({
+      user_id: newCustomer.customer_id,
+      email: newCustomer.email,
+      role: "customer",
+      user_type: "customer",
+      permissions: ["customer:basic"],
+      token_version: newCustomer.token_version,
+    });
+
+    await newCustomer.save();
+
+    logger.info(`Customer registered: ${newCustomer.customer_id}`);
+
+    successResponse(
+      res,
+      {
+        user: {
+          customer_id: newCustomer.customer_id,
+          name: newCustomer.name,
+          email: newCustomer.email,
+          phone: newCustomer.phone,
+          is_verified: newCustomer.is_verified,
+          status: newCustomer.status,
+        },
+        tokens,
+      },
+      "Registration successful. Please verify your email.",
+      201
+    );
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function login(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    const { email, password } = req.body;
+
+    const customer = await Customer.findOne({ email }).select("+password_hash");
+    if (!customer) {
+      throw new AppError("Invalid email or password", 401);
+    }
+
+    if (customer.status === "banned") {
+      throw new AppError("Your account has been banned. Contact support.", 403);
+    }
+
+    if (customer.status === "suspended") {
+      throw new AppError("Your account is suspended. Contact support.", 403);
+    }
+
+    const isPasswordValid = await (customer as any).comparePassword(password);
+    if (!isPasswordValid) {
+      throw new AppError("Invalid email or password", 401);
+    }
+
+    const tokens = authService.generateTokens({
+      user_id: customer.customer_id,
+      email: customer.email,
+      role: "customer",
+      user_type: "customer",
+      permissions: ["customer:basic"],
+      token_version: customer.token_version,
+    });
+
+    customer.last_login = new Date();
+    await customer.save();
+
+    logger.info(`Customer logged in: ${customer.customer_id}`);
+
+    successResponse(
+      res,
+      {
+        user: {
+          customer_id: customer.customer_id,
+          name: customer.name,
+          email: customer.email,
+          phone: customer.phone,
+          is_verified: customer.is_verified,
+          status: customer.status,
+          avatar_url: customer.avatar_url,
+          preferences: customer.preferences,
+        },
+        tokens,
+      },
+      "Login successful"
+    );
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function verifyEmail(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    const { email, otp } = req.body;
+
+    const customer = await Customer.findOne({ email }).select(
+      "+verification_otp +verification_otp_expires"
+    );
+
+    if (!customer) {
+      throw new AppError("Customer not found", 404);
+    }
+
+    if (customer.is_verified) {
+      throw new AppError("Email already verified", 400);
+    }
+
+    if (!customer.verification_otp || !customer.verification_otp_expires) {
+      throw new AppError("No OTP found. Please request a new one.", 400);
+    }
+
+    if (isOTPExpired(customer.verification_otp_expires)) {
+      throw new AppError("OTP has expired. Please request a new one.", 400);
+    }
+
+    if (customer.verification_otp !== otp) {
+      throw new AppError("Invalid OTP", 400);
+    }
+
+    customer.is_verified = true;
+    customer.verification_otp = undefined;
+    customer.verification_otp_expires = undefined;
+    await customer.save();
+
+    logger.info(`Email verified for customer: ${customer.customer_id}`);
+
+    successResponse(res, null, "Email verified successfully");
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function resendVerificationOTP(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    const { email } = req.body;
+
+    const customer = await Customer.findOne({ email }).select(
+      "+verification_otp +verification_otp_expires"
+    );
+
+    if (!customer) {
+      throw new AppError("Customer not found", 404);
+    }
+
+    if (customer.is_verified) {
+      throw new AppError("Email already verified", 400);
+    }
+
+    const verificationOTP = generateOTP();
+    const otpExpiry = getOTPExpiry(10);
+
+    customer.verification_otp = verificationOTP;
+    customer.verification_otp_expires = otpExpiry;
+    await customer.save();
+
+    await notificationService.sendEmail({
+      to: email,
+      subject: "Verification Code - ROVEX",
+      template: "customer_verification_otp",
+      data: {
+        name: customer.name,
+        otp: verificationOTP,
+        expires_in: "10 minutes",
+      },
+    });
+
+    logger.info(`Verification OTP resent to: ${email}`);
+
+    successResponse(res, null, "Verification OTP sent successfully");
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function customerLogout(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    const { refresh_token } = req.body;
+    const accessToken = req.headers.authorization?.replace("Bearer ", "");
+
+    if (!accessToken || !refresh_token) {
+      throw new AppError(
+        "Access token and refresh token are required",
+        400,
+        "VALIDATION_ERROR"
+      );
+    }
+
+    await authService.logout(
+      accessToken,
+      refresh_token,
+      req.user!.user_id,
+      "customer"
+    );
+
+    successResponse(res, null, "Logged out successfully");
+  } catch (error) {
+    next(error);
+  }
+}

@@ -282,7 +282,566 @@ Complete authentication and user management API for ROVEX fleet management platf
               example: 10,
             },
           },
-        }
+        },
+        CompanyUserDetailed: {
+          type: "object",
+          properties: {
+            user_id: {
+              type: "string",
+              example: "USR_1234567890",
+              description: "Unique user identifier",
+            },
+            company_id: {
+              type: "string",
+              example: "CMP_0987654321",
+              description: "Company identifier",
+            },
+            email: {
+              type: "string",
+              format: "email",
+              example: "john.doe@company.com",
+            },
+            name: {
+              type: "string",
+              example: "John Doe",
+            },
+            phone: {
+              type: "string",
+              example: "+1234567890",
+              nullable: true,
+            },
+            role: {
+              type: "string",
+              enum: [
+                "company_admin",
+                "dispatcher",
+                "store_manager",
+                "customer_support",
+                "analyst",
+              ],
+              example: "dispatcher",
+            },
+            permissions: {
+              type: "array",
+              items: {
+                type: "string",
+              },
+              example: ["deliveries:read", "deliveries:write", "rovers:read"],
+            },
+            status: {
+              type: "string",
+              enum: ["active", "inactive", "suspended"],
+              example: "active",
+            },
+            password_must_change: {
+              type: "boolean",
+              example: false,
+            },
+            last_login: {
+              type: "string",
+              format: "date-time",
+              nullable: true,
+            },
+            created_at: {
+              type: "string",
+              format: "date-time",
+            },
+            updated_at: {
+              type: "string",
+              format: "date-time",
+            },
+          },
+        },
+        CreateCompanyUserRequest: {
+          type: "object",
+          required: ["name", "email", "role"],
+          properties: {
+            name: {
+              type: "string",
+              minLength: 2,
+              maxLength: 100,
+              example: "John Doe",
+            },
+            email: {
+              type: "string",
+              format: "email",
+              example: "john.doe@company.com",
+            },
+            phone: {
+              type: "string",
+              pattern: "^\\+?[1-9]\\d{1,14}$",
+              example: "+1234567890",
+            },
+            role: {
+              type: "string",
+              enum: [
+                "company_admin",
+                "dispatcher",
+                "store_manager",
+                "customer_support",
+                "analyst",
+              ],
+              example: "dispatcher",
+            },
+          },
+        },
+        UpdateCompanyUserRequest: {
+          type: "object",
+          minProperties: 1,
+          properties: {
+            name: {
+              type: "string",
+              minLength: 2,
+              maxLength: 100,
+              example: "John Doe",
+            },
+            phone: {
+              type: "string",
+              pattern: "^\\+?[1-9]\\d{1,14}$",
+              example: "+1234567890",
+            },
+            role: {
+              type: "string",
+              enum: [
+                "company_admin",
+                "dispatcher",
+                "store_manager",
+                "customer_support",
+                "analyst",
+              ],
+              example: "store_manager",
+            },
+            permissions: {
+              type: "array",
+              items: {
+                type: "string",
+              },
+              example: ["deliveries:read", "analytics:read"],
+            },
+            status: {
+              type: "string",
+              enum: ["active", "inactive", "suspended"],
+              example: "active",
+            },
+          },
+        },
+        UpdateProfileRequest: {
+          type: "object",
+          minProperties: 1,
+          properties: {
+            name: {
+              type: "string",
+              minLength: 2,
+              maxLength: 100,
+              example: "John Doe",
+            },
+            phone: {
+              type: "string",
+              pattern: "^\\+?[1-9]\\d{1,14}$",
+              example: "+1234567890",
+            },
+          },
+        },
+        CompanyUserListResponse: {
+          type: "object",
+          properties: {
+            success: {
+              type: "boolean",
+              example: true,
+            },
+            message: {
+              type: "string",
+              example: "Users retrieved successfully",
+            },
+            data: {
+              type: "object",
+              properties: {
+                users: {
+                  type: "array",
+                  items: {
+                    $ref: "#/components/schemas/CompanyUserDetailed",
+                  },
+                },
+                pagination: {
+                  $ref: "#/components/schemas/PaginationMeta",
+                },
+              },
+            },
+            timestamp: {
+              type: "string",
+              format: "date-time",
+            },
+          },
+        },
+        CompanyUserResponse: {
+          type: "object",
+          properties: {
+            success: {
+              type: "boolean",
+              example: true,
+            },
+            message: {
+              type: "string",
+              example: "User retrieved successfully",
+            },
+            data: {
+              type: "object",
+              properties: {
+                user: {
+                  $ref: "#/components/schemas/CompanyUserDetailed",
+                },
+              },
+            },
+            timestamp: {
+              type: "string",
+              format: "date-time",
+            },
+          },
+        },
+        CreateCompanyUserResponse: {
+          type: "object",
+          properties: {
+            success: {
+              type: "boolean",
+              example: true,
+            },
+            message: {
+              type: "string",
+              example: "User created successfully",
+            },
+            data: {
+              type: "object",
+              properties: {
+                user: {
+                  $ref: "#/components/schemas/CompanyUserDetailed",
+                },
+                temporary_password: {
+                  type: "string",
+                  description: "Temporary password sent via email",
+                  example: "TempPass123!@#",
+                },
+              },
+            },
+            timestamp: {
+              type: "string",
+              format: "date-time",
+            },
+          },
+        },
+        CustomerProfile: {
+          type: "object",
+          properties: {
+            customer_id: {
+              type: "string",
+              example: "CUST_ABC123XYZ",
+            },
+            name: {
+              type: "string",
+              example: "John Doe",
+            },
+            email: {
+              type: "string",
+              format: "email",
+              example: "john@example.com",
+            },
+            phone: {
+              type: "string",
+              example: "+201234567890",
+              nullable: true,
+            },
+            avatar_url: {
+              type: "string",
+              format: "uri",
+              example: "https://example.com/avatar.jpg",
+              nullable: true,
+            },
+            is_verified: {
+              type: "boolean",
+              example: true,
+            },
+            status: {
+              type: "string",
+              enum: ["active", "suspended", "banned"],
+              example: "active",
+            },
+            preferences: {
+              $ref: "#/components/schemas/CustomerPreferences",
+            },
+            addresses: {
+              type: "array",
+              items: {
+                $ref: "#/components/schemas/CustomerAddress",
+              },
+            },
+            created_at: {
+              type: "string",
+              format: "date-time",
+            },
+            updated_at: {
+              type: "string",
+              format: "date-time",
+            },
+          },
+        },
+        CustomerPreferences: {
+          type: "object",
+          properties: {
+            language: {
+              type: "string",
+              enum: ["en", "ar"],
+              example: "en",
+            },
+            notifications: {
+              type: "object",
+              properties: {
+                sms: {
+                  type: "boolean",
+                  example: true,
+                },
+                email: {
+                  type: "boolean",
+                  example: true,
+                },
+                push: {
+                  type: "boolean",
+                  example: true,
+                },
+              },
+            },
+            marketing_opt_in: {
+              type: "boolean",
+              example: false,
+            },
+          },
+        },
+        CustomerAddress: {
+          type: "object",
+          properties: {
+            address_id: {
+              type: "string",
+              example: "ADDR_123456",
+            },
+            label: {
+              type: "string",
+              example: "Home",
+            },
+            address_line1: {
+              type: "string",
+              example: "123 Main Street",
+            },
+            address_line2: {
+              type: "string",
+              example: "Apt 4B",
+              nullable: true,
+            },
+            city: {
+              type: "string",
+              example: "Cairo",
+            },
+            state: {
+              type: "string",
+              example: "Cairo Governorate",
+              nullable: true,
+            },
+            postal_code: {
+              type: "string",
+              example: "11511",
+              nullable: true,
+            },
+            country: {
+              type: "string",
+              example: "EG",
+            },
+            location: {
+              type: "object",
+              properties: {
+                type: {
+                  type: "string",
+                  example: "Point",
+                },
+                coordinates: {
+                  type: "array",
+                  items: {
+                    type: "number",
+                  },
+                  example: [31.2357, 30.0444],
+                  description: "[longitude, latitude]",
+                },
+              },
+            },
+            is_default: {
+              type: "boolean",
+              example: true,
+            },
+            notes: {
+              type: "string",
+              example: "Ring the doorbell twice",
+              nullable: true,
+            },
+          },
+        },
+        UpdateCustomerProfileRequest: {
+          type: "object",
+          minProperties: 1,
+          properties: {
+            name: {
+              type: "string",
+              minLength: 2,
+              maxLength: 100,
+              example: "John Doe",
+            },
+            phone: {
+              type: "string",
+              pattern: "^\\+?[1-9]\\d{1,14}$",
+              example: "+201234567890",
+            },
+            avatar_url: {
+              type: "string",
+              format: "uri",
+              example: "https://example.com/avatar.jpg",
+            },
+          },
+        },
+        UpdatePreferencesRequest: {
+          type: "object",
+          minProperties: 1,
+          properties: {
+            language: {
+              type: "string",
+              enum: ["en", "ar"],
+              example: "en",
+            },
+            notifications: {
+              type: "object",
+              properties: {
+                sms: {
+                  type: "boolean",
+                },
+                email: {
+                  type: "boolean",
+                },
+                push: {
+                  type: "boolean",
+                },
+              },
+            },
+            marketing_opt_in: {
+              type: "boolean",
+              example: false,
+            },
+          },
+        },
+        AddAddressRequest: {
+          type: "object",
+          required: ["label", "address_line1", "city", "latitude", "longitude"],
+          properties: {
+            label: {
+              type: "string",
+              example: "Home",
+            },
+            address_line1: {
+              type: "string",
+              example: "123 Main Street",
+            },
+            address_line2: {
+              type: "string",
+              example: "Apt 4B",
+            },
+            city: {
+              type: "string",
+              example: "Cairo",
+            },
+            state: {
+              type: "string",
+              example: "Cairo Governorate",
+            },
+            postal_code: {
+              type: "string",
+              example: "11511",
+            },
+            country: {
+              type: "string",
+              default: "EG",
+              example: "EG",
+            },
+            latitude: {
+              type: "number",
+              minimum: -90,
+              maximum: 90,
+              example: 30.0444,
+            },
+            longitude: {
+              type: "number",
+              minimum: -180,
+              maximum: 180,
+              example: 31.2357,
+            },
+            is_default: {
+              type: "boolean",
+              default: false,
+            },
+            notes: {
+              type: "string",
+              example: "Ring the doorbell twice",
+            },
+          },
+        },
+        UpdateAddressRequest: {
+          type: "object",
+          minProperties: 1,
+          properties: {
+            label: {
+              type: "string",
+              example: "Work",
+            },
+            address_line1: {
+              type: "string",
+              example: "456 Office Building",
+            },
+            address_line2: {
+              type: "string",
+            },
+            city: {
+              type: "string",
+            },
+            state: {
+              type: "string",
+            },
+            postal_code: {
+              type: "string",
+            },
+            country: {
+              type: "string",
+            },
+            latitude: {
+              type: "number",
+              minimum: -90,
+              maximum: 90,
+            },
+            longitude: {
+              type: "number",
+              minimum: -180,
+              maximum: 180,
+            },
+            is_default: {
+              type: "boolean",
+            },
+            notes: {
+              type: "string",
+            },
+          },
+        },
+        DeleteAccountRequest: {
+          type: "object",
+          required: ["password"],
+          properties: {
+            password: {
+              type: "string",
+              format: "password",
+              description: "Current password for verification",
+            },
+          },
+        },
       },
     },
     tags: [
@@ -313,6 +872,11 @@ Complete authentication and user management API for ROVEX fleet management platf
       {
         name: "Customer Auth",
         description: "Customer authentication endpoints (OTP-based)",
+      },
+      {
+        name: "Customer Profile",
+        description:
+          "Customer profile management, preferences, and address operations",
       },
       {
         name: "Token",
