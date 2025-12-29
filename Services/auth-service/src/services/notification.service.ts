@@ -72,9 +72,10 @@ class NotificationService {
 
       const isDark = theme === "dark";
       template = template.replace(
-        /\{\{#if_dark\}\}(.*?)\{\{else\}\}(.*?)\{\{\/if_dark\}\}/gs,
-        (match, darkContent, lightContent) =>
-          isDark ? darkContent : lightContent
+        /\{\{#if_dark\}\}([\s\S]*?)\{\{else\}\}([\s\S]*?)\{\{\/if_dark\}\}/g,
+        (match, darkContent, lightContent) => {
+          return isDark ? darkContent.trim() : lightContent.trim();
+        }
       );
 
       Object.keys(data).forEach((key) => {

@@ -189,7 +189,8 @@ class CompanyController {
             email: admin_user.email,
             temporary_password: tempPassword,
             api_key: apiKey,
-            login_url: "`${env.DASHBOARD_URL}/login`",
+            login_url: `${env.DASHBOARD_URL}/login`,
+            support_email: env.SUPPORT_EMAIL,
           },
         });
       } catch (emailError) {

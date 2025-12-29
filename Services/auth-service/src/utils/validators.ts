@@ -269,3 +269,17 @@ export const resendOTPSchema = Joi.object({
 export const refreshTokenSchema = Joi.object({
   refresh_token: Joi.string().required(),
 });
+
+export const customerResetPasswordSchema = Joi.object({
+  email: Joi.string().email().required(),
+  otp: Joi.string().length(6).pattern(/^\d+$/).required(),
+  new_password: Joi.string()
+    .min(8)
+    .max(128)
+    .pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/)
+    .required()
+    .messages({
+      "string.pattern.base":
+        "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character",
+    }),
+});

@@ -7,6 +7,9 @@ import {
   loginSchema,
   verifyOTPSchema,
   resendOTPSchema,
+  changePasswordSchema,
+  forgotPasswordSchema,
+  customerResetPasswordSchema,
 } from "../utils/validators";
 import authController from "../controllers/auth.controller";
 
@@ -52,7 +55,7 @@ const router = Router();
  *         description: Email already exists
  */
 router.post(
-  "/customer/register",
+  "/register",
   validate(registerSchema),
   customerAuthController.register
 );
@@ -86,7 +89,7 @@ router.post(
  *         description: Invalid credentials
  */
 router.post(
-  "/customer/login",
+  "/login",
   validate(loginSchema),
   customerAuthController.login
 );
@@ -124,7 +127,7 @@ router.post(
  *         description: Invalid or expired OTP
  */
 router.post(
-  "/customer/verify-email",
+  "/verify-email",
   validate(verifyOTPSchema),
   customerAuthController.verifyEmail
 );
@@ -156,9 +159,148 @@ router.post(
  *         description: Email already verified
  */
 router.post(
-  "/customer/resend-otp",
+  "/resend-otp",
   validate(resendOTPSchema),
   customerAuthController.resendVerificationOTP
+);
+
+/**
+ * @swagger
+ * /auth/customer/change-password:
+ *   post:
+ *     summary: Change password (authenticated)
+ *     tags: [Customer Auth]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - current_password
+ *               - new_password
+ *             properties:
+ *               current_password:
+ *                 type: string
+ *               new_password:
+ *                 type: string
+ *                 minLength: 8
+ *     responses:
+ *       200:
+ *         description: Password changed successfully
+ *       400:
+ *         description: Incorrect current password
+ */
+router.post(
+  "/change-password",
+  authenticateCustomer,
+  validate(changePasswordSchema),
+  customerAuthController.changePassword
+);
+
+/**
+ * @swagger
+ * /auth/customer/forgot-password:
+ *   post:
+ *     summary: Request password reset OTP
+ *     description: Send OTP to email for password reset
+ *     tags: [Customer Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *     responses:
+ *       200:
+ *         description: Reset OTP sent if email exists
+ */
+router.post(
+  "/forgot-password",
+  validate(forgotPasswordSchema),
+  customerAuthController.forgotPassword
+);
+
+/**
+ * @swagger
+ * /auth/customer/verify-reset-otp:
+ *   post:
+ *     summary: Verify password reset OTP
+ *     description: Validate the OTP before resetting password
+ *     tags: [Customer Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - otp
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *               otp:
+ *                 type: string
+ *                 example: "123456"
+ *     responses:
+ *       200:
+ *         description: OTP verified, can proceed to reset password
+ *       400:
+ *         description: Invalid or expired OTP
+ */
+router.post(
+  "/verify-reset-otp",
+  validate(verifyOTPSchema),
+  customerAuthController.verifyResetOTP
+);
+
+/**
+ * @swagger
+ * /auth/customer/reset-password:
+ *   post:
+ *     summary: Reset password with OTP
+ *     description: Reset password using verified OTP
+ *     tags: [Customer Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - otp
+ *               - new_password
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *               otp:
+ *                 type: string
+ *                 example: "123456"
+ *               new_password:
+ *                 type: string
+ *                 minLength: 8
+ *     responses:
+ *       200:
+ *         description: Password reset successful
+ *       400:
+ *         description: Invalid OTP
+ */
+router.post(
+  "/reset-password",
+  validate(customerResetPasswordSchema),
+  customerAuthController.resetPassword
 );
 
 /**
@@ -185,7 +327,7 @@ router.post(
  *         description: Logged out successfully
  */
 router.post(
-  "/customer/logout",
+  "/logout",
   authenticateCustomer,
   customerAuthController.customerLogout
 );
@@ -203,7 +345,7 @@ router.post(
  *         description: Logged out from all devices
  */
 router.post(
-  "/customer/logout-all",
+  "/logout-all",
   authenticateCustomer,
   authController.logoutAllDevices
 );
