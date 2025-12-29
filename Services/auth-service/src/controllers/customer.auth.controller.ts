@@ -44,6 +44,7 @@ export async function register(
         to: email,
         subject: "Verify Your Email - ROVEX",
         template: "customer_verification_otp",
+        theme: "dark",
         data: {
           name,
           otp: verificationOTP,
@@ -226,6 +227,7 @@ export async function resendVerificationOTP(
       to: email,
       subject: "Verification Code - ROVEX",
       template: "customer_verification_otp",
+      theme: "light",
       data: {
         name: customer.name,
         otp: verificationOTP,

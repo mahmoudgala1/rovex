@@ -182,6 +182,7 @@ class CompanyController {
           to: admin_user.email,
           subject: "Welcome to ROVEX Fleet Platform",
           template: "company_welcome",
+          theme: "dark",
           data: {
             company_name: company.name,
             admin_name: admin_user.name,
@@ -529,6 +530,7 @@ class CompanyController {
             to: adminUser.email,
             subject: "ROVEX Account Suspended",
             template: "account_suspended",
+            theme: "dark",
             data: {
               company_name: company.name,
               reason: reason || "Please contact support for details",
