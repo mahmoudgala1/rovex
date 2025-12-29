@@ -16,5 +16,5 @@ export const swaggerOptions: Options = {
     ],
   },
   // Path to the API docs (where you will write your JSDoc comments)
-  apis: [path.join(__dirname, './routes/*.{ts,js}')],
+  apis: [path.join(__dirname, './routers/*.{ts,js}')],
 };
