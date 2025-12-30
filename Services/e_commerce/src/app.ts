@@ -5,6 +5,7 @@ import cartRoutes from "./routers/cart.routers";
 import { validateRequiredFields } from "./middlewares/globalValidation.middleware";
 import { AppError } from "./utils/AppError";
 import { globalErrorHandeler } from "./middlewares/globalerror.middleware";
+import wishlistRoutes from "./routers/whishlist.routes";
 import swaggerJsDoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
 import { swaggerOptions } from './swagger';
@@ -31,6 +32,8 @@ app.get("/health", (req, res) => {
 app.use("/api/v1/products", productRoutes);
 app.use("/api/v1/cart", cartRoutes);
 app.use("/api/v1/coupon", cartRoutes);
+app.use("/api/v1/whishlist", wishlistRoutes);
+
 
 app.use(globalErrorHandeler);
 export default app;
