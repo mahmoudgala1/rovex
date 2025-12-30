@@ -30,11 +30,29 @@ const couponSchema = new Schema<ICoupon>(
         required: [true, 'Coupon vendor is required'] ,
     },
     is_deleted: {
-      type: Boolean,
+      type: Boolean,// Soft delete flag
       default: false,
     },
+    max_usage: {
+        type: Number,// Maximum number of times the coupon can be used
+        default: 100 
+    },
+    used_count: {
+        type: Number,
+        default: 0 // Number of times the coupon has been used
+    },
+    min_purchase_amount: {
+        type: Number,
+        default: 0   // Minimum purchase amount to apply the coupon
+    },
+    discount_type: {
+        type: String,
+        enum: ['percentage', 'fixed'],
+        default: 'fixed'
+    },
+  
   },
-  { timestamps: true }
+    { timestamps: true }
 );
 
 const coupon_model: Model<ICoupon> = mongoose.model<ICoupon>('Coupon', couponSchema);

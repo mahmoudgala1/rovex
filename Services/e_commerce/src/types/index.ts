@@ -44,6 +44,7 @@ export interface ICart extends Document{
   user: Types.ObjectId; // Reference to User ID
   createdAt: Date;
   updatedAt: Date;
+  coupon_id: Types.ObjectId| null; // Reference to Coupon ID
 }
 
 export interface ICoupon extends Document{
@@ -54,4 +55,8 @@ export interface ICoupon extends Document{
   vendor: Types.ObjectId; // Reference to vendor ID
   user: Types.ObjectId; // Reference to User ID
   is_deleted:boolean;
+  max_usage: number;    
+  used_count: number;   
+  min_purchase_amount: number;
+  discount_type: 'percentage' | 'fixed';
 }

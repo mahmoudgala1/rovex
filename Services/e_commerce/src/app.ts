@@ -5,10 +5,16 @@ import cartRoutes from "./routers/cart.routers";
 import { validateRequiredFields } from "./middlewares/globalValidation.middleware";
 import { AppError } from "./utils/AppError";
 import { globalErrorHandeler } from "./middlewares/globalerror.middleware";
-
+import swaggerJsDoc from 'swagger-jsdoc';
+import swaggerUi from 'swagger-ui-express';
+import { swaggerOptions } from './swagger';
 const app: Application = express();
 app.use(express.json());
 app.use(LoggerMiddleware);
+
+const specs = swaggerJsDoc(swaggerOptions);
+console.log(JSON.stringify(specs, null, 2)); 
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 
 app.get("/health", (req, res) => {
   res.status(200).json({

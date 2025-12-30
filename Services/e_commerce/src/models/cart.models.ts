@@ -30,6 +30,11 @@ const cartSchema = new Schema<ICart>(
       ref: 'User',
       required: true,
     },
+     coupon_id: {
+            type: Schema.Types.ObjectId,
+            ref: 'Coupon',
+            default: null
+        }
   },
   { timestamps: true }
 );

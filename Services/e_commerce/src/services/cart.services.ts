@@ -1,88 +1,102 @@
-import { API_Response } from "../types/response.types";
-import { Request } from "express";
 import { IProduct, IUser,ICart,ICartItem } from "../types";
 import CartModel from "../models/cart.models";
-import mongoose from "mongoose";
+import { validateCoupon } from "../helper/validate_coupon.helper";
+import CouponModel from "../models/coupon.models";
+import { AppError } from "../utils/AppError";
+import { calculateCartStats } from "../helper/calculate.cart.price.helper";
 
-export const addToCartService = async(product:IProduct, user:IUser) =>{
-
-    //product is passed from isAcive middleware
-    //logged user is passed from login 
-
-    //find cart for the logged user
-
-    let cart = await CartModel.findOne({user:user._id})
-    if(!cart)
-    {
-        cart = await CartModel.create({
-        user: user?._id,
-        cartItems: [{ product: product._id, price: product.price }],
-    });
-
-    }
-    else {
-    // Cart exists
+export const addToCartService = async (product: IProduct, user: IUser) => {
+    let cart = await CartModel.findOne({ user: user._id });
     
-    const productIndex = cart.cartItems.findIndex(
-      (item: ICartItem) => 
-        item.product.toString() === product._id.toString()
-
-    );
+    // 1. Manage Items (Push or Increment)
+    if (!cart) {
+        cart = await CartModel.create({
+            user: user._id,
+            cartItems: [{ product: product._id, price: product.price }],
+            totalCartPrice: product.price // Init value, will be fixed by calc below
+        });
+    } else {
+        const productIndex = cart.cartItems.findIndex(
+            (item: ICartItem) => item.product.toString() === product._id.toString()
+        );
 
         if (productIndex > -1) {
-        // Product exists -> update quantity
-        const cartItem = cart.cartItems[productIndex];
-        cartItem.quantity += 1;
-        cart.cartItems[productIndex] = cartItem;
+            cart.cartItems[productIndex].quantity += 1;
         } else {
-        // Product not in cart -> push new item
-        cart.cartItems.push({ 
-            product: product._id, 
-            price: product.price,
-            quantity: 1 
-        } as ICartItem);
+            cart.cartItems.push({
+                product: product._id,
+                price: product.price,
+                quantity: 1
+            } as ICartItem);
+        }
     }
-  }
-    //Calculate Total Cart Price
- 
-    cart.totalCartPrice = cart.cartItems.reduce(
-        (acc: number, item: ICartItem) => acc + item.quantity * item.price,
-        0
-    );
 
-     await cart.save();
-     return cart;
 
-}
 
-export const delteItemFromCartService = async(productId:string, user:IUser) =>{
-
-    //find cart for the logged user 
-    const cart = await CartModel.findOne({user:user._id})
-    if(!cart)
-    {   
-        throw new Error("Cart not found for the user");
-    }   
-    const productIndex = cart.cartItems.findIndex(
-        (item: ICartItem) =>
-            item.product.toString() === productId
-    );
-
-    if (productIndex > -1) {        
-        // Product exists -> remove item
-        cart.cartItems.splice(productIndex, 1);        
+    if (cart.coupon_id) {
+        try {
+            const coupon = await CouponModel.findById(cart.coupon_id);
+            
+          
+            calculateCartStats(cart, coupon); // Updates totalCartPrice & Discount
+            
+            // Now validate the result
+            await validateCoupon(coupon!.code, cart.totalCartPrice);
+            
+        } catch (error) {
+            // Validation failed? Recalculate WITHOUT coupon
+            calculateCartStats(cart, null);
+        }
     } else {
-        throw new Error("Product not found in cart");
-    }   
-    //Calculate Total Cart Price
-    cart.totalCartPrice = cart.cartItems.reduce(
-        (acc: number, item: ICartItem) => acc + item.quantity * item.price,
-        0
-    );      
-        await cart.save();
-        return cart;
+        // No coupon? Just calculate totals
+        calculateCartStats(cart, null);
+    }
 
-}
+    await cart.save();
+    return cart;
+};
+
+export const deleteItemFromCartService = async (productId: string, user: IUser) => {
+    const cart = await CartModel.findOne({ user: user._id });
+    
+    if (!cart) {
+        throw new AppError("Cart not found for the user", 404);
+    }
+
+    const productIndex = cart.cartItems.findIndex(
+        (item: ICartItem) => item.product.toString() === productId
+    );
+
+    if (productIndex > -1) {
+        // Product exists -> remove item
+        cart.cartItems.splice(productIndex, 1);
+    } else {
+        throw new AppError("Product not found in cart", 404);
+    }
+        // Recalculate totals & handle coupon if exists
+    
+    if (cart.coupon_id) {
+        try {
+            const coupon = await CouponModel.findById(cart.coupon_id);
+
+            calculateCartStats(cart, coupon);
+
+            // Now validate the result
+            await validateCoupon(coupon!.code, cart.totalCartPrice);
+
+        } catch (error) {
+            // 3. Validation Failed? Remove coupon & Recalculate
+            calculateCartStats(cart, null);
+        }
+    } else {
+        // No coupon? Just calculate base totals
+        calculateCartStats(cart, null);
+    }
+  
+
+    await cart.save();
+    return cart;
+};
 
 export const clearCartService = async(user:IUser) =>{
 

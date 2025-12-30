@@ -1,16 +1,20 @@
 import { createCouponBody,deleteCouponParams} from "../types/cart.types";
 import {asyncHandler} from "../utils/asyncHandler";
-import { Request } from "express";
+import { NextFunction, Request } from "express";
 import { API_Response } from "../types/response.types";
-import { createCouponService, updateCouponService,getAllCouponsService} from "../services/coupon.servics";
+import { createCouponService, updateCouponService,
+    getAllCouponsService, applyCouponToCartService, removeCouponFromCartService} from "../services/coupon.servics";
+import CartModel from "../models/cart.models";
+import { validateCoupon } from "../helper/validate_coupon.helper";
+import { AppError } from "../utils/AppError";
 
 export const createCoupon = asyncHandler(
     async(
         req: Request<unknown,API_Response,createCouponBody,unknown>,
         res 
         ,next)=>{
-            const {code, discount, expiration_date} = req.body; 
-            const coupon =  await createCouponService(code, discount, expiration_date, (req as any).user._id, (req as any).user.vendor_id); //logged admin id
+            const {code, discount, expiration_date, max_usage, min_purchase_amount} = req.body; 
+            const coupon =  await createCouponService(code, discount, expiration_date, max_usage, min_purchase_amount, (req as any).user._id, (req as any).user.vendor_id); //logged admin id
 
             res.status(200).json(
                 { 
@@ -59,3 +63,30 @@ export const getAllCoupons = asyncHandler(
                 data: coupons });            
         }   
 )   
+
+export const applyCoupon = asyncHandler(async (req: Request, res, next) => {    
+    
+    const { couponCode } = req.body;
+    const user_id = req.user!._id; 
+
+    const updatedCart = await applyCouponToCartService(user_id, couponCode);
+
+    // 3. Send Response
+    res.status(200).json({
+        success: true,
+        message: 'Coupon applied successfully',
+        data: {
+            cart: updatedCart
+        }
+    });
+});
+
+export const removeCoupon = asyncHandler(async (req: Request, res) => {
+    const updatedCart = await removeCouponFromCartService(req.user!._id);
+
+    res.status(200).json({
+        success: true,
+        message: 'Coupon removed successfully',
+        data: { cart: updatedCart }
+    });
+});
