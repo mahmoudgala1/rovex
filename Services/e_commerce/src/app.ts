@@ -8,8 +8,11 @@ import { globalErrorHandeler } from "./middlewares/globalerror.middleware";
 import swaggerJsDoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
 import { swaggerOptions } from './swagger';
+import cors from "cors";
+
 const app: Application = express();
 app.use(express.json());
+app.use(cors());
 app.use(LoggerMiddleware);
 
 const specs = swaggerJsDoc(swaggerOptions);

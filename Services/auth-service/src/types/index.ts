@@ -154,9 +154,11 @@ export type FleetOperatorRole =
   | "support_engineer"
   | "analyst";
 
-export type UserRole = CompanyUserRole | FleetOperatorRole;
+export type CustomerRole = "customer";
 
-export type UserType = "company_user" | "fleet_operator";
+export type UserRole = CompanyUserRole | FleetOperatorRole | CustomerRole;
+
+export type UserType = "company_user" | "fleet_operator" | "customer";
 
 export interface JWTPayload {
   user_id: string;
@@ -169,4 +171,48 @@ export interface JWTPayload {
   token_version: number;
   iat?: number;
   exp?: number;
+}
+
+export interface ICustomerAddress {
+  address_id: string;
+  label: string;
+  address_line1: string;
+  address_line2?: string;
+  city: string;
+  state?: string;
+  postal_code?: string;
+  country: string;
+  location: ICoordinates;
+  is_default: boolean;
+  notes?: string;
+}
+
+export interface ICustomer extends Document {
+  customer_id: string;
+  name: string;
+  email: string;
+  phone?: string;
+  auth_provider: "local" | "google" | "apple";
+  password_hash: string;
+  is_verified: boolean;
+  verification_otp?: string;
+  verification_otp_expires?: Date;
+  reset_password_otp?: string;
+  reset_password_otp_expires?: Date;
+  avatar_url?: string;
+  addresses: ICustomerAddress[];
+  preferences: {
+    language: string;
+    notifications: {
+      sms: boolean;
+      email: boolean;
+      push: boolean;
+    };
+    marketing_opt_in: boolean;
+  };
+  status: "active" | "suspended" | "banned";
+  last_login?: Date;
+  token_version: number;
+  created_at: Date;
+  updated_at: Date;
 }

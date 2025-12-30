@@ -152,6 +152,7 @@ export async function createCompanyUser(
         to: email,
         subject: `Welcome to ${company.name} on ROVEX`,
         template: "company_user_welcome",
+        theme: "dark",
         data: {
           user_name: name,
           email: email,

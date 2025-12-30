@@ -72,6 +72,7 @@ class FleetController {
         to: email,
         subject: "Welcome to ROVEX Fleet Operations",
         template: "fleet_operator_welcome",
+        theme: "dark",
         data: {
           operator_name: name,
           email: email,

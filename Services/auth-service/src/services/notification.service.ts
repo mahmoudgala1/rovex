@@ -10,6 +10,7 @@ interface EmailOptions {
   to: string;
   subject: string;
   template: string;
+  theme: string;
   data: Record<string, any>;
 }
 
@@ -33,7 +34,13 @@ class NotificationService {
 
   async sendEmail(options: EmailOptions): Promise<void> {
     try {
-      const html = this.loadTemplate(options.template, options.data);
+      const html = this.loadTemplate(
+        options.template,
+        options.theme,
+        options.data
+      );
+
+      // fs.writeFileSync("./output.html", html);
 
       const mailOptions = {
         from: `"ROVEX Fleet Platform" <${env.SMTP_FROM || env.SMTP_USER}>`,
@@ -53,6 +60,7 @@ class NotificationService {
 
   private loadTemplate(
     templateName: string,
+    theme: string,
     data: Record<string, any>
   ): string {
     try {
@@ -61,6 +69,13 @@ class NotificationService {
         `${templateName}.html`
       );
       let template = fs.readFileSync(templatePath, "utf-8");
+
+      const isDark = theme === "dark";
+      template = template.replace(
+        /\{\{#if_dark\}\}(.*?)\{\{else\}\}(.*?)\{\{\/if_dark\}\}/gs,
+        (match, darkContent, lightContent) =>
+          isDark ? darkContent : lightContent
+      );
 
       Object.keys(data).forEach((key) => {
         const regex = new RegExp(`{{${key}}}`, "g");
