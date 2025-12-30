@@ -8,11 +8,11 @@ const router = Router()
 /**
  * @openapi
  * /users:
- * get:
- * description: Get all users
- * responses:
- * 200:
- * description: Returns a list of users.
+ *   get:
+ *     description: Get all users
+ *     responses:
+ *       200:
+ *         description: Returns a list of users.
  */
 router.get("/",ProductControllers.getAllProducts);
 router.get("/:id",productIsActive,ProductControllers.getProductById);

@@ -124,7 +124,7 @@ class AuthController {
         to: user.email,
         subject: "Your ROVEX password was changed",
         template: "password_changed",
-        theme:"dark",
+        theme: "dark",
         data: {
           name: user.name,
           timestamp: new Date().toLocaleString(),
@@ -179,7 +179,7 @@ class AuthController {
         to: user.email,
         subject: "ROVEX Fleet - Reset your password",
         template: "password_reset_request",
-        theme: "dark",
+        theme: "light",
         data: {
           name: user.name,
           reset_url: resetUrl,
@@ -239,7 +239,8 @@ class AuthController {
         theme: "dark",
         data: {
           name: user.name,
-          login_url: `${process.env.DASHBOARD_URL}/login`,
+          login_url: `${env.DASHBOARD_URL}/login`,
+          support_email: env.SUPPORT_EMAIL,
         },
       });
 
@@ -452,7 +453,7 @@ class AuthController {
         to: user.email,
         subject: "ROVEX Dashboard - Reset your password",
         template: "password_reset_request",
-        theme: "dark",
+        theme: "light",
         data: {
           name: user.name,
           reset_url: resetUrl,
@@ -503,7 +504,7 @@ class AuthController {
         to: user.email,
         subject: "Your ROVEX password was changed",
         template: "password_reset_success",
-        theme: "dark",
+        theme: "light",
         data: {
           name: user.name,
           login_url: `${process.env.DASHBOARD_URL}/login`,

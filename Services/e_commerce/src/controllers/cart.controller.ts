@@ -1,7 +1,7 @@
 
 import {addToCartBody} from "../types/cart.types";
 import {asyncHandler} from "../utils/asyncHandler";
-import { addToCartService, delteItemFromCartService,clearCartService ,getCartService} from "../services/cart.services";
+import { addToCartService, deleteItemFromCartService,clearCartService ,getCartService} from "../services/cart.services";
 import { Request } from "express";
 import { API_Response } from "../types/response.types";
 
@@ -26,7 +26,10 @@ export const delteItemFromCart = asyncHandler(
         req: Request,
         res 
         ,next)=>{
-              const cart = await delteItemFromCartService(req.params.id , (req as any).user);     
+              const cart = await deleteItemFromCartService(
+                req.params.id,
+                (req as any).user
+              );     
 
             res.status(200).json(
                 { 

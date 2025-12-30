@@ -243,6 +243,179 @@ export async function resendVerificationOTP(
   }
 }
 
+export async function changePassword(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    const { current_password, new_password } = req.body;
+
+    const customer = await Customer.findOne({
+      customer_id: req.user!.user_id,
+    }).select("+password_hash");
+
+    if (!customer) {
+      throw new AppError("Customer not found", 404);
+    }
+
+    const isPasswordValid = await (customer as any).comparePassword(
+      current_password
+    );
+    if (!isPasswordValid) {
+      throw new AppError("Current password is incorrect", 400);
+    }
+
+    const isSamePassword = await (customer as any).comparePassword(
+      new_password
+    );
+    if (isSamePassword) {
+      throw new AppError(
+        "New password must be different from current password",
+        400
+      );
+    }
+
+    customer.password_hash = new_password;
+    await customer.save();
+
+    logger.info(`Password changed for customer: ${customer.customer_id}`);
+
+    successResponse(res, null, "Password changed successfully");
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function forgotPassword(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    const { email } = req.body;
+
+    const customer = await Customer.findOne({ email });
+    if (!customer) {
+      successResponse(
+        res,
+        null,
+        "If email exists, password reset OTP has been sent"
+      );
+      return;
+    }
+
+    const resetOTP = generateOTP();
+    const otpExpiry = getOTPExpiry(10);
+
+    customer.reset_password_otp = resetOTP;
+    customer.reset_password_otp_expires = otpExpiry;
+    await customer.save();
+
+    await notificationService.sendEmail({
+      to: email,
+      subject: "Password Reset Code - ROVEX",
+      template: "customer_password_reset_otp",
+      theme: "light",
+      data: {
+        name: customer.name,
+        otp: resetOTP,
+        expires_in: "10 minutes",
+      },
+    });
+
+    logger.info(`Password reset OTP sent to: ${email}`);
+
+    successResponse(
+      res,
+      null,
+      "If email exists, password reset OTP has been sent"
+    );
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function verifyResetOTP(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    const { email, otp } = req.body;
+
+    const customer = await Customer.findOne({ email }).select(
+      "+reset_password_otp +reset_password_otp_expires"
+    );
+
+    if (!customer) {
+      throw new AppError("Invalid request", 400);
+    }
+
+    if (!customer.reset_password_otp || !customer.reset_password_otp_expires) {
+      throw new AppError("No reset OTP found. Please request a new one.", 400);
+    }
+
+    if (isOTPExpired(customer.reset_password_otp_expires)) {
+      throw new AppError("OTP has expired. Please request a new one.", 400);
+    }
+
+    if (customer.reset_password_otp !== otp) {
+      throw new AppError("Invalid OTP", 400);
+    }
+
+    successResponse(
+      res,
+      { email },
+      "OTP verified successfully. You can now reset your password."
+    );
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function resetPassword(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    const { email, otp, new_password } = req.body;
+
+    const customer = await Customer.findOne({ email }).select(
+      "+reset_password_otp +reset_password_otp_expires +password_hash"
+    );
+
+    if (!customer) {
+      throw new AppError("Invalid request", 400);
+    }
+
+    if (!customer.reset_password_otp || !customer.reset_password_otp_expires) {
+      throw new AppError("No reset OTP found", 400);
+    }
+
+    if (isOTPExpired(customer.reset_password_otp_expires)) {
+      throw new AppError("OTP has expired", 400);
+    }
+
+    if (customer.reset_password_otp !== otp) {
+      throw new AppError("Invalid OTP", 400);
+    }
+
+    customer.password_hash = new_password;
+    customer.reset_password_otp = undefined;
+    customer.reset_password_otp_expires = undefined;
+
+    await customer.save();
+
+    logger.info(`Password reset for customer: ${customer.customer_id}`);
+
+    successResponse(res, null, "Password reset successfully");
+  } catch (error) {
+    next(error);
+  }
+}
+
 export async function customerLogout(
   req: Request,
   res: Response,

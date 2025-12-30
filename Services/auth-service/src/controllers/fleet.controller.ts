@@ -72,7 +72,7 @@ class FleetController {
         to: email,
         subject: "Welcome to ROVEX Fleet Operations",
         template: "fleet_operator_welcome",
-        theme: "dark",
+        theme: "light",
         data: {
           operator_name: name,
           email: email,
@@ -81,7 +81,7 @@ class FleetController {
           role_display: roleInfo.display,
           role_description: roleInfo.description,
           permissions_html: permissionsHtml,
-          login_url: `${env.DASHBOARD_URL}/fleet/login`,
+          login_url: `${env.DASHBOARD_URL}/login`,
           dashboard_url: env.DASHBOARD_URL,
           admin_email: req.user!.email,
         },

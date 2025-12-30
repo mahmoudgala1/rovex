@@ -7,7 +7,7 @@ import customerAuthRoutes from "./customer.auth.routes";
 const router = Router();
 
 router.use("/auth", authRoutes);
-router.use("/auth", customerAuthRoutes);
+router.use("/auth/customer", customerAuthRoutes);
 router.use("/fleet", fleetRoutes);
 router.use("/users", userRoutes);
 
