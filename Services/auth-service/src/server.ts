@@ -20,7 +20,6 @@ const swaggerOptions = {
     .swagger-ui .info .title { color: #1f77b4 }
   `,
   customSiteTitle: "ROVEX Auth API Docs",
-  customfavIcon: "/favicon.ico",
   swaggerOptions: {
     persistAuthorization: true,
     displayRequestDuration: true,
