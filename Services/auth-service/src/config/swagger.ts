@@ -32,7 +32,7 @@ Complete authentication and user management API for ROVEX fleet management platf
 
 ## Token Expiry
 
-- **Access Token**: 1 hour
+- **Access Token**: 1 day
 - **Refresh Token**: 7 days
 
 ## Base URL
