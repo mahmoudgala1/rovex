@@ -110,6 +110,13 @@ export async function login(
       throw new AppError("Your account is suspended. Contact support.", 403);
     }
 
+    if (!customer.is_verified) {
+  throw new AppError(
+    "Please verify your email address before logging in. Check your inbox for the verification code.", 
+    403
+  );
+}
+
     const isPasswordValid = await (customer as any).comparePassword(password);
     if (!isPasswordValid) {
       throw new AppError("Invalid email or password", 401);
