@@ -6,6 +6,8 @@ import FleetOperator from "../models/FleetOperator";
 import TokenBlacklist from "../models/TokenBlacklist";
 import { AppError } from "../utils/errors";
 import { JWTPayload } from "../types";
+import CompanyUser from "../models/CompanyUser";
+import Customer from "../models/Customer";
 
 class AuthService {
   generateTokens(payload: Omit<JWTPayload, "type">): {
@@ -117,6 +119,18 @@ class AuthService {
       if (userType === "fleet_operator") {
         result = await FleetOperator.findOneAndUpdate(
           { operator_id: userId },
+          { $inc: { token_version: 1 } },
+          { new: true }
+        );
+      } else if (userType === "company_user") {
+        result = await CompanyUser.findOneAndUpdate(
+          { user_id: userId },
+          { $inc: { token_version: 1 } },
+          { new: true }
+        );
+      } else {
+        result = await Customer.findOneAndUpdate(
+          { customer_id: userId },
           { $inc: { token_version: 1 } },
           { new: true }
         );

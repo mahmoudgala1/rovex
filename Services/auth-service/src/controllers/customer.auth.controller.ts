@@ -111,11 +111,11 @@ export async function login(
     }
 
     if (!customer.is_verified) {
-  throw new AppError(
-    "Please verify your email address before logging in. Check your inbox for the verification code.", 
-    403
-  );
-}
+      throw new AppError(
+        "Please verify your email address before logging in. Check your inbox for the verification code.",
+        403
+      );
+    }
 
     const isPasswordValid = await (customer as any).comparePassword(password);
     if (!isPasswordValid) {
