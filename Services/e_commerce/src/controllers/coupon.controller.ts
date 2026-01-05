@@ -4,7 +4,7 @@ import { NextFunction, Request } from "express";
 import { API_Response } from "../types/response.types";
 import { createCouponService, updateCouponService,
     getAllCouponsService, applyCouponToCartService, removeCouponFromCartService} from "../services/coupon.servics";
-import CartModel from "../models/cart.models";
+import CartModel from "../models/cart.model";
 import { validateCoupon } from "../helper/validate_coupon.helper";
 import { AppError } from "../utils/AppError";
 

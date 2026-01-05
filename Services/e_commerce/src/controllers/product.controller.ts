@@ -13,6 +13,7 @@ export const createProduct = asyncHandler(
         req: Request<unknown,API_Response,CreateProductInput,unknown>,
         res 
         ,next)=>{
+            console.log("user", req.user);
            const NewProduct =  await CreateProductService(req.body);
 
             res.status(200).json(

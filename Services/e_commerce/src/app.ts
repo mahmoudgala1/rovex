@@ -17,7 +17,6 @@ app.use(cors());
 app.use(LoggerMiddleware);
 
 const specs = swaggerJsDoc(swaggerOptions);
-console.log(JSON.stringify(specs, null, 2)); 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 
 app.get("/health", (req, res) => {
@@ -33,6 +32,8 @@ app.use("/api/v1/products", productRoutes);
 app.use("/api/v1/cart", cartRoutes);
 app.use("/api/v1/coupon", cartRoutes);
 app.use("/api/v1/whishlist", wishlistRoutes);
+app.use("/api/v1/orders", wishlistRoutes);
+
 
 
 app.use(globalErrorHandeler);

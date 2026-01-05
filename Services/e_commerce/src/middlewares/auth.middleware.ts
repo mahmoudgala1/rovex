@@ -1,10 +1,8 @@
+
 import { Request, Response, NextFunction } from 'express';
 import axios from 'axios';
 import { AppError } from '../utils/AppError';
 import { asyncHandler } from '../utils/asyncHandler';
-
-
-const AUTH_URL = process.env.AUTH_SERVICE_URL || 'http://localhost:8000/api/v1/auth/verify-token';
 
 interface AuthUser {
     id: string;
@@ -33,6 +31,9 @@ export const protect = asyncHandler(async (req: Request, res: Response, next: Ne
 
     try {
         // B. Validate Token with Auth Service
+        const AUTH_URL = process.env.AUTH_SERVICE_URL + "/verify-token" || 'http://localhost:8000/api/v1/auth/verify-token';
+
+        console.log("URL", AUTH_URL);
         const response = await axios.post(
             AUTH_URL, 
             {}, 

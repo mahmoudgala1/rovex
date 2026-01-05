@@ -2,7 +2,7 @@ import coupon_model from "../models/coupon.models";
 import {UpdateCouponInput} from "../types/cart.types";
 import { AppError } from "../utils/AppError";
 import { ICoupon } from "../types";
-import CartModel from "../models/cart.models";  
+import CartModel from "../models/cart.model";  
 import { validateCoupon } from "../helper/validate_coupon.helper";  
 import { calculateCartStats } from "../helper/calculate.cart.price.helper";
 

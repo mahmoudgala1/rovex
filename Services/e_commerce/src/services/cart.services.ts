@@ -1,5 +1,5 @@
 import { IProduct, IUser,ICart,ICartItem } from "../types";
-import CartModel from "../models/cart.models";
+import CartModel from "../models/cart.model";
 import { validateCoupon } from "../helper/validate_coupon.helper";
 import CouponModel from "../models/coupon.models";
 import { AppError } from "../utils/AppError";
