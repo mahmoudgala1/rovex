@@ -10,7 +10,8 @@ import {
   resetPasswordSchema,
   changePasswordSchema,
   logoutSchema,
-  refreshTokenSchema
+  refreshTokenSchema,
+  loginSchema
 } from "../utils/validators";
 
 const router = Router();
@@ -80,7 +81,11 @@ const router = Router();
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.post("/fleet/login", authController.fleetLogin);
+router.post(
+  "/fleet/login",
+  validate(loginSchema),
+  authController.fleetLogin
+);
 
 /**
  * @swagger

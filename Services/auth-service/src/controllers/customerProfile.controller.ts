@@ -4,6 +4,7 @@ import { AppError } from "../utils/errors";
 import { successResponse } from "../utils/responses";
 import { logger } from "../utils/logger";
 import { generateId } from "../utils/helpers";
+import cloudinary from "../config/cloudinary";
 
 export async function getProfile(
   req: Request,
@@ -31,7 +32,7 @@ export async function updateProfile(
   next: NextFunction
 ): Promise<void> {
   try {
-    const { name, phone, avatar_url } = req.body;
+    const { name, phone } = req.body;
 
     const customer = await Customer.findOne({
       customer_id: req.user!.user_id,
@@ -43,7 +44,19 @@ export async function updateProfile(
 
     if (name) customer.name = name;
     if (phone) customer.phone = phone;
-    if (avatar_url) customer.avatar_url = avatar_url;
+
+    if (req.file) {
+      try {
+        if (customer.avatar_public_id) {
+          await cloudinary.uploader.destroy(customer.avatar_public_id);
+          logger.info(`Deleted old avatar: ${customer.avatar_public_id}`);
+        }
+        customer.avatar_url = req.file.path;
+        customer.avatar_public_id = req.file.filename;
+      } catch (error) {
+        throw new AppError("Failed to update avatar", 500);
+      }
+    }
 
     await customer.save();
 
@@ -106,7 +119,7 @@ export async function deleteAccount(
       throw new AppError("Customer not found", 404);
     }
 
-    const isValid = await(customer as any).comparePassword(password);
+    const isValid = await (customer as any).comparePassword(password);
     if (!isValid) {
       throw new AppError("Incorrect password", 400);
     }
@@ -121,4 +134,3 @@ export async function deleteAccount(
     next(error);
   }
 }
-

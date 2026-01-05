@@ -21,12 +21,10 @@ export interface IFleetOperator extends Document {
   created_at: Date;
   updated_at: Date;
 }
-
 export interface ICoordinates {
   type: "Point";
   coordinates: [number, number];
 }
-
 export interface ILocation {
   location_id: string;
   name: string;
@@ -38,7 +36,6 @@ export interface ILocation {
   is_primary?: boolean;
   active: boolean;
 }
-
 export interface ISubscription {
   tier: "starter" | "professional" | "enterprise";
   status: "active" | "trial" | "suspended" | "cancelled";
@@ -52,7 +49,6 @@ export interface ISubscription {
     overage_rate: number;
   };
 }
-
 export interface ICompany extends Document {
   company_id: string;
   name: string;
@@ -109,7 +105,6 @@ export interface ICompany extends Document {
   created_at: Date;
   updated_at: Date;
 }
-
 export interface ICompanyUser extends Document {
   user_id: string;
   company_id: string;
@@ -159,7 +154,6 @@ export type CustomerRole = "customer";
 export type UserRole = CompanyUserRole | FleetOperatorRole | CustomerRole;
 
 export type UserType = "company_user" | "fleet_operator" | "customer";
-
 export interface JWTPayload {
   user_id: string;
   email: string;
@@ -172,7 +166,6 @@ export interface JWTPayload {
   iat?: number;
   exp?: number;
 }
-
 export interface ICustomerAddress {
   address_id: string;
   label: string;
@@ -186,7 +179,6 @@ export interface ICustomerAddress {
   is_default: boolean;
   notes?: string;
 }
-
 export interface ICustomer extends Document {
   customer_id: string;
   name: string;
@@ -200,6 +192,7 @@ export interface ICustomer extends Document {
   reset_password_otp?: string;
   reset_password_otp_expires?: Date;
   avatar_url?: string;
+  avatar_public_id?: string;
   addresses: ICustomerAddress[];
   preferences: {
     language: string;

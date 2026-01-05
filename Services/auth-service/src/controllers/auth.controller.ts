@@ -11,7 +11,6 @@ import authService from "../services/auth.service";
 import { env } from "../config/environment";
 import CompanyUser from "../models/CompanyUser";
 import Company from "../models/Company";
-import crypto from "crypto";
 
 const RESET_TOKEN_EXPIRY_MIN = 30;
 

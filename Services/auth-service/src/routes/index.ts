@@ -2,8 +2,8 @@ import { Router } from "express";
 import authRoutes from "./auth.routes";
 import fleetRoutes from "./fleet.routes";
 import userRoutes from "./user.routes";
-import customerAuthRoutes from "./customer.auth.routes";
-import customerProfileRoutes from "./customer-profile.routes";
+import customerAuthRoutes from "./customerAuth.routes";
+import customerProfileRoutes from "./customerProfile.routes";
 
 const router = Router();
 

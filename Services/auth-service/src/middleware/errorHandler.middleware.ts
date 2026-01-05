@@ -2,7 +2,6 @@ import { Request, Response, NextFunction } from "express";
 import { AppError } from "../utils/errors";
 import { logger } from "../utils/logger";
 
-
 export const errorHandler = (
   err: Error | AppError,
   req: Request,
@@ -12,11 +11,13 @@ export const errorHandler = (
   let statusCode = 500;
   let errorCode = "INTERNAL_ERROR";
   let message = "Internal server error";
+  let details;
 
   if (err instanceof AppError) {
     statusCode = err.statusCode;
     errorCode = err.errorCode;
     message = err.message;
+    details = err.details;
 
     if (err.isOperational) {
       logger.warn({
@@ -54,16 +55,21 @@ export const errorHandler = (
     message = "Resource already exists";
   }
 
-  res.status(statusCode).json({
+  const response: any = {
     success: false,
     message,
     error: {
       code: errorCode,
     },
     timestamp: new Date().toISOString(),
-  });
-};
+  };
 
+  if (details) {
+    response.details = details;
+  }
+
+  res.status(statusCode).json(response);
+};
 
 export const notFoundHandler = (
   req: Request,

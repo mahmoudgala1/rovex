@@ -23,6 +23,9 @@ interface Environment {
   LOG_FILE: string;
   ALLOWED_ORIGINS: string;
   DASHBOARD_URL: string;
+  CLOUDINARY_CLOUD_NAME: string;
+  CLOUDINARY_API_KEY: string;
+  CLOUDINARY_API_SECRET: string;
 }
 
 export const env: Environment = {
@@ -49,6 +52,9 @@ export const env: Environment = {
   LOG_FILE: process.env.LOG_FILE || "logs/app.log",
   ALLOWED_ORIGINS: process.env.ALLOWED_ORIGINS || "http://localhost:3000",
   DASHBOARD_URL: process.env.DASHBOARD_URL || "",
+  CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME || "",
+  CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY || "",
+  CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET || "",
 };
 
 const requiredEnvVars = ["MONGODB_URI", "JWT_SECRET"];

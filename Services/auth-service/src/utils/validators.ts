@@ -225,9 +225,11 @@ export const updateUserSchema = Joi.object({
 export const updateProfileSchema = Joi.object({
   name: Joi.string().min(2).max(100).optional(),
   phone: Joi.string()
-    .pattern(/^\+?[1-9]\d{1,14}$/)
+    .pattern(/^(\+20|0)?1[0125]\d{8}$/)
     .optional(),
-}).min(1);
+})
+  .min(1)
+  .unknown(true);
 
 export const registerSchema = Joi.object({
   name: Joi.string().min(2).max(100).required(),

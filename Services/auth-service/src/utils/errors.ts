@@ -2,17 +2,20 @@ export class AppError extends Error {
   public statusCode: number;
   public errorCode: string;
   public isOperational: boolean;
+  public details?: any;
 
   constructor(
     message: string,
     statusCode: number = 500,
-    errorCode: string = "INTERNAL_ERROR"
+    details?: any,
+    errorCode: string = "INTERNAL_ERROR",
   ) {
     super(message);
 
     this.statusCode = statusCode;
     this.errorCode = errorCode;
     this.isOperational = true;
+    this.details = details;
 
     Error.captureStackTrace(this, this.constructor);
     Object.setPrototypeOf(this, AppError.prototype);
@@ -29,7 +32,6 @@ export class AppError extends Error {
     };
   }
 }
-
 
 export class ValidationError extends AppError {
   constructor(message: string, details?: any) {

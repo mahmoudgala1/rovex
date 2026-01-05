@@ -7,6 +7,7 @@ import {
   updatePreferencesSchema,
   deleteAccountSchema,
 } from "../utils/validators";
+import { upload } from "../middleware/multer";
 
 const router = Router();
 
@@ -37,24 +38,60 @@ router.get("/", customerProfileController.getProfile);
  *     security:
  *       - bearerAuth: []
  *     requestBody:
- *       required: true
+ *       required: false
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
  *             type: object
  *             properties:
  *               name:
  *                 type: string
+ *                 description: Customer name
  *               phone:
  *                 type: string
- *               avatar_url:
+ *                 description: Customer phone number
+ *               avatar:
  *                 type: string
+ *                 format: binary
+ *                 description: Avatar image file (jpg, png, webp)
  *     responses:
  *       200:
- *         description: Profile updated
+ *         description: Profile updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     customer:
+ *                       type: object
+ *                       properties:
+ *                         customer_id:
+ *                           type: string
+ *                         name:
+ *                           type: string
+ *                         phone:
+ *                           type: string
+ *                         email:
+ *                           type: string
+ *                         avatar_url:
+ *                           type: string
+ *                 message:
+ *                   type: string
+ *       400:
+ *         description: Validation error
+ *       404:
+ *         description: Customer not found
+ *       500:
+ *         description: Server error
  */
 router.patch(
   "/",
+  upload.single("avatar"),
   validate(updateProfileSchema),
   customerProfileController.updateProfile
 );

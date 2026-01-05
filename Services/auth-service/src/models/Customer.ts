@@ -64,7 +64,11 @@ const CustomerSchema = new Schema<ICustomer>(
 
     avatar_url: {
       type: String,
+      default:
+        "https://res.cloudinary.com/dty7q0xhs/image/upload/v1767596572/customer-avatars/default_avatar.png",
     },
+
+    avatar_public_id: String,
 
     addresses: [
       {
