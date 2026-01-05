@@ -283,3 +283,17 @@ export const customerResetPasswordSchema = Joi.object({
         "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character",
     }),
 });
+
+export const updatePreferencesSchema = Joi.object({
+  language: Joi.string().valid("en", "ar").optional(),
+  notifications: Joi.object({
+    sms: Joi.boolean().optional(),
+    email: Joi.boolean().optional(),
+    push: Joi.boolean().optional(),
+  }).optional(),
+  marketing_opt_in: Joi.boolean().optional(),
+}).min(1);
+
+export const deleteAccountSchema = Joi.object({
+  password: Joi.string().required(),
+});
