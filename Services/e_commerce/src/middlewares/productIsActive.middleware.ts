@@ -1,34 +1,41 @@
-import { Request } from "express";
+import { Request, Response, NextFunction } from "express";
 import { asyncHandler } from "../utils/asyncHandler";
-import { GetPtoductParams } from "../types/products.types";
-import { API_Response } from "../types/response.types";
 import { productModel } from "../models/product.models";
 import { AppError } from "../utils/AppError";
-import { IProduct } from "../types";
-import mongoose from "mongoose";
 
-export const productIsActive = asyncHandler(
-    async(
-        req: Request<GetPtoductParams,API_Response,unknown,unknown>,
-        res 
-        ,next)=>{
-            console.log("productIsActive middleware called");
-            
-            const companyId = (req as any).company || (req as any).user.company;
-            console.log(companyId);
 
+export const productIsActive = (isCustomer: boolean) => {
+  
+    return asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
         
-           const product=  await productModel.findOne({ 
+        let product;
+
+        // SCENARIO A: Admin/Company Owner (Must own the product)
+        if (!isCustomer) {
+            const companyId = (req as any).company || (req as any).user?.company;
+            
+            product = await productModel.findOne({ 
                 _id: req.params.id, 
-                company: companyId})
-
-           if(!product || !product.is_active)
-           {
-                throw new AppError("product not found or you do not have access to it",404)
-           }
-           (req as any).product = product;
-
-           return  next()
+                company: companyId 
+            });
+        } 
+        // SCENARIO B: Public Customer (Product must be active)
+        else {
+            product = await productModel.findOne({ _id: req.body.productId });
+            
+            // For customers, if it's inactive, pretend it doesn't exist
+            if (product && !product.is_active) {
+                return next(new AppError("Product not found", 404));
+            }
         }
-    
-)
+
+        // Common Check: Did we find anything?
+        if (!product) {
+            return next(new AppError("Product not found or access denied", 404));
+        }
+
+        // Attach to request and move on
+        (req as any).product = product;
+        next();
+    });
+};

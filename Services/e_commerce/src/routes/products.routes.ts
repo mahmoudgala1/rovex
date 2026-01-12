@@ -109,7 +109,7 @@ router.get("/",assignCompanyContext,ProductControllers.getAllProducts);
  */
 
 
-router.get("/:id",assignCompanyContext,productIsActive,ProductControllers.getProductById);
+router.get("/:id",assignCompanyContext,productIsActive(false),ProductControllers.getProductById);
 /**
  * @swagger
  * /api/products/create:
@@ -190,7 +190,7 @@ router.post("/create",extractUserFromHeaders,restrictTo("admin"),upload.array('i
  *                           example: ""
  */
 
-router.patch("/update/:id",extractUserFromHeaders,restrictTo("admin"),productIsActive,ProductControllers.updateProduct)
+router.patch("/update/:id",extractUserFromHeaders,restrictTo("admin"),productIsActive(false),ProductControllers.updateProduct)
 //delete requests by set it not active  (soft delete)
 
 

@@ -19,14 +19,16 @@ export const addToWishlistService = async (userId: mongoose.Types.ObjectId, prod
 
 export const removeFromWishlistService = async (userId: mongoose.Types.ObjectId, productId: mongoose.Types.ObjectId) => {
     const wishlist = await WishlistModel.findOneAndUpdate(
-        { user: userId },
+        { user: userId ,
+            "items.product": productId
+        },
         { 
             $pull: { items: { product: productId } } // efficient removal
         },
         { new: true }
     );
 
-    if (!wishlist) throw new AppError('Wishlist not found', 404);
+    if (!wishlist) throw new AppError('Product not found in your wishlist', 404);
     
     return wishlist;
 };
@@ -34,8 +36,8 @@ export const removeFromWishlistService = async (userId: mongoose.Types.ObjectId,
 /**
  * Gets the list.
  */
-export const getWishlistService = async (userId: string, idsOnly: boolean = false) => {
-    
+export const getWishlistService = async (userId: mongoose.Types.ObjectId, idsOnly: boolean = false) => {
+    console.log("idsOnly:", idsOnly);
     if (idsOnly) {
         const wishlist = await WishlistModel.findOne({ user: userId })
             .select('items.product') // Only get the product field

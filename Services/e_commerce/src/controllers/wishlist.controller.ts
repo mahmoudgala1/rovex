@@ -12,13 +12,13 @@ export const addToWishlist = asyncHandler(
         next: NextFunction
     ) => {
        
-        const userId = (req as any).user.user_id; 
+        const userId = (req as any).user.id; 
         
         const updatedWishlist = await WishlistService.addToWishlistService(userId, req.body.productId);
 
         res.status(200).json({
             success: true,
-            message: "Item added to wishlist",
+            message: "Item added to wishlist scuccessfully",
             data: updatedWishlist
         });
     }
@@ -27,13 +27,13 @@ export const addToWishlist = asyncHandler(
 // Remove Item from Wishlist
 export const removeFromWishlist = asyncHandler(
     async (
-        req: Request<RemoveItemParams, API_Response, unknown, unknown>,
+        req: Request<RemoveItemParams, API_Response, AddToWishlistInput, unknown>,
         res: Response,
         next: NextFunction
     ) => {
         const userId = (req as any).user.id;
         
-        const updatedWishlist = await WishlistService.removeFromWishlistService(userId, req.params.productId);
+        const updatedWishlist = await WishlistService.removeFromWishlistService(userId, req.body.productId);
 
         res.status(200).json({
             success: true,
@@ -50,7 +50,7 @@ export const getWishlist = asyncHandler(
         res: Response,
         next: NextFunction
     ) => {
-        const userId = (req as any).user.user_id;
+        const userId = (req as any).user.id;
         
         const wishlist = await WishlistService.getWishlistService(userId, false);
 
@@ -68,7 +68,7 @@ export const clearWishlist = asyncHandler(
         res: Response,
         next: NextFunction
     ) => {
-        const userId = (req as any).user._id;
+        const userId = (req as any).user.id;
         const clearedWishlist = await WishlistService.clearWishlistService(userId);
 
         res.status(200).json({  
@@ -85,7 +85,7 @@ export const getWishlistIds = asyncHandler(
         res: Response,
         next: NextFunction
     ) => {
-        const userId = (req as any).user._id;
+        const userId = (req as any).user.id;
         const wishlist = await WishlistService.getWishlistService(userId, true);
 
         res.status(200).json({

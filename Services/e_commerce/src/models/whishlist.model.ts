@@ -8,7 +8,8 @@ const WishlistSchema = new Schema<IWishlist>(
     items: [
       {
         product: { type: Schema.Types.ObjectId, ref: 'Product', required: true },
-        addedAt: { type: Date, default: Date.now },
+        _id: false, // Prevent automatic _id generation for subdocuments
+  
       },
     ],
   },

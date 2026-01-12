@@ -12,10 +12,11 @@ export const extractUserFromHeaders = asyncHandler(async (req: Request, res: Res
     // const user_type = req.headers['x-user-type'] as string;
     // const company_id = req.headers['x-company-id'] as string
     //mokup data
-     const user_id = "galal1234567890123456789";
-    const user_role = "admin";
+     const user_id = new Types.ObjectId("64b5f8c12345678901230000");
+    const user_role = "customer";
     const user_type = "";
-    const company_id = "64b5f8c12345678901234567"
+    // const company_id = new Types.ObjectId("64b5f8c12345678901234567");
+    const company_id = null
 
     // 2. Validate: If Nginx is configured correctly, these should NEVER be missing.
     if (!user_id || !user_role) {
@@ -30,7 +31,7 @@ export const extractUserFromHeaders = asyncHandler(async (req: Request, res: Res
         id: user_id,
         role: user_role,
         type: user_type ,
-        company: company_id || null
+        company: company_id  
     };
 
     next();
