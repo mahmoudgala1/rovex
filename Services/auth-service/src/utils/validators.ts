@@ -299,3 +299,31 @@ export const updatePreferencesSchema = Joi.object({
 export const deleteAccountSchema = Joi.object({
   password: Joi.string().required(),
 });
+
+export const addAddressSchema = Joi.object({
+  label: Joi.string().required(),
+  address_line1: Joi.string().required(),
+  address_line2: Joi.string().optional().allow(""),
+  city: Joi.string().required(),
+  state: Joi.string().optional().allow(""),
+  postal_code: Joi.string().optional().allow(""),
+  country: Joi.string().default("EG"),
+  latitude: Joi.number().min(-90).max(90).required(),
+  longitude: Joi.number().min(-180).max(180).required(),
+  is_default: Joi.boolean().default(false),
+  notes: Joi.string().optional().allow(""),
+});
+
+export const updateAddressSchema = Joi.object({
+  label: Joi.string().optional(),
+  address_line1: Joi.string().optional(),
+  address_line2: Joi.string().optional().allow(""),
+  city: Joi.string().optional(),
+  state: Joi.string().optional().allow(""),
+  postal_code: Joi.string().optional().allow(""),
+  country: Joi.string().optional(),
+  latitude: Joi.number().min(-90).max(90).optional(),
+  longitude: Joi.number().min(-180).max(180).optional(),
+  is_default: Joi.boolean().optional(),
+  notes: Joi.string().optional().allow(""),
+}).min(1);
