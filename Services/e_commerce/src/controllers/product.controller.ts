@@ -5,6 +5,7 @@ import { asyncHandler } from "../utils/asyncHandler";
 import {CreateProductService,getAllProductsService,updateProductService} from "../services/product.services";
 import { IQueryString, IUser } from "../types";
 import { Types } from "mongoose";
+import { uploadToCloudinary } from "../utils/cloudinary";
 
 
 //create new product
@@ -14,7 +15,18 @@ export const createProduct = asyncHandler(
        res,
         next)=>{
             const company = new Types.ObjectId((req as any).user.company)
-           const NewProduct =  await CreateProductService(req.body,company);
+            const folderPath = `${company}/products`; 
+            let imageURLs: string[] = [];
+          
+          if (req.files && Array.isArray(req.files)) {
+              const uploadPromises = (req.files as Express.Multer.File[]).map(file => 
+                  uploadToCloudinary(file.buffer, folderPath)
+              );
+
+              imageURLs = await Promise.all(uploadPromises);
+             
+          }
+           const NewProduct =  await CreateProductService(req.body,company,imageURLs);
 
     res.status(200).json({
       success: true,

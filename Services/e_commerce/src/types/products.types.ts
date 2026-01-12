@@ -3,8 +3,7 @@ export interface CreateProductInput {
   price: number;
   description?: string;
   discount?: number;
-  images_URL: string[];
-  stock: number;
+    stock: number;
   is_active: boolean;
 }
 export type UpdateProductInput = Partial<CreateProductInput>;

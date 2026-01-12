@@ -6,10 +6,10 @@ import { IQueryString } from "../types";
 import { Types } from "mongoose";
 
 
-export const CreateProductService = async(ProdctBody:CreateProductInput,company:Types.ObjectId) =>
+export const CreateProductService = async(ProdctBody:CreateProductInput,company:Types.ObjectId,images_URL:string[]) =>
 {
 
-    const {title, price, description, discount, images_URL, stock, is_active} = ProdctBody;
+    const {title, price, description, discount, stock, is_active} = ProdctBody;
 
     const NewProduct = await productModel.create(
         {
@@ -17,7 +17,7 @@ export const CreateProductService = async(ProdctBody:CreateProductInput,company:
             price,
             description,
             discount,
-            images_URL,
+            images_URL: images_URL,
             stock,
             is_active,
             company
