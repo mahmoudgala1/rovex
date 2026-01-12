@@ -181,12 +181,25 @@ router.post(
  *             required:
  *               - current_password
  *               - new_password
+ *               - confirm_password
  *             properties:
  *               current_password:
  *                 type: string
+ *                 format: password
+ *                 example: OldPassword123!
+ *                 description: Current password
  *               new_password:
  *                 type: string
+ *                 format: password
  *                 minLength: 8
+ *                 maxLength: 128
+ *                 example: NewPassword123!
+ *                 description: New password (8-128 chars, must include uppercase, lowercase, number, and special character @$!%*?&)
+ *               confirm_password:
+ *                 type: string
+ *                 format: password
+ *                 example: NewPassword123!
+ *                 description: Must match new_password
  *     responses:
  *       200:
  *         description: Password changed successfully

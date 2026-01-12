@@ -37,7 +37,6 @@ const TokenBlacklistSchema = new Schema<ITokenBlacklist>(
     expires_at: {
       type: Date,
       required: true,
-      index: true,
       description: "When the token expires (from JWT exp claim)",
     },
   },
