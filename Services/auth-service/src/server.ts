@@ -13,6 +13,8 @@ import { connectDatabase } from "./config/database";
 import routes from "./routes";
 import swaggerUi from "swagger-ui-express";
 import { swaggerSpec } from "./config/swagger";
+import jwt from "jsonwebtoken";
+import { JWTPayload } from "types";
 
 const swaggerOptions = {
   customCss: `
@@ -79,6 +81,21 @@ class Server {
         uptime: process.uptime(),
         service: "rovex-auth-service",
       });
+    });
+
+    this.app.get("/validate", async (req, res) => {
+      const token = req.headers.authorization?.split(" ")[1];
+      if (!token) return res.sendStatus(401);
+      try {
+        const decoded = jwt.verify(token, env.JWT_SECRET) as JWTPayload;
+        res.set("X-User-Id", decoded.user_id);
+        res.set("X-User-Role", decoded.role);
+        res.set("X-User-Type", decoded.user_type);
+        if (decoded.company_id) res.set("X-Company-Id", decoded.type);
+        return res.sendStatus(200);
+      } catch (error) {
+        return res.sendStatus(403);
+      }
     });
 
     this.app.use(`/api/${env.API_VERSION}`, routes);

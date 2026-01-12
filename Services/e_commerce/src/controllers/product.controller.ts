@@ -7,7 +7,6 @@ import { IQueryString, IUser } from "../types";
 import { Types } from "mongoose";
 
 
-
 //create new product
 export const createProduct = asyncHandler(
     async(
@@ -17,16 +16,13 @@ export const createProduct = asyncHandler(
             const company = new Types.ObjectId((req as any).user.company)
            const NewProduct =  await CreateProductService(req.body,company);
 
-            res.status(200).json(
-                {
-                    success : true,
-                    message:"New product is created",
-                    data:NewProduct
-                }
-            )
-        }
-    
-)
+    res.status(200).json({
+      success: true,
+      message: "New product is created",
+      data: NewProduct,
+    });
+  }
+);
 
 //get all products
 export const getAllProducts = asyncHandler(
@@ -37,35 +33,30 @@ export const getAllProducts = asyncHandler(
           
            const allProducts =  await getAllProductsService(req.query,(req as any).company);
 
-            res.status(200).json(
-                {
-                    success : true,
-                    message:"all products retrieved successfult",
-                    data:allProducts
-                }
-            )
-        }
-    
-)
+    res.status(200).json({
+      success: true,
+      message: "all products retrieved successfult",
+      data: allProducts,
+    });
+  }
+);
 
 //get product by id
 export const getProductById = asyncHandler(
-    async(
-        req: Request<GetPtoductParams,API_Response,unknown,unknown>,
-        res 
-        ,next)=>{
-           const product=  (req as any).product
-           
-            res.status(200).json(
-                {
-                    success : true,
-                    message:"product retrieved successfult",
-                    data:product
-                }
-            )
-        }
-    
-)
+  async (
+    req: Request<GetPtoductParams, API_Response, unknown, unknown>,
+    res,
+    next
+  ) => {
+    const product = (req as any).product;
+
+    res.status(200).json({
+      success: true,
+      message: "product retrieved successfult",
+      data: product,
+    });
+  }
+);
 
 //update product property
 

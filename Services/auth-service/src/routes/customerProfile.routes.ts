@@ -6,6 +6,8 @@ import {
   updateProfileSchema,
   updatePreferencesSchema,
   deleteAccountSchema,
+  addAddressSchema,
+  updateAddressSchema,
 } from "../utils/validators";
 import { upload } from "../middleware/multer";
 
@@ -164,6 +166,170 @@ router.delete(
   "/",
   validate(deleteAccountSchema),
   customerProfileController.deleteAccount
+);
+
+/**
+ * @swagger
+ * /customers/profile/addresses:
+ *   get:
+ *     summary: Get all addresses
+ *     tags: [Customer Profile]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Addresses retrieved
+ */
+router.get("/addresses", customerProfileController.getAddresses);
+
+/**
+ * @swagger
+ * /customers/profile/addresses:
+ *   post:
+ *     summary: Add new address
+ *     tags: [Customer Profile]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - label
+ *               - address_line1
+ *               - city
+ *               - latitude
+ *               - longitude
+ *             properties:
+ *               label:
+ *                 type: string
+ *                 example: "Home"
+ *               address_line1:
+ *                 type: string
+ *               address_line2:
+ *                 type: string
+ *               city:
+ *                 type: string
+ *               state:
+ *                 type: string
+ *               postal_code:
+ *                 type: string
+ *               country:
+ *                 type: string
+ *                 default: "EG"
+ *               latitude:
+ *                 type: number
+ *               longitude:
+ *                 type: number
+ *               is_default:
+ *                 type: boolean
+ *               notes:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Address added
+ */
+router.post(
+  "/addresses",
+  validate(addAddressSchema),
+  customerProfileController.addAddress
+);
+
+/**
+ * @swagger
+ * /customers/profile/addresses/{address_id}:
+ *   patch:
+ *     summary: Update address
+ *     tags: [Customer Profile]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: address_id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               label:
+ *                 type: string
+ *               address_line1:
+ *                 type: string
+ *               city:
+ *                 type: string
+ *               latitude:
+ *                 type: number
+ *               longitude:
+ *                 type: number
+ *               is_default:
+ *                 type: boolean
+ *     responses:
+ *       200:
+ *         description: Address updated
+ *       404:
+ *         description: Address not found
+ */
+router.patch(
+  "/addresses/:address_id",
+  validate(updateAddressSchema),
+  customerProfileController.updateAddress
+);
+
+/**
+ * @swagger
+ * /customers/profile/addresses/{address_id}:
+ *   delete:
+ *     summary: Delete address
+ *     tags: [Customer Profile]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: address_id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Address deleted
+ *       404:
+ *         description: Address not found
+ */
+router.delete(
+  "/addresses/:address_id",
+  customerProfileController.deleteAddress
+);
+
+/**
+ * @swagger
+ * /customers/profile/addresses/{address_id}/set-default:
+ *   post:
+ *     summary: Set default address
+ *     tags: [Customer Profile]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: address_id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Default address updated
+ *       404:
+ *         description: Address not found
+ */
+router.post(
+  "/addresses/:address_id/set-default",
+  customerProfileController.setDefaultAddress
 );
 
 export default router;
