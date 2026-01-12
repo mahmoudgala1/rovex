@@ -1,20 +1,21 @@
 import { Request, Response,NextFunction,RequestHandler } from "express";
 import {API_Response} from "../types/response.types";
 import { CreateProductInput, GetPtoductParams,UpdateProductInput } from "../types/products.types";
-import { AppError } from "../utils/AppError";
 import { asyncHandler } from "../utils/asyncHandler";
 import {CreateProductService,getAllProductsService,updateProductService} from "../services/product.services";
-import { IQueryString } from "../types";
+import { IQueryString, IUser } from "../types";
+import { Types } from "mongoose";
+
 
 
 //create new product
 export const createProduct = asyncHandler(
     async(
-        req: Request<unknown,API_Response,CreateProductInput,unknown>,
-        res 
-        ,next)=>{
-            console.log("user", req.user);
-           const NewProduct =  await CreateProductService(req.body);
+       req: Request<unknown, API_Response<any>, CreateProductInput>,
+       res,
+        next)=>{
+            const company = new Types.ObjectId((req as any).user.company)
+           const NewProduct =  await CreateProductService(req.body,company);
 
             res.status(200).json(
                 {
@@ -33,7 +34,8 @@ export const getAllProducts = asyncHandler(
         req: Request<unknown,API_Response,unknown,IQueryString>,
         res 
         ,next)=>{
-           const allProducts =  await getAllProductsService(req.query);
+          
+           const allProducts =  await getAllProductsService(req.query,(req as any).company);
 
             res.status(200).json(
                 {
@@ -73,8 +75,9 @@ export const updateProduct = asyncHandler(
         res 
         ,next)=>{
         
+            const company = new Types.ObjectId((req as any).user.company)
           
-            const updatedProduct =  await updateProductService(req.params.id,req.body);
+            const updatedProduct =  await updateProductService(req.params.id,company,req.body);
             const isDeleted = !(updatedProduct as NonNullable<typeof updatedProduct>).is_active;
             const message = isDeleted ? "Product deleted successfully" : "Product updated successfully";
             const data = isDeleted ?"":updatedProduct;
@@ -86,7 +89,4 @@ export const updateProduct = asyncHandler(
                 })
             }
            
-            
-        
-    
 )

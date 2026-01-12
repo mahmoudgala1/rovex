@@ -1,9 +1,9 @@
 import { Router } from 'express';
-import { protect } from '../middlewares/auth.middleware';
+
 import * as orderController from '../controllers/order.cotroller';
 
 const router = Router();
-router.use(protect);
+router.use();
 
 router.route('/')
     .get(orderController.getMyOrders)

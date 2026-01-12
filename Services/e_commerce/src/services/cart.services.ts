@@ -6,12 +6,12 @@ import { AppError } from "../utils/AppError";
 import { calculateCartStats } from "../helper/calculate.cart.price.helper";
 
 export const addToCartService = async (product: IProduct, user: IUser) => {
-    let cart = await CartModel.findOne({ user: user._id });
+    let cart = await CartModel.findOne({ user: user.id });
     
     // 1. Manage Items (Push or Increment)
     if (!cart) {
         cart = await CartModel.create({
-            user: user._id,
+            user: user.id,
             cartItems: [{ product: product._id, price: product.price }],
             totalCartPrice: product.price // Init value, will be fixed by calc below
         });
@@ -57,7 +57,7 @@ export const addToCartService = async (product: IProduct, user: IUser) => {
 };
 
 export const deleteItemFromCartService = async (productId: string, user: IUser) => {
-    const cart = await CartModel.findOne({ user: user._id });
+    const cart = await CartModel.findOne({ user: user.id });
     
     if (!cart) {
         throw new AppError("Cart not found for the user", 404);
@@ -101,7 +101,7 @@ export const deleteItemFromCartService = async (productId: string, user: IUser) 
 export const clearCartService = async(user:IUser) =>{
 
     //find cart for the logged user     
-    const cart = await CartModel.findOne({user:"64a7f0f2c2a62b6f4d5e8b9a"})
+    const cart = await CartModel.findOne({user:user.id});
     if(!cart)
     {   
         throw new Error("Cart not found for the user");
@@ -115,7 +115,7 @@ export const clearCartService = async(user:IUser) =>{
 export const getCartService = async(user:IUser) =>{
 
     //find cart for the logged user     
-    const cart = await CartModel.findOne({user:"64a7f0f2c2a62b6f4d5e8b9a"}).populate('cartItems.product');
+    const cart = await CartModel.findOne({user:user.id}).populate('cartItems.product');
     if(!cart)
     {   
         throw new Error("Cart not found for the user");

@@ -35,10 +35,18 @@ const productSchema :Schema = new Schema(
             type:Boolean,
            required:[true,"Product status is required"]
         },
+        company:{
+            type:Schema.Types.ObjectId,
+            required:[true,"Product must belong to a company"],
+            index:true,
+        },
         created_at:{
             type:Date
         }
     }
 )
+
+// Rule company cannot have two products with the same Title
+productSchema.index({ company: 1, title: 1 }, { unique: true });
 
 export const productModel= mongoose.model<IProduct>('Product',productSchema);

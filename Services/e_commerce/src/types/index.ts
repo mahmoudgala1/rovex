@@ -1,15 +1,12 @@
 
 import { Document, Types } from "mongoose";
-
-export interface IUser extends Document
-{
-    name:string;
-    email:string;
-    role:'user'|"admin";
-    password:string;
-
-
+export interface IUser {
+    id: string;          
+    role: string;        
+    type: string;        
+    company: string;  
 }
+
 export interface IProduct extends Document
 {
     title:string;
@@ -19,6 +16,7 @@ export interface IProduct extends Document
     images_URL:string[];
     stock:number;
     is_active:boolean;
+    company:Types.ObjectId;
     created_at:Date;
 
 

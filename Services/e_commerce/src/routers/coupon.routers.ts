@@ -1,22 +1,22 @@
 import { Router } from "express";
 import * as couponControllers from "../controllers/coupon.controller"
-import { restrictTo, protect } from "../middlewares/auth.middleware";
+import { restrictTo } from "../middlewares/auth.middleware";
 
 
 const router = Router()
 
 //get requests
-router.get("/",protect,restrictTo("admin"),couponControllers.getAllCoupons);
+router.get("/",restrictTo("admin"),couponControllers.getAllCoupons);
 
 // post requests
-router.post("/create",protect,restrictTo("admin"), couponControllers.createCoupon);
-router.post("/applyCoupon",protect, couponControllers.applyCoupon);
-router.post("/removeCoupon",protect, couponControllers.removeCoupon);
+router.post("/create",restrictTo("admin"), couponControllers.createCoupon);
+router.post("/applyCoupon", couponControllers.applyCoupon);
+router.post("/removeCoupon", couponControllers.removeCoupon);
 
 
 //patch requests 
 
 //update requests (soft delete)
-router.patch("/:code",protect,restrictTo("admin"), couponControllers.updateCoupon);
+router.patch("/:code",restrictTo("admin"), couponControllers.updateCoupon);
 
 export default router;

@@ -1,26 +1,19 @@
 import { Router } from "express";
 import * as ProductControllers from "../controllers/product.controller"
 import { productIsActive } from "../middlewares/productIsActive.middleware";
-import { protect ,restrictTo} from "../middlewares/auth.middleware";
+import { extractUserFromHeaders ,restrictTo} from "../middlewares/auth.middleware";
+import { assignCompanyContext } from "../middlewares/assignCompanyContext.middleware";
 const router = Router()
 
-//get requests
-/**
- * @openapi
- * /users:
- *   get:
- *     description: Get all users
- *     responses:
- *       200:
- *         description: Returns a list of users.
- */
-router.get("/",ProductControllers.getAllProducts);
-router.get("/:id",productIsActive,ProductControllers.getProductById);
+
+
+// get requests
+router.get("/",assignCompanyContext,ProductControllers.getAllProducts);
+router.get("/:id",assignCompanyContext,productIsActive,ProductControllers.getProductById);
 
 // post requests
-router.post("/create",protect,restrictTo("admin"),ProductControllers.createProduct);
-
+router.post("/create",extractUserFromHeaders,restrictTo("admin"),ProductControllers.createProduct); 
 //patch requests 
-router.patch("/update/:id",protect,restrictTo("admin"),productIsActive,ProductControllers.updateProduct)
-//delete requests by set it not active
+router.patch("/update/:id",extractUserFromHeaders,restrictTo("admin"),productIsActive,ProductControllers.updateProduct)
+//delete requests by set it not active  (soft delete)
 export default router;

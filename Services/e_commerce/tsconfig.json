@@ -5,7 +5,11 @@
     "module": "commonjs",                              /* Node uses CommonJS (require/module.exports) */
     "outDir": "./dist",                                /* Redirect output structure to the directory. */
     "rootDir": "./src",                                /* Specify the root directory of input files. */
-    "esModuleInterop": true,                           /* Enables cleaner imports (import x from 'y') */
+    "esModuleInterop": true,   
+    "typeRoots": ["./node_modules/@types", "./src/types"],
+    
+    // 2. Make sure this is true to process the global files
+    "skipLibCheck": true    ,                    /* Enables cleaner imports (import x from 'y') */
     
     /* Strict Type-Checking Options (The Rules) */
     "strict": true,                                    /* Enable all strict type-checking options. */
@@ -19,6 +23,6 @@
       "*": ["node_modules/*"]
     }
   },
-  "include": ["src/**/*"],                             /* Only compile files in src */
+  "include": ["src/**/*", "src/types/**/*.d.ts"],                             /* Only compile files in src */
   "exclude": ["node_modules"]                          /* Ignore library files */
 }
