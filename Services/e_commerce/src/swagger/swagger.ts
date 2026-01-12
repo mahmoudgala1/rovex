@@ -1,20 +1,50 @@
-import { Options } from 'swagger-jsdoc';
-import path from 'path';
+import { Options } from "swagger-jsdoc";
+import path from "path";
+
+const isDevelopment = process.env.NODE_ENV !== "production";
 
 export const swaggerOptions: Options = {
   definition: {
-    openapi: '3.0.0',
+    openapi: "3.0.0",
     info: {
-      title: 'E-commerce API',
-      version: '1.0.0',
-      description: 'E-commerce API documentation',
+      title: "E-commerce API",
+      version: "1.0.0",
+      description: "E-commerce API documentation",
     },
     servers: [
       {
-        url: 'http://localhost:3200',
-        
+        url: "http://localhost:8001/api/v1",
+        description: "Local development",
+      },
+      {
+        url: "https://api.rovex.com/ecommerce/api/v1",
+        description: "Staging development",
+      },
+      {
+        url: "https://rovex.duckdns.org/ecommerce/api/v1",
+        description: "Production environment",
       },
     ],
+    components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: "http",
+          scheme: "bearer",
+          bearerFormat: "JWT",
+          description: 'Enter your JWT access token (without "Bearer" prefix)',
+        },
+      },
+    },
   },
-  apis: ["./src/swagger/swagger.schemas.ts",  path.join(__dirname, '../routes/*.ts')],
+  apis: isDevelopment
+    ? [
+        "./src/swagger/swagger.schemas.ts",
+        "./src/routes/*.ts",
+        "./src/controllers/*.ts",
+      ]
+    : [
+        "./dist/swagger/swagger.schemas.js",
+        "./dist/routes/*.js",
+        "./dist/controllers/*.js",
+      ],
 };

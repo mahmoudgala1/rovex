@@ -24,7 +24,7 @@ app.get("/health", (req, res) => {
     status: "OK",
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
-    service: "rovex-e_commerce-service",
+    service: "rovex-ecommerce-service",
   });
 });
 
