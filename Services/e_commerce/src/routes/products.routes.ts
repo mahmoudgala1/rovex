@@ -1,12 +1,13 @@
 import { Router } from "express";
-import * as ProductControllers from "../controllers/product.controller"
+import * as ProductControllers from "../controllers/product.controller";
 import { productIsActive } from "../middlewares/productIsActive.middleware";
-import { extractUserFromHeaders ,restrictTo} from "../middlewares/auth.middleware";
+import {
+  extractUserFromHeaders,
+  restrictTo,
+} from "../middlewares/auth.middleware";
 import { assignCompanyContext } from "../middlewares/assignCompanyContext.middleware";
-import { upload } from '../middlewares/multer.middleware';
-const router = Router()
-
-
+import { upload } from "../middlewares/multer.middleware";
+const router = Router();
 
 // get requests
 
@@ -20,7 +21,7 @@ const router = Router()
  *       - bearerAuth: []
  *     parameters:
  *       - in: header
- *         name: x-company-id
+ *         name: company-id
  *         required: true
  *         schema:
  *           type: string
@@ -73,7 +74,12 @@ const router = Router()
  *                         $ref: '#/components/schemas/Product'
  */
 
-router.get("/",assignCompanyContext,ProductControllers.getAllProducts);
+router.get(
+  "/",
+  extractUserFromHeaders,
+  assignCompanyContext,
+  ProductControllers.getAllProducts
+);
 
 /**
  * @swagger
@@ -85,7 +91,7 @@ router.get("/",assignCompanyContext,ProductControllers.getAllProducts);
  *       - bearerAuth: []
  *     parameters:
  *       - in: header
- *         name: x-company-id
+ *         name: company-id
  *         required: true
  *         schema:
  *           type: string
@@ -112,8 +118,13 @@ router.get("/",assignCompanyContext,ProductControllers.getAllProducts);
  *                       $ref: '#/components/schemas/Product'
  */
 
-
-router.get("/:id",assignCompanyContext,productIsActive(false),ProductControllers.getProductById);
+router.get(
+  "/:id",
+  extractUserFromHeaders,
+  assignCompanyContext,
+  productIsActive(false),
+  ProductControllers.getProductById
+);
 /**
  * @swagger
  * /products/create:
@@ -151,10 +162,14 @@ router.get("/:id",assignCompanyContext,productIsActive(false),ProductControllers
  *                       $ref: '#/components/schemas/Product'
  */
 
-
-router.post("/create",extractUserFromHeaders,restrictTo("admin"),upload.array('images', 5),ProductControllers.createProduct); 
-//patch requests 
-
+router.post(
+  "/create",
+  extractUserFromHeaders,
+  restrictTo("admin"),
+  upload.array("images", 5),
+  ProductControllers.createProduct
+);
+//patch requests
 
 /**
  * @swagger
@@ -194,8 +209,13 @@ router.post("/create",extractUserFromHeaders,restrictTo("admin"),upload.array('i
  *                           example: ""
  */
 
-router.patch("/update/:id",extractUserFromHeaders,restrictTo("admin"),productIsActive(false),ProductControllers.updateProduct)
+router.patch(
+  "/update/:id",
+  extractUserFromHeaders,
+  restrictTo("admin"),
+  productIsActive(false),
+  ProductControllers.updateProduct
+);
 //delete requests by set it not active  (soft delete)
-
 
 export default router;

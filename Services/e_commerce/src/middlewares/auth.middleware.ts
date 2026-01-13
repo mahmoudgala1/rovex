@@ -7,10 +7,12 @@ import { Types } from 'mongoose';
 export const extractUserFromHeaders = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
     
     // 1. Extract user info from custom headers set by Nginx
-    const user_id = new Types.ObjectId(req.headers['x-user-id'] as string);
-     const user_role = new Types.ObjectId(req.headers['x-user-role'] as string);
+    const user_id = req.headers['x-user-id']
+     const user_role = req.headers['x-user-role'] 
      const user_type = req.headers['x-user-type'] as string
-     const company_id = new Types.ObjectId(req.headers['x-company-id'] as string) || null;
+     const company_id = req.headers['x-company-id'] || null;
+
+     console.log(user_id,user_role,user_type,company_id);
     //mokup data
 
     //const user_id = new Types.ObjectId("64b5f8c12345678901230000");
@@ -34,6 +36,8 @@ export const extractUserFromHeaders = asyncHandler(async (req: Request, res: Res
         type: user_type ,
         company: company_id  
     };
+
+    console.log((req as any).user);
 
     next();
 });
