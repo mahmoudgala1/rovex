@@ -9,7 +9,7 @@ import { Types } from "mongoose";
 export const CreateProductService = async(ProdctBody:CreateProductInput,company:Types.ObjectId,images_URL:string[]) =>
 {
 
-    const {title, price, description, discount, stock, is_active} = ProdctBody;
+    const {title, price, description, discount, stock} = ProdctBody;
 
     const NewProduct = await productModel.create(
         {
@@ -19,7 +19,6 @@ export const CreateProductService = async(ProdctBody:CreateProductInput,company:
             discount,
             images_URL: images_URL,
             stock,
-            is_active,
             company
 
         }

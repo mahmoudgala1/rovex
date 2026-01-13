@@ -1,14 +1,14 @@
 import express, { Request, Response, Application, NextFunction } from "express";
 import { LoggerMiddleware } from "./middlewares/logger.middleware";
-import productRoutes from "./routers/products.routers";
-import cartRoutes from "./routers/cart.routers";
+import productRoutes from "./routes/products.routes";
+import cartRoutes from "./routes/cart.routes";
 import { validateRequiredFields } from "./middlewares/globalValidation.middleware";
 import { AppError } from "./utils/AppError";
 import { globalErrorHandeler } from "./middlewares/globalerror.middleware";
-import wishlistRoutes from "./routers/whishlist.routes";
+import wishlistRoutes from "./routes/whishlist.routes";
 import swaggerJsDoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
-import { swaggerOptions } from './swagger';
+import { swaggerOptions } from './swagger/swagger';
 import cors from "cors";
 
 const app: Application = express();

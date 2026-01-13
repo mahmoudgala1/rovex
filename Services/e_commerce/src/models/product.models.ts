@@ -21,11 +21,13 @@ const productSchema :Schema = new Schema(
         },
         stock:{
             type:Number,
-            min: [0, 'Stock cannot be negative']
+            min: [0, 'Stock cannot be negative'],
+             required:[true,"Product stock is required"],
         },
          discount:{
             type:Number,
-            min: [0, 'Discount cannot be negative']
+            min: [0, 'Discount cannot be negative'],
+            default:0
         },
          images_URL:{
             type:Array,
@@ -33,7 +35,7 @@ const productSchema :Schema = new Schema(
         },
          is_active:{
             type:Boolean,
-           required:[true,"Product status is required"]
+            default:true
         },
         company:{
             type:Schema.Types.ObjectId,

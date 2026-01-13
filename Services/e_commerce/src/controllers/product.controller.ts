@@ -6,7 +6,7 @@ import {CreateProductService,getAllProductsService,updateProductService} from ".
 import { IQueryString, IUser } from "../types";
 import { Types } from "mongoose";
 import { uploadToCloudinary } from "../utils/cloudinary";
-
+  
 
 //create new product
 export const createProduct = asyncHandler(
@@ -28,7 +28,7 @@ export const createProduct = asyncHandler(
           }
            const NewProduct =  await CreateProductService(req.body,company,imageURLs);
 
-    res.status(200).json({
+    res.status(201).json({
       success: true,
       message: "New product is created",
       data: NewProduct,
