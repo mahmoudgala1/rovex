@@ -92,7 +92,7 @@ class Server {
         res.set("X-User-Id", decoded.user_id);
         res.set("X-User-Role", decoded.role);
         res.set("X-User-Type", decoded.user_type);
-        if (decoded.company_id) res.set("X-Company-Id", decoded.type);
+        if (decoded.company_id) res.set("X-Company-Id", decoded.company_id);
         return res.sendStatus(200);
       } catch (error) {
         return res.sendStatus(403);

@@ -31,3 +31,5 @@ coverage/
 .cache/
 
 output.html
+
+.gitignore
