@@ -98,7 +98,7 @@
  *     WishlistItem:
  *       type: object
  *       properties:
- *         product:
+ *         productId:
  *           $ref: '#/components/schemas/Product'
  *
  *     Wishlist:
@@ -137,7 +137,7 @@
  *     AddToCartBody:
  *       type: object
  *       properties:
- *         product:
+ *         productId:
  *           type: string
  *           description: ID of the product to add
  *           example: "6965444f8546e5e0adc05995"

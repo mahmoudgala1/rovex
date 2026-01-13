@@ -112,17 +112,47 @@ export const clearCartService = async(userId: string) =>{
         await cart.save();
         return cart;        
 }   
+export const getCartService = async (userId: string) => {
+   
+    const cart = await CartModel.findOne({ user: userId }).populate('cartItems.product');
 
-export const getCartService = async(userId: string) =>{
+    if (!cart) {
+        return { cartItems: [] }; // Return a consistent structure
+    }
 
-    //find cart for the logged user     
-    const cart = await CartModel.findOne({user:userId}).populate('cartItems.product');
-    if(!cart)
-    {   
-        return []; // Return empty array if no cart found
-    }       
+    const validItems = cart.cartItems.filter((item) => {
+        const product = item.product as any; 
+        return product && product.is_active === true; 
+    });
 
-        return cart;
-}       
+    
+    if (validItems.length < cart.cartItems.length) {
+        cart.cartItems = validItems as any; // Update the local object
+        console.log(`Auto-cleaned cart for user ${userId}`); // Optional logging
+
+         // Recalculate totals & handle coupon if exists
+    
+    if (cart.coupon_id) {
+        try {
+            const coupon = await CouponModel.findById(cart.coupon_id);
+
+            calculateCartStats(cart, coupon);
+
+            // Now validate the result
+            await validateCoupon(coupon!.code, cart.totalCartPrice);
+
+        } catch (error) {
+            // 3. Validation Failed? Remove coupon & Recalculate
+            calculateCartStats(cart, null);
+        }
+    } else {
+        // No coupon? Just calculate base totals
+        calculateCartStats(cart, null);
+    }
+    await cart.save(); // UPDATE Database: Permanently remove dead links and recalculate 
+    }
+
+    return cart;
+};     
 
     

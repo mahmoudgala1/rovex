@@ -13,9 +13,9 @@ export const extractUserFromHeaders = asyncHandler(async (req: Request, res: Res
     //  const company_id = req.headers['company-id'] || null;
      //mokup data
 
-     const user_id = "2232112"
+     const user_id = "000000"
      const user_role = "customer"
-     const user_type = ""
+     const user_type = ""   
      const company_id = "company_x10"
 
      console.log(user_id,user_role,user_type,company_id);
