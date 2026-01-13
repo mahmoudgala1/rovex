@@ -15,7 +15,7 @@ export const assignCompanyContext = (req: Request, res: Response, next: NextFunc
     } 
     // 2. FALLBACK: Public Header (Storefront Visitors)
     else {
-        company = req.headers['x-company-id'] as string;
+        company = req.headers['company-id'] as string;
        
     }
 
@@ -30,6 +30,8 @@ export const assignCompanyContext = (req: Request, res: Response, next: NextFunc
 
     // 4. ATTACH: Make it easy for Controllers
     (req as any).company = new Types.ObjectId(company);
+
+    console.log(company);
     
     next();
 };
