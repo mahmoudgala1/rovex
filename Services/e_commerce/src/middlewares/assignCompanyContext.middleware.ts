@@ -10,8 +10,8 @@ export const assignCompanyContext = (req: Request, res: Response, next: NextFunc
     let company: string | undefined;
 
     // 1. PRIORITY: Logged-in User Context
-    if ((req as any).user && (req as any).user.company_id) {
-        company = (req as any) .user.company_id;
+    if ((req as any).user && (req as any).user.company) {
+        company = (req as any) .user.company;
     } 
     // 2. FALLBACK: Public Header (Storefront Visitors)
     else {
@@ -24,14 +24,8 @@ export const assignCompanyContext = (req: Request, res: Response, next: NextFunc
         return next(new AppError('Company Context Missing. Cannot handle requests please try again.', 400));
     }
 
-    if (!Types.ObjectId.isValid(company)) {
-        return next(new AppError('Invalid Company ID format.', 400));
-    }
-
     // 4. ATTACH: Make it easy for Controllers
-    (req as any).company = new Types.ObjectId(company);
+    (req as any).company = company;
 
-    console.log(company);
-    
     next();
 };

@@ -1,15 +1,15 @@
 import { Document, Types } from 'mongoose';
-
+import { BaseDocument } from './base.types';
 export interface IOrderItem {
-  product_id: Types.ObjectId;
+  product_id: string;
   name: string;
   image: string;
   price: number;
   quantity: number;
 }
 
-export interface IOrder extends Document {
-  user: Types.ObjectId;
+export interface IOrder extends BaseDocument {
+  user: string;
   items: IOrderItem[];
   shippingAddress: {
     address: string;

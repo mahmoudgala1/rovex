@@ -3,7 +3,7 @@ import { WishlistModel } from '../models/whishlist.model';
 import { AppError } from '../utils/AppError'; 
 
 
-export const addToWishlistService = async (userId: mongoose.Types.ObjectId, productId: mongoose.Types.ObjectId) => {
+export const addToWishlistService = async (userId:String, productId:String) => {
   
     const wishlist = await WishlistModel.findOneAndUpdate(
         { user: userId },
@@ -17,7 +17,7 @@ export const addToWishlistService = async (userId: mongoose.Types.ObjectId, prod
 };
 
 
-export const removeFromWishlistService = async (userId: mongoose.Types.ObjectId, productId: mongoose.Types.ObjectId) => {
+export const removeFromWishlistService = async (userId: String, productId: String) => {
     const wishlist = await WishlistModel.findOneAndUpdate(
         { user: userId ,
             "items.product": productId
@@ -36,8 +36,8 @@ export const removeFromWishlistService = async (userId: mongoose.Types.ObjectId,
 /**
  * Gets the list.
  */
-export const getWishlistService = async (userId: mongoose.Types.ObjectId, idsOnly: boolean = false) => {
-    console.log("idsOnly:", idsOnly);
+export const getWishlistService = async (userId: String, idsOnly: boolean = false) => {
+   
     if (idsOnly) {
         const wishlist = await WishlistModel.findOne({ user: userId })
             .select('items.product') // Only get the product field
@@ -62,7 +62,7 @@ export const getWishlistService = async (userId: mongoose.Types.ObjectId, idsOnl
     return wishlist;
 };
 
-export const clearWishlistService = async (userId: mongoose.Types.ObjectId) => {
+export const clearWishlistService = async (userId: String) => {
     const wishlist = await WishlistModel.findOneAndUpdate(
         { user: userId },
         { $set: { items: [] } },

@@ -5,7 +5,7 @@ declare global {
   namespace Express {
     interface Request {
    
-      company?: Types.ObjectId;
+      company?: string;
       product?: import('../types').IProduct;
       user?: import('../types').IUser;
     }

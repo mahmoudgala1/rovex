@@ -13,12 +13,18 @@ export const createCouponService = async(
     expiration_date:Date,
     max_usage:number,
     min_purchase_amount:number,
-    user_id:mongoose.Types.ObjectId,
-    vendor_id:mongoose.Types.ObjectId
+    user:string,
+    company:string
     ) =>{
 
-    //find cart for the logged user     
-    const coupon = await coupon_model.create({code, discount, expiration_date, max_usage, min_purchase_amount, user: user_id, vendor: vendor_id}); //logged admin id
+    const coupon = await coupon_model.create(
+        {code, 
+            discount,
+            expiration_date, 
+            max_usage, 
+            min_purchase_amount, 
+            user, 
+            company}); 
         return coupon;
 }       
 
@@ -26,24 +32,24 @@ export const createCouponService = async(
 
 export const updateCouponService = async(
     code:string,
-     user_id:mongoose.Types.ObjectId,
-     vendor_id:mongoose.Types.ObjectId,
+     user:string,
+     company:string,
      updatedBody:UpdateCouponInput
     ) =>{
 
-        const coupon = await coupon_model.findOneAndUpdate({code, vendor:vendor_id}, {...updatedBody,user:user_id}, {new:true});
+        const coupon = await coupon_model.findOneAndUpdate({code, company}, {...updatedBody,user}, {new:true});
         return coupon;
     }       
 
 export const getAllCouponsService = async(
-     vendor_id:mongoose.Types.ObjectId
+     company:string
     ) =>{
-        const coupons = await coupon_model.find({vendor:vendor_id, is_deleted:false});
+        const coupons = await coupon_model.find({company, is_deleted:false});
         return coupons;
     }           
 
 
-export const applyCouponToCartService = async (userId: mongoose.Types.ObjectId, couponCode: string) => {
+export const applyCouponToCartService = async (userId:string, couponCode: string) => {
     // 1. Find Cart
     const cart = await CartModel.findOne({ user: userId });
     if (!cart) {
@@ -63,7 +69,7 @@ export const applyCouponToCartService = async (userId: mongoose.Types.ObjectId, 
 };
 
 
-export const removeCouponFromCartService = async (userId: mongoose.Types.ObjectId) => {
+export const removeCouponFromCartService = async (userId:string) => {
     // 1. Find Cart
     const cart = await CartModel.findOne({ user: userId });
     if (!cart) throw new AppError('Cart not found', 404);

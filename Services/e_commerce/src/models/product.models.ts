@@ -1,17 +1,21 @@
 import mongoose, { Schema, Document, Query } from 'mongoose';
 import { IProduct } from '../types/index';
 
-
-
+import { nanoid } from 'nanoid';
+const generateID = () => `PRODUCT_${nanoid(15)}`;
 
 const productSchema :Schema = new Schema(
     {
+        _id: { 
+        type: String, 
+        default: generateID 
+    },
 
         title:{
             type:String,
             required:[true,"Product Title is required"],
         },
-        price:{
+        price:{ 
             type:Number,
             required:[true,"Product Price is required"],
             min: [0, 'Price cannot be negative']
@@ -40,7 +44,7 @@ const productSchema :Schema = new Schema(
             default:true
         },
         company:{
-            type:Schema.Types.ObjectId,
+            type:String,
             required:[true,"Product must belong to a company"],
             index:true,
         },

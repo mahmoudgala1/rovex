@@ -16,7 +16,7 @@ const PAYMENT_SERVICE_URL = process.env.PAYMENT_SERVICE_URL || 'http://localhost
  * 4. Calls Payment Microservice
  */
 export const placeOrderService = async (
-  userId: mongoose.Types.ObjectId,
+  userId: string,
   items: any[],
   address: any,
   paymentMethod: 'Cash' | 'Card'
@@ -34,7 +34,7 @@ export const placeOrderService = async (
   const bulkStockOps = [];
 
   for (const item of items) {
-    const product = dbProducts.find((p) => p._id.toString() === item.product_id);
+    const product = dbProducts.find((p) => p._id == item.product_id);
     
     // Strict Stock Check
     if (!product || product.stock < item.quantity) {
@@ -157,8 +157,8 @@ export const releaseExpiredStockService = async () => {
 /**
  * Re-attempts payment for an existing "PendingPayment" order
  */
-export const retryPaymentService = async (user_id: mongoose.Types.ObjectId, orderId: mongoose.Types.ObjectId) => {
-    const order = await OrderModel.findOne({ _id: orderId, user_id: user_id });
+export const retryPaymentService = async (user_id: string, orderId: string) => {
+    const order = await OrderModel.findOne({ _id: orderId, user: user_id });
 
     if (!order) throw new AppError('Order not found', 404);
 
@@ -188,7 +188,7 @@ export const retryPaymentService = async (user_id: mongoose.Types.ObjectId, orde
 /**
  * Get User's Order History (Newest first)
  */
-export const getMyOrdersService = async (userId: mongoose.Types.ObjectId) => {
+export const getMyOrdersService = async (userId: string) => {
     return await OrderModel.find({ user: userId })
         .sort({ createdAt: -1 }) // Newest on top
         .lean(); // Performance optimization
@@ -197,7 +197,7 @@ export const getMyOrdersService = async (userId: mongoose.Types.ObjectId) => {
 /**
  * Cancel Order & RESTORE Stock
  */
-export const cancelOrderService = async (userId: mongoose.Types.ObjectId, orderId:  mongoose.Types.ObjectId) => {
+export const cancelOrderService = async (userId: string, orderId:string) => {
     // 1. Find Order
     const order = await OrderModel.findOne({ _id: orderId, user: userId });
 
@@ -229,7 +229,7 @@ export const cancelOrderService = async (userId: mongoose.Types.ObjectId, orderI
     return order;
 };
 
-export const getOrderDetailsService = async (userId: mongoose.Types.ObjectId, orderId: mongoose.Types.ObjectId) => {
+export const getOrderDetailsService = async (userId: string, orderId: string) => {
     const order = await OrderModel.findOne({ _id: orderId, user: userId });
 
     if (!order) throw new AppError('Order not found', 404);

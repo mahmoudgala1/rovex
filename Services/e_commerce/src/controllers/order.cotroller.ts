@@ -10,7 +10,7 @@ export const placeOrder = asyncHandler(
         res: Response,
         next: NextFunction
     ) => {
-        const userId = (req as any).user._id;
+        const userId = (req as any).user.id;
         const { items, shippingAddress, paymentMethod } = req.body;
 
         // Call Service
@@ -68,11 +68,10 @@ export const retryPayment = asyncHandler(
         res: Response,
         next: NextFunction
     ) => {
-        const userId = (req as any).user._id;
+        const userId = (req as any).user.id;
         const { orderId } = req.params;
-         const orderIdObj = new mongoose.Types.ObjectId(orderId);
 
-        const paymentData = await OrderService.retryPaymentService(userId, orderIdObj);
+        const paymentData = await OrderService.retryPaymentService(userId, orderId);
 
         res.status(200).json({
             success: true,
@@ -92,7 +91,7 @@ export const getMyOrders = asyncHandler(
         res: Response,
         next: NextFunction
     ) => {
-        const userId = (req as any).user._id;
+        const userId = (req as any).user.id;
         
         const orders = await OrderService.getMyOrdersService(userId);
 
@@ -111,11 +110,10 @@ export const cancelOrder = asyncHandler(
         res: Response,
         next: NextFunction
     ) => {
-        const userId = (req as any).user._id;
+        const userId = (req as any).user.id;
         const { orderId } = req.params;
-        const orderIdObj = new mongoose.Types.ObjectId(orderId);
-
-        const order = await OrderService.cancelOrderService(userId, orderIdObj);
+     
+        const order = await OrderService.cancelOrderService(userId, orderId);
 
         res.status(200).json({
             success: true,
@@ -134,10 +132,9 @@ export const GetOrderDetails = asyncHandler(
         res: Response,
         next: NextFunction
     ) => {
-        const userId = (req as any).user._id;
+        const userId = (req as any).user.id;
         const { orderId } = req.params;
-        const orderIdObj = new mongoose.Types.ObjectId(orderId);
-        const order = await OrderService.getOrderDetailsService(userId, orderIdObj);
+        const order = await OrderService.getOrderDetailsService(userId, orderId);
 
         res.status(200).json({
             success: true,

@@ -14,7 +14,7 @@ export const createProduct = asyncHandler(
        req: Request<unknown, API_Response<any>, CreateProductInput>,
        res,
         next)=>{
-            const company = new Types.ObjectId((req as any).user.company)
+            const company = (req as any).user.company
             const folderPath = `${company}/products`; 
             let imageURLs: string[] = [];
           
@@ -78,7 +78,7 @@ export const updateProduct = asyncHandler(
         res 
         ,next)=>{
         
-            const company = new Types.ObjectId((req as any).user.company)
+            const company = (req as any).user.company
           
             const updatedProduct =  await updateProductService(req.params.id,company,req.body);
             const isDeleted = !(updatedProduct as NonNullable<typeof updatedProduct>).is_active;

@@ -13,16 +13,16 @@ export const productIsActive = (isCustomer: boolean,isBody:boolean = true) => {
         // SCENARIO A: Admin/Company Owner (Must own the product)
         if (!isCustomer) {
             const companyId = (req as any).company || (req as any).user?.company;
-            
+            console.log(req.params.id,)
             product = await productModel.findOne({ 
                 _id: req.params.id, 
-                company: companyId 
+                company: companyId ,    
+                is_active:true
             });
+           
         } 
         // SCENARIO B: Public Customer (Product must be active)
         else {
-            console.log("isBody",isBody);
-
             const id = isBody ? req.body.product : req.params.id;
             console.log("Product ID:",id);
             product = await productModel.findOne({ _id: id });

@@ -2,7 +2,7 @@ import { Types } from "mongoose";
 import { ICoupon } from "./index";
 
 export interface addToCartBody{
-     product:Types.ObjectId; 
+     product:string; 
      quantity?:number ;
 }
 
