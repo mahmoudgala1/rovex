@@ -26,6 +26,7 @@ interface Environment {
   CLOUDINARY_CLOUD_NAME: string;
   CLOUDINARY_API_KEY: string;
   CLOUDINARY_API_SECRET: string;
+  RABBITMQ_URL: string;
 }
 
 export const env: Environment = {
@@ -55,6 +56,7 @@ export const env: Environment = {
   CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME || "",
   CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY || "",
   CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET || "",
+  RABBITMQ_URL: process.env.RABBITMQ_URL || "",
 };
 
 const requiredEnvVars = ["MONGODB_URI", "JWT_SECRET"];

@@ -11,6 +11,7 @@ import authService from "../services/auth.service";
 import { env } from "../config/environment";
 import CompanyUser from "../models/CompanyUser";
 import Company from "../models/Company";
+import RabbitMQPublisher from "../services/rabbitmq.service";
 
 const RESET_TOKEN_EXPIRY_MIN = 30;
 
@@ -119,16 +120,22 @@ class AuthController {
         ip_address: req.ip,
       });
 
-      await notificationService.sendEmail({
-        to: user.email,
-        subject: "Your ROVEX password was changed",
-        template: "password_changed",
-        theme: "dark",
+      await RabbitMQPublisher.publishEvent("user.create", {
+        channels: ["email"],
         data: {
-          name: user.name,
+          email: user.email,
+          subject: "Your ROVEX password was changed",
+          template: "password_changed",
+          theme: "dark",
+          data: {
+            name: user.name,
+            timestamp: new Date().toLocaleString(),
+            ip_address: req.ip,
+            support_email: env.SUPPORT_EMAIL,
+          },
+        },
+        metadata: {
           timestamp: new Date().toLocaleString(),
-          ip_address: req.ip,
-          support_email: env.SUPPORT_EMAIL,
         },
       });
 

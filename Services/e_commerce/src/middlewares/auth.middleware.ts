@@ -37,8 +37,6 @@ export const extractUserFromHeaders = asyncHandler(async (req: Request, res: Res
         company: company_id  
     };
 
-    console.log((req as any).user);
-
     next();
 });
 
