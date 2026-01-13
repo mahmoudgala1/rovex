@@ -2,8 +2,7 @@ import express, { Request, Response, Application, NextFunction } from "express";
 import { LoggerMiddleware } from "./middlewares/logger.middleware";
 import productRoutes from "./routes/products.routes";
 import cartRoutes from "./routes/cart.routes";
-import { validateRequiredFields } from "./middlewares/globalValidation.middleware";
-import { AppError } from "./utils/AppError";
+import couponRoutes from "./routes/coupon.routes"
 import { globalErrorHandeler } from "./middlewares/globalerror.middleware";
 import wishlistRoutes from "./routes/whishlist.routes";
 import swaggerJsDoc from 'swagger-jsdoc';
@@ -30,7 +29,7 @@ app.get("/health", (req, res) => {
 
 app.use("/api/v1/products", productRoutes);
 app.use("/api/v1/cart", cartRoutes);
-app.use("/api/v1/coupon", cartRoutes);
+app.use("/api/v1/coupon", couponRoutes);
 app.use("/api/v1/wishlist", wishlistRoutes);
 app.use("/api/v1/orders", wishlistRoutes);
 
