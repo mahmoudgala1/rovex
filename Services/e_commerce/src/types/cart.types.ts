@@ -3,7 +3,7 @@ import { ICoupon } from "./index";
 
 export interface addToCartBody{
      product:Types.ObjectId; 
-     quantity:number;
+     quantity?:number ;
 }
 
 export interface deleteCouponParams{
