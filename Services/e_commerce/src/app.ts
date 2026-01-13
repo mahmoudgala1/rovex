@@ -31,7 +31,7 @@ app.get("/health", (req, res) => {
 app.use("/api/v1/products", productRoutes);
 app.use("/api/v1/cart", cartRoutes);
 app.use("/api/v1/coupon", cartRoutes);
-app.use("/api/v1/whishlist", wishlistRoutes);
+app.use("/api/v1/wishlist", wishlistRoutes);
 app.use("/api/v1/orders", wishlistRoutes);
 
 

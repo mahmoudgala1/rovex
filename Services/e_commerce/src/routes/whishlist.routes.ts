@@ -1,17 +1,18 @@
 import { Router } from 'express';
 import * as wishlistController from '../controllers/wishlist.controller';
-
+import { extractUserFromHeaders } from '../middlewares/auth.middleware';
+import { productIsActive } from '../middlewares/productIsActive.middleware';
 const router = Router();
 
-
+router.use(extractUserFromHeaders)
 
 router.route('/')
     .get(wishlistController.getWishlist)
-    .post(wishlistController.addToWishlist);
+    .post(productIsActive(true),wishlistController.addToWishlist);
 
-router.get("/ids", wishlistController.getWishlist);
+router.get("/ids", wishlistController.getWishlistIds);
 
-router.post("/clear", wishlistController.clearWishlist);
-router.delete('/:productId', wishlistController.removeFromWishlist);
+router.delete("/", wishlistController.clearWishlist);
+router.delete('/remove', wishlistController.removeFromWishlist);
 
 export default router;
