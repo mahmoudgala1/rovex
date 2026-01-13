@@ -10,7 +10,7 @@
  *         - stock
  *         - description
  *         - images_URL
- *         - company
+ * 
  *       properties:
  *         _id:
  *           type: string
@@ -37,9 +37,7 @@
  *             type: string
  *           example:
  *             - "https://res.cloudinary.com/demo/image/upload/v1/product1.jpg"
- *         company:
- *           type: string
- *           example: "64b5f8c12d4a2b0000000000"
+ * 
  *         is_active:
  *           type: boolean
  *           example: true
@@ -90,4 +88,42 @@
  *           type: string
  *         data:
  *           nullable: true
+ */
+
+
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     WishlistItem:
+ *       type: object
+ *       properties:
+ *         product:
+ *           $ref: '#/components/schemas/Product'
+ *
+ *     Wishlist:
+ *       type: object
+ *       properties:
+ *         _id:
+ *           type: string
+ *           example: "69653abf186a01d3748e7d83"
+ *         user:
+ *           type: string
+ *           example: "64b5f8c12345678901230000"
+ *         items:
+ *           type: array
+ *           items:
+ *             $ref: '#/components/schemas/WishlistItem'
+ *         createdAt:
+ *           type: string
+ *           format: date-time
+ *         updatedAt:
+ *           type: string
+ *           format: date-time
+ *
+ *     WishlistIDs:
+ *       type: array
+ *       items:
+ *         type: string
+ *         example: "69655405465cae4f71883653"
  */

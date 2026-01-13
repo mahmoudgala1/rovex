@@ -12,7 +12,7 @@ const router = Router()
 
 /**
  * @swagger
- * /api/products:
+ * /api/v1/products:
  *   get:
  *     summary: Get all products for a specific company
  *     tags: [Products]
@@ -75,7 +75,7 @@ router.get("/",assignCompanyContext,ProductControllers.getAllProducts);
 
 /**
  * @swagger
- * /api/products/{id}:
+ * /api/v1/products/{id}:
  *   get:
  *     summary: Get product by ID for a specific company
  *     tags: [Products]
@@ -112,7 +112,7 @@ router.get("/",assignCompanyContext,ProductControllers.getAllProducts);
 router.get("/:id",assignCompanyContext,productIsActive(false),ProductControllers.getProductById);
 /**
  * @swagger
- * /api/products/create:
+ * /api/v1/products/create:
  *   post:
  *     summary: Create new product
  *     tags: [Products]
@@ -154,7 +154,7 @@ router.post("/create",extractUserFromHeaders,restrictTo("admin"),upload.array('i
 
 /**
  * @swagger
- * /api/products/{id}:
+ * /api/v1/products/{id}:
  *   patch:
  *     summary: Update product or soft delete it
  *     tags: [Products]
