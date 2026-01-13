@@ -9,7 +9,7 @@ router.use(extractUserFromHeaders)
 
 /**
  * @swagger
- * /api/v1/wishlist:
+ * /wishlist:
  *   get:
  *     summary: Get the authenticated user's wishlist
  *     tags: [Wishlist]
@@ -36,7 +36,7 @@ router.route('/')
     .post(productIsActive(true),wishlistController.addToWishlist);/**
  /**
  * @swagger
- * /api/v1/wishlist:
+ * /wishlist:
  *   post:
  *     summary: Add product to user wishlist
  *     tags: [Wishlist]
@@ -70,7 +70,7 @@ router.route('/')
  */
 /**
  * @swagger
- * /api/v1/wishlist/ids:
+ * /wishlist/ids:
  *   get:
  *     summary: Get only product IDs in the authenticated user's wishlist
  *     tags: [Wishlist]
@@ -95,7 +95,7 @@ router.get("/ids", wishlistController.getWishlistIds);
 
 /**
  * @swagger
- * /api/v1/wishlist/clear:
+ * /wishlist/clear:
  *   delete:
  *     summary: Clear all items from the authenticated user's wishlist
  *     tags: [Wishlist]
@@ -133,7 +133,7 @@ router.delete("/", wishlistController.clearWishlist);
 
 /**
  * @swagger
- * /api/v1/wishlist/remove:
+ * /wishlist/remove:
  *   post:
  *     summary: Remove product from user wishlist
  *     tags: [Wishlist]
