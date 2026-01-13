@@ -1,13 +1,15 @@
 import mongoose, { Schema, Document, Types } from 'mongoose';
 import { IOrder } from '../types/order.types';
+import { nanoid } from 'nanoid';
+const generateID = () => `ORDER_${nanoid(15)}`;
 
 
 const OrderSchema = new Schema<IOrder>(
   {
-    user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    user: { type:String, ref: 'User', required: true },
     items: [
       {
-        product_id: { type: Schema.Types.ObjectId, ref: 'Product', required: true },
+        product_id: { type: String, ref: 'Product', required: true },
         name: { type: String, required: true },
         image: { type: String, required: true },
         price: { type: Number, required: true },

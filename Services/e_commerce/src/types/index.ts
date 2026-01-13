@@ -1,5 +1,6 @@
 
 import { Document, Types } from "mongoose";
+import { BaseDocument } from "./base.types";
 export interface IUser {
     id: string;          
     role: string;        
@@ -7,7 +8,7 @@ export interface IUser {
     company: string;  
 }
 
-export interface IProduct extends Document
+export interface IProduct extends BaseDocument
 {
     title:string;
     price:number;
@@ -30,28 +31,28 @@ export interface IQueryString {
 }
 
 export interface ICartItem {
-  product:Types.ObjectId; // Reference to product ID
+  product:string; // Reference to product ID
   quantity:number;
   price:number;
 
 }
-export interface ICart extends Document{
+export interface ICart extends BaseDocument{
   cartItems:ICartItem[];
   totalCartPrice: number;
   totalPriceAfterDiscount?: number;
-  user: Types.ObjectId; // Reference to User ID
+  user: string; // Reference to User ID
   createdAt: Date;
   updatedAt: Date;
-  coupon_id: Types.ObjectId| null; // Reference to Coupon ID
+  coupon_id: string| null; // Reference to Coupon ID
 }
 
-export interface ICoupon extends Document{
+export interface ICoupon extends BaseDocument{
   code:string;
   discount:number;
   expiration_date:Date;  
   created_at: Date;
-  vendor: Types.ObjectId; // Reference to vendor ID
-  user: Types.ObjectId; // Reference to User ID
+  company: string; // Reference to vendor ID
+  user: string; // Reference to User ID
   is_deleted:boolean;
   max_usage: number;    
   used_count: number;   

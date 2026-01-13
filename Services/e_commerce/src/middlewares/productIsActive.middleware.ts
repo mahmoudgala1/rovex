@@ -4,7 +4,7 @@ import { productModel } from "../models/product.models";
 import { AppError } from "../utils/AppError";
 
 
-export const productIsActive = (isCustomer: boolean) => {
+export const productIsActive = (isCustomer: boolean,isBody:boolean = true) => {
   
     return asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
         
@@ -13,15 +13,18 @@ export const productIsActive = (isCustomer: boolean) => {
         // SCENARIO A: Admin/Company Owner (Must own the product)
         if (!isCustomer) {
             const companyId = (req as any).company || (req as any).user?.company;
-            
+            console.log(req.params.id,)
             product = await productModel.findOne({ 
                 _id: req.params.id, 
-                company: companyId 
+                company: companyId ,    
+                is_active:true
             });
+         
         } 
         // SCENARIO B: Public Customer (Product must be active)
         else {
-            product = await productModel.findOne({ _id: req.body.productId });
+            const id = isBody ? req.body.productId : req.params.id;
+            product = await productModel.findOne({ _id: id });
             
             // For customers, if it's inactive, pretend it doesn't exist
             if (product && !product.is_active) {

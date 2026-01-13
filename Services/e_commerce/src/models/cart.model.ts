@@ -1,12 +1,17 @@
 import mongoose, { Schema, Model } from 'mongoose';
 import { ICart } from "../types/index"
-
+import { nanoid } from 'nanoid';
+const generateID = () => `CART${nanoid(15)}`;
 const cartSchema = new Schema<ICart>(
   {
+     _id: { 
+        type: String, 
+        default: generateID 
+    },
     cartItems: [
       {
         product: {
-          type: Schema.Types.ObjectId,
+          type: String,
           ref: 'Product',
           required: true
         },
@@ -26,12 +31,12 @@ const cartSchema = new Schema<ICart>(
       required: false,
     },
     user: {
-      type: Schema.Types.ObjectId,
+      type: String,
       ref: 'User',
       required: true,
     },
      coupon_id: {
-            type: Schema.Types.ObjectId,
+            type: String,
             ref: 'Coupon',
             default: null
         }

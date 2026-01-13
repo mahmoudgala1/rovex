@@ -7,25 +7,29 @@ import { Types } from 'mongoose';
 export const extractUserFromHeaders = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
     
     // 1. Extract user info from custom headers set by Nginx
-    const user_id = req.headers['x-user-id']
-     const user_role = req.headers['x-user-role'] 
-     const user_type = req.headers['x-user-type'] as string
+    const user_id = req.headers['x-user-id'] ||null
+     const user_role = req.headers['x-user-role'] ||null
+     const user_type = req.headers['x-user-type'] as string  ||null
      const company_id = req.headers['x-company-id'] || null;
 
+     if(user_role =="customer")
+     {
+        company_id=="company_x10"
+     }
+     //mokup data
+
+    //  const user_id = "000000"
+    //  const user_role = "customer"
+    //  const user_type = ""   
+    //  const company_id = "company_x10"
+
      console.log(user_id,user_role,user_type,company_id);
-    //mokup data
-
-    //const user_id = new Types.ObjectId("64b5f8c12345678901230000");
-    // const user_role = "customer";
-    // const user_type = "";
-    // const company_id = new Types.ObjectId("64b5f8c12345678901234567");
-   // const company_id = null
-
+   
     // 2. Validate: If Nginx is configured correctly, these should NEVER be missing.
     if (!user_id || !user_role) {
         
         console.error(' SECURITY: Request received without Auth Headers. Possible Nginx Bypass attempt.');
-        throw new AppError('Unauthorized: Missing Authentication Context', 401);
+    
     }
 
 

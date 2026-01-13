@@ -98,7 +98,7 @@
  *     WishlistItem:
  *       type: object
  *       properties:
- *         product:
+ *         productId:
  *           $ref: '#/components/schemas/Product'
  *
  *     Wishlist:
@@ -126,4 +126,73 @@
  *       items:
  *         type: string
  *         example: "69655405465cae4f71883653"
+ */
+
+
+// cart schemas
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     AddToCartBody:
+ *       type: object
+ *       properties:
+ *         productId:
+ *           type: string
+ *           description: ID of the product to add
+ *           example: "6965444f8546e5e0adc05995"
+ *         quantity:
+ *           type: integer
+ *           description: Quantity of the product to add (optional, defaults to 1)
+ *           example: 3
+ *       required:
+ *         - product
+ * 
+ *     CartItem:
+ *       type: object
+ *       properties:
+ *         _id:
+ *           type: string
+ *         product:
+ *           type: string
+ *         quantity:
+ *           type: integer
+ *         price:
+ *           type: number
+ *           format: float
+ * 
+ *     Cart:
+ *       type: object
+ *       properties:
+ *         _id:
+ *           type: string
+ *         cartItems:
+ *           type: array
+ *           items:
+ *             $ref: '#/components/schemas/CartItem'
+ *         totalCartPrice:
+ *           type: number
+ *           format: float
+ *         user:
+ *           type: string
+ *         coupon_id:
+ *           type: string
+ *           nullable: true
+ *         createdAt:
+ *           type: string
+ *           format: date-time
+ *         updatedAt:
+ *           type: string
+ *           format: date-time
+ *         __v:
+ *           type: integer
+ */
+/**
+ * @swagger
+ * components:
+ *   securitySchemes:
+ *     bearerAuth:
+ *       type: http
+ *       scheme: bearer
+ *       bearerFormat: JWT
  */

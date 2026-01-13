@@ -2,8 +2,8 @@ import { Types } from "mongoose";
 import { ICoupon } from "./index";
 
 export interface addToCartBody{
-     product:Types.ObjectId; 
-     quantity:number;
+     productId:string; 
+     quantity?:number ;
 }
 
 export interface deleteCouponParams{

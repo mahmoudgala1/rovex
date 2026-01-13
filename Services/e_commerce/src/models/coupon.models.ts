@@ -1,9 +1,14 @@
 
 import mongoose, { Schema, Model } from 'mongoose';
 import { ICoupon } from '../types/index';
-
+import { nanoid } from 'nanoid';
+const generateID = () => `COUPON_${nanoid(15)}`;
 const couponSchema = new Schema<ICoupon>(
   {
+     _id: { 
+        type: String, 
+        default: generateID 
+    },
     code: {
       type: String,
       trim: true,
@@ -20,14 +25,14 @@ const couponSchema = new Schema<ICoupon>(
       required: [true, 'Coupon discount value is required'],
     },
     user: {
-      type: Schema.Types.ObjectId,
+      type: String,
       ref: 'User',  
-        required: [true, 'Coupon user is required'] ,
+        required: [true, 'user ID is required'] ,
     },
-    vendor: {
-      type: Schema.Types.ObjectId,
+    company: {
+      type: String,
       ref: 'Vendor',  
-        required: [true, 'Coupon vendor is required'] ,
+        required: [true, 'Company ID  is required'] ,
     },
     is_deleted: {
       type: Boolean,// Soft delete flag

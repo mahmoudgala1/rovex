@@ -10,7 +10,8 @@ export const addToCart = asyncHandler(
         req: Request<unknown,API_Response,addToCartBody,unknown>,
         res 
         ,next)=>{
-           const cart =  await addToCartService((req as any).product, (req as any).user);
+            
+           const cart =  await addToCartService((req as any).product, (req as any).user.id, req.body.quantity);
 
             res.status(200).json(
                 { 
@@ -28,7 +29,7 @@ export const delteItemFromCart = asyncHandler(
         ,next)=>{
               const cart = await deleteItemFromCartService(
                 req.params.id,
-                (req as any).user
+                (req as any).user.id
               );     
 
             res.status(200).json(
@@ -46,7 +47,7 @@ export const clearCart = asyncHandler(
         req: Request,
         res 
         ,next)=>{
-              const cart = await clearCartService((req as any).user);     
+              const cart = await clearCartService((req as any).user.id);     
 
             res.status(200).json(
                 { 
@@ -63,7 +64,7 @@ export const getCart = asyncHandler(
         req: Request,
         res 
         ,next)=>{
-            const cart = await getCartService((req as any).user);     
+            const cart = await getCartService((req as any).user.id);     
 
             res.status(200).json(
                 { 

@@ -3,10 +3,9 @@ import { productModel } from "../models/product.models";
 import { CreateProductInput, UpdateProductInput} from "../types/products.types";
 import { QueryBuilder } from "../utils/queryBuilder";
 import { IQueryString } from "../types";
-import { Types } from "mongoose";
 
 
-export const CreateProductService = async(ProdctBody:CreateProductInput,company:Types.ObjectId,images_URL:string[]) =>
+export const CreateProductService = async(ProdctBody:CreateProductInput,company:string,images_URL:string[]) =>
 {
 
     const {title, price, description, discount, stock} = ProdctBody;
@@ -28,7 +27,7 @@ export const CreateProductService = async(ProdctBody:CreateProductInput,company:
 
 }
 
-export const getAllProductsService = async(queryString:IQueryString,company:Types.ObjectId) =>
+export const getAllProductsService = async(queryString:IQueryString,company:string) =>
 {
     const features = new QueryBuilder(productModel.find({ is_active: true, company: company }), queryString)
       .filter()
@@ -53,7 +52,7 @@ export const getAllProductsService = async(queryString:IQueryString,company:Type
 
 export const updateProductService = async (
   id: string,
-  company: Types.ObjectId,
+  company: string,
   updateBody: UpdateProductInput
 ) => {
   const updatedProduct = await productModel.findOneAndUpdate(
