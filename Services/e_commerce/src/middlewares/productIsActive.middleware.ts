@@ -19,12 +19,11 @@ export const productIsActive = (isCustomer: boolean,isBody:boolean = true) => {
                 company: companyId ,    
                 is_active:true
             });
-           
+         
         } 
         // SCENARIO B: Public Customer (Product must be active)
         else {
-            const id = isBody ? req.body.product : req.params.id;
-            console.log("Product ID:",id);
+            const id = isBody ? req.body.productId : req.params.id;
             product = await productModel.findOne({ _id: id });
             
             // For customers, if it's inactive, pretend it doesn't exist

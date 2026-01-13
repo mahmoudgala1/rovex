@@ -38,28 +38,41 @@ export const removeFromWishlistService = async (userId: String, productId: Strin
  */
 export const getWishlistService = async (userId: String, idsOnly: boolean = false) => {
    
-    if (idsOnly) {
-        const wishlist = await WishlistModel.findOne({ user: userId })
-            .select('items.product') // Only get the product field
-            .lean();
-
-        if (!wishlist) return []; // Return empty array if not found
-
-        // Safely map the IDs
-        return wishlist.items.map(item => item.product.toString());
-    }
-
-   // Full Details (Wishlist Page)
+   if (idsOnly) {
     const wishlist = await WishlistModel.findOne({ user: userId })
-        .populate('items.product', 'title price images_URL description discount stock')
+        .populate({
+            path: 'items.product',
+            match: { is_active: true }, // If false, 'item.product' becomes null
+            select: '_id'
+        })
         .lean();
 
-    // Return empty structure if not found (Better UX)
+    if (!wishlist) return []; 
+
+    
+    const activeItemIDs = wishlist.items
+        .filter(item => item.product != null) 
+        .map(item => (item.product as any)._id);
+
+    return activeItemIDs;
+}
+
+   // Full Details (Wishlist Page)
+   const wishlist = await WishlistModel.findOne({ user: userId })
+        .populate({
+            path: 'items.product',
+            match: { is_active: true }, // 1. Only populate if active
+            select: 'title price images_URL description discount stock' // 2. Select specific fields
+        })
+        .lean();
+
+    // Return empty structure    if not found (Better UX)
     if (!wishlist) {
         return { user: userId, items: [] };
     }
-
-    return wishlist;
+   
+  const activeItems = wishlist.items.filter(item => item.product != null);
+    return activeItems;
 };
 
 export const clearWishlistService = async (userId: String) => {
