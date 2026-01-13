@@ -24,7 +24,6 @@ COPY package*.json ./
 
 RUN npm ci --only=production && npm cache clean --force
 COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/src/swagger.yaml ./dist/swagger.yaml
 
 COPY .env .env
 
@@ -35,10 +34,5 @@ RUN addgroup -g 1001 -S nodejs && \
 RUN chown -R nodejs:nodejs /app
 
 USER nodejs
-
-EXPOSE 8001
-
-HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-    CMD node -e "require('http').get('http://localhost:8001/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
 
 CMD ["node", "dist/server.js"]

@@ -1,8 +1,5 @@
 import mongoose, { Schema, Document, Types } from 'mongoose';
 import { IOrder } from '../types/order.types';
-import { nanoid } from 'nanoid';
-const generateID = () => `ORDER_${nanoid(15)}`;
-
 
 const OrderSchema = new Schema<IOrder>(
   {
