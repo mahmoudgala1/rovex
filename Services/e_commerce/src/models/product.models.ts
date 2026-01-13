@@ -1,5 +1,7 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Schema, Document, Query } from 'mongoose';
 import { IProduct } from '../types/index';
+
+
 
 
 const productSchema :Schema = new Schema(
@@ -50,5 +52,10 @@ const productSchema :Schema = new Schema(
 
 // Rule company cannot have two products with the same Title
 productSchema.index({ company: 1, title: 1 }, { unique: true });
+
+
+productSchema.pre(/^find/, function (this: Query<any, any>) {
+  this.select('-company'); // 'this' is correctly typed as Query
+});
 
 export const productModel= mongoose.model<IProduct>('Product',productSchema);
