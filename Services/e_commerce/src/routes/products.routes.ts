@@ -12,10 +12,12 @@ const router = Router()
 
 /**
  * @swagger
- * /api/products:
+ * /products:
  *   get:
  *     summary: Get all products for a specific company
  *     tags: [Products]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: header
  *         name: x-company-id
@@ -75,10 +77,12 @@ router.get("/",assignCompanyContext,ProductControllers.getAllProducts);
 
 /**
  * @swagger
- * /api/products/{id}:
+ * /products/{id}:
  *   get:
  *     summary: Get product by ID for a specific company
  *     tags: [Products]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: header
  *         name: x-company-id
@@ -112,7 +116,7 @@ router.get("/",assignCompanyContext,ProductControllers.getAllProducts);
 router.get("/:id",assignCompanyContext,productIsActive(false),ProductControllers.getProductById);
 /**
  * @swagger
- * /api/products/create:
+ * /products/create:
  *   post:
  *     summary: Create new product
  *     tags: [Products]
@@ -154,7 +158,7 @@ router.post("/create",extractUserFromHeaders,restrictTo("admin"),upload.array('i
 
 /**
  * @swagger
- * /api/products/{id}:
+ * /products/{id}:
  *   patch:
  *     summary: Update product or soft delete it
  *     tags: [Products]
