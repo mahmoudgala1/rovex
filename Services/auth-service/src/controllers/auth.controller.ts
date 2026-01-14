@@ -5,7 +5,6 @@ import { AppError } from "../utils/errors";
 import { successResponse } from "../utils/responses";
 import { logger } from "../utils/logger";
 import AuditLog from "../models/AuditLog";
-import notificationService from "../services/notification.service";
 import PasswordResetToken from "../models/PasswordResetToken";
 import authService from "../services/auth.service";
 import { env } from "../config/environment";
@@ -120,7 +119,7 @@ class AuthController {
         ip_address: req.ip,
       });
 
-      await RabbitMQPublisher.publishEvent("user.create", {
+      await RabbitMQPublisher.publishEvent("send-notification", {
         channels: ["email"],
         data: {
           email: user.email,
@@ -181,15 +180,21 @@ class AuthController {
 
       const resetUrl = `${process.env.DASHBOARD_URL}/reset-password?type=fleet&user_id=${user.operator_id}&token=${token}`;
 
-      await notificationService.sendEmail({
-        to: user.email,
-        subject: "ROVEX Fleet - Reset your password",
-        template: "password_reset_request",
-        theme: "light",
+      await RabbitMQPublisher.publishEvent("send-notification", {
+        channels: ["email"],
         data: {
-          name: user.name,
-          reset_url: resetUrl,
-          expires_in_min: RESET_TOKEN_EXPIRY_MIN,
+          email: user.email,
+          subject: "ROVEX Fleet - Reset your password",
+          template: "password_reset_request",
+          theme: "light",
+          data: {
+            name: user.name,
+            reset_url: resetUrl,
+            expires_in_min: RESET_TOKEN_EXPIRY_MIN,
+          },
+        },
+        metadata: {
+          timestamp: new Date().toLocaleString(),
         },
       });
 
@@ -238,15 +243,21 @@ class AuthController {
 
       await resetRecord.deleteOne();
 
-      await notificationService.sendEmail({
-        to: user.email,
-        subject: "Your ROVEX password was changed",
-        template: "password_reset_success",
-        theme: "dark",
+      await RabbitMQPublisher.publishEvent("send-notification", {
+        channels: ["email"],
         data: {
-          name: user.name,
-          login_url: `${env.DASHBOARD_URL}/login`,
-          support_email: env.SUPPORT_EMAIL,
+          email: user.email,
+          subject: "Your ROVEX password was changed",
+          template: "password_reset_success",
+          theme: "dark",
+          data: {
+            name: user.name,
+            login_url: `${env.DASHBOARD_URL}/login`,
+            support_email: env.SUPPORT_EMAIL,
+          },
+        },
+        metadata: {
+          timestamp: new Date().toLocaleString(),
         },
       });
 
@@ -397,16 +408,22 @@ class AuthController {
         ip_address: req.ip,
       });
 
-      await notificationService.sendEmail({
-        to: user.email,
-        subject: "Your ROVEX password was changed",
-        template: "password_changed",
-        theme: "dark",
+      await RabbitMQPublisher.publishEvent("send-notification", {
+        channels: ["email"],
         data: {
-          name: user.name,
+          email: user.email,
+          subject: "Your ROVEX password was changed",
+          template: "password_changed",
+          theme: "dark",
+          data: {
+            name: user.name,
+            timestamp: new Date().toLocaleString(),
+            ip_address: req.ip,
+            support_email: env.SUPPORT_EMAIL,
+          },
+        },
+        metadata: {
           timestamp: new Date().toLocaleString(),
-          ip_address: req.ip,
-          support_email: env.SUPPORT_EMAIL,
         },
       });
 
@@ -455,15 +472,21 @@ class AuthController {
 
       const resetUrl = `${process.env.DASHBOARD_URL}/reset-password?type=company&user_id=${user.user_id}&token=${token}`;
 
-      await notificationService.sendEmail({
-        to: user.email,
-        subject: "ROVEX Dashboard - Reset your password",
-        template: "password_reset_request",
-        theme: "light",
+      await RabbitMQPublisher.publishEvent("send-notification", {
+        channels: ["email"],
         data: {
-          name: user.name,
-          reset_url: resetUrl,
-          expires_in_min: RESET_TOKEN_EXPIRY_MIN,
+          email: user.email,
+          subject: "ROVEX Dashboard - Reset your password",
+          template: "password_reset_request",
+          theme: "light",
+          data: {
+            name: user.name,
+            reset_url: resetUrl,
+            expires_in_min: RESET_TOKEN_EXPIRY_MIN,
+          },
+        },
+        metadata: {
+          timestamp: new Date().toLocaleString(),
         },
       });
 
@@ -506,14 +529,20 @@ class AuthController {
 
       await resetRecord.deleteOne();
 
-      await notificationService.sendEmail({
-        to: user.email,
-        subject: "Your ROVEX password was changed",
-        template: "password_reset_success",
-        theme: "light",
+      await RabbitMQPublisher.publishEvent("send-notification", {
+        channels: ["email"],
         data: {
-          name: user.name,
-          login_url: `${process.env.DASHBOARD_URL}/login`,
+          email: user.email,
+          subject: "Your ROVEX password was changed",
+          template: "password_reset_success",
+          theme: "light",
+          data: {
+            name: user.name,
+            login_url: `${process.env.DASHBOARD_URL}/login`,
+          },
+        },
+        metadata: {
+          timestamp: new Date().toLocaleString(),
         },
       });
 

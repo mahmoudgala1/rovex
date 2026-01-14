@@ -4,10 +4,10 @@ import Company from "../models/Company";
 import { AppError } from "../utils/errors";
 import { successResponse } from "../utils/responses";
 import authServices from "../services/auth.service";
-import notificationService from "../services/notification.service";
 import { logger } from "../utils/logger";
 import { env } from "../config/environment";
 import { getRolePermissions } from "../config/permissions";
+import RabbitMQPublisher from "../services/rabbitmq.service";
 
 export async function getCompanyUsers(
   req: Request,
@@ -148,23 +148,29 @@ export async function createCompanyUser(
       .join("");
 
     try {
-      await notificationService.sendEmail({
-        to: email,
-        subject: `Welcome to ${company.name} on ROVEX`,
-        template: "company_user_welcome",
-        theme: "dark",
+      await RabbitMQPublisher.publishEvent("send-notification", {
+        channels: ["email"],
         data: {
-          user_name: name,
           email: email,
-          temporary_password: tempPassword,
-          company_name: company.name,
-          role: role,
-          role_display: roleInfo.display,
-          role_description: roleInfo.description,
-          permissions_html: permissionsHtml,
-          login_url: `${env.DASHBOARD_URL}/login`,
-          dashboard_url: env.DASHBOARD_URL,
-          admin_email: req.user!.email,
+          subject: `Welcome to ${company.name} on ROVEX`,
+          template: "company_user_welcome",
+          theme: "dark",
+          data: {
+            user_name: name,
+            email: email,
+            temporary_password: tempPassword,
+            company_name: company.name,
+            role: role,
+            role_display: roleInfo.display,
+            role_description: roleInfo.description,
+            permissions_html: permissionsHtml,
+            login_url: `${env.DASHBOARD_URL}/login`,
+            dashboard_url: env.DASHBOARD_URL,
+            admin_email: req.user!.email,
+          },
+        },
+        metadata: {
+          timestamp: new Date().toLocaleString(),
         },
       });
     } catch (emailError) {

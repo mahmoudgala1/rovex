@@ -7,8 +7,8 @@ import AuditLog from "../models/AuditLog";
 import { getRolePermissions, PERMISSIONS } from "../config/permissions";
 import authService from "../services/auth.service";
 import { env } from "../config/environment";
-import notificationService from "../services/notification.service";
 import { paginationMeta, parsePagination } from "../utils/helpers";
+import RabbitMQPublisher from "../services/rabbitmq.service";
 
 class FleetController {
   constructor() {
@@ -68,22 +68,28 @@ class FleetController {
         )
         .join("");
 
-      await notificationService.sendEmail({
-        to: email,
-        subject: "Welcome to ROVEX Fleet Operations",
-        template: "fleet_operator_welcome",
-        theme: "light",
+      await RabbitMQPublisher.publishEvent("send-notification", {
+        channels: ["email"],
         data: {
-          operator_name: name,
           email: email,
-          temporary_password: tempPassword,
-          role: role,
-          role_display: roleInfo.display,
-          role_description: roleInfo.description,
-          permissions_html: permissionsHtml,
-          login_url: `${env.DASHBOARD_URL}/login`,
-          dashboard_url: env.DASHBOARD_URL,
-          admin_email: req.user!.email,
+          subject: "Welcome to ROVEX Fleet Operations",
+          template: "fleet_operator_welcome",
+          theme: "light",
+          data: {
+            operator_name: name,
+            email: email,
+            temporary_password: tempPassword,
+            role: role,
+            role_display: roleInfo.display,
+            role_description: roleInfo.description,
+            permissions_html: permissionsHtml,
+            login_url: `${env.DASHBOARD_URL}/login`,
+            dashboard_url: env.DASHBOARD_URL,
+            admin_email: req.user!.email,
+          },
+        },
+        metadata: {
+          timestamp: new Date().toLocaleString(),
         },
       });
 

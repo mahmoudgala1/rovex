@@ -6,9 +6,8 @@ class RabbitMQConfig {
   private channel: any = null;
   private readonly url: string;
 
-  private readonly EXCHANGE_NAME = "rovex.events";
-  private readonly EXCHANGE_TYPE = "topic";
-  private readonly NOTIFICATION_QUEUE = "notification.events";
+  private readonly EXCHANGE_NAME = "rovex.direct";
+  private readonly EXCHANGE_TYPE = "direct";
 
   constructor() {
     this.url = env.RABBITMQ_URL;
@@ -28,20 +27,6 @@ class RabbitMQConfig {
           durable: true,
         }
       );
-
-      await this.channel.assertQueue(this.NOTIFICATION_QUEUE, {
-        durable: true,
-      });
-
-      const routingPatterns = ["user.*", "order.*", "rover.*"];
-
-      for (const pattern of routingPatterns) {
-        await this.channel.bindQueue(
-          this.NOTIFICATION_QUEUE,
-          this.EXCHANGE_NAME,
-          pattern
-        );
-      }
 
       console.log("Connected to RabbitMQ");
 
@@ -75,10 +60,6 @@ class RabbitMQConfig {
       throw new Error("RabbitMQ channel not initialized");
     }
     return this.channel;
-  }
-
-  getQueueName(): string {
-    return this.NOTIFICATION_QUEUE;
   }
 
   async close(): Promise<void> {

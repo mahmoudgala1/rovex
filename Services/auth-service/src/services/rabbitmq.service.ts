@@ -1,7 +1,7 @@
 import RabbitMQConfig from "../config/rabbitmq";
 
 class RabbitMQPublisher {
-  private readonly EXCHANGE_NAME = "rovex.events";
+  private readonly EXCHANGE_NAME = "rovex.direct";
 
   async publishEvent(routingKey: string, event: any): Promise<boolean> {
     try {

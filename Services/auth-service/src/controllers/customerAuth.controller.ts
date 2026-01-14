@@ -4,7 +4,7 @@ import { AppError } from "../utils/errors";
 import { successResponse } from "../utils/responses";
 import authService from "../services/auth.service";
 import { logger } from "../utils/logger";
-import notificationService from "../services/notification.service";
+import RabbitMQPublisher from "../services/rabbitmq.service";
 import {
   generateOTP,
   getOTPExpiry,
@@ -40,15 +40,21 @@ export async function register(
     });
 
     try {
-      await notificationService.sendEmail({
-        to: email,
-        subject: "Verify Your Email - ROVEX",
-        template: "customer_verification_otp",
-        theme: "dark",
+      await RabbitMQPublisher.publishEvent("send-notification", {
+        channels: ["email"],
         data: {
-          name,
-          otp: verificationOTP,
-          expires_in: "10 minutes",
+          email: email,
+          subject: "Verify Your Email - ROVEX",
+          template: "customer_verification_otp",
+          theme: "dark",
+          data: {
+            name,
+            otp: verificationOTP,
+            expires_in: "10 minutes",
+          },
+        },
+        metadata: {
+          timestamp: new Date().toLocaleString(),
         },
       });
     } catch (emailError) {
@@ -230,15 +236,21 @@ export async function resendVerificationOTP(
     customer.verification_otp_expires = otpExpiry;
     await customer.save();
 
-    await notificationService.sendEmail({
-      to: email,
-      subject: "Verification Code - ROVEX",
-      template: "customer_verification_otp",
-      theme: "light",
+    await RabbitMQPublisher.publishEvent("send-notification", {
+      channels: ["email"],
       data: {
-        name: customer.name,
-        otp: verificationOTP,
-        expires_in: "10 minutes",
+        email: email,
+        subject: "Verification Code - ROVEX",
+        template: "customer_verification_otp",
+        theme: "light",
+        data: {
+          name: customer.name,
+          otp: verificationOTP,
+          expires_in: "10 minutes",
+        },
+      },
+      metadata: {
+        timestamp: new Date().toLocaleString(),
       },
     });
 
@@ -319,15 +331,21 @@ export async function forgotPassword(
     customer.reset_password_otp_expires = otpExpiry;
     await customer.save();
 
-    await notificationService.sendEmail({
-      to: email,
-      subject: "Password Reset Code - ROVEX",
-      template: "customer_password_reset_otp",
-      theme: "light",
+    await RabbitMQPublisher.publishEvent("send-notification", {
+      channels: ["email"],
       data: {
-        name: customer.name,
-        otp: resetOTP,
-        expires_in: "10 minutes",
+        email: email,
+        subject: "Password Reset Code - ROVEX",
+        template: "customer_password_reset_otp",
+        theme: "light",
+        data: {
+          name: customer.name,
+          otp: resetOTP,
+          expires_in: "10 minutes",
+        },
+      },
+      metadata: {
+        timestamp: new Date().toLocaleString(),
       },
     });
 

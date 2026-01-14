@@ -6,10 +6,10 @@ import AuditLog from "../models/AuditLog";
 import { AppError } from "../utils/errors";
 import { successResponse } from "../utils/responses";
 import { logger } from "../utils/logger";
-import notificationService from "../services/notification.service";
 import { generateId, paginationMeta, parsePagination } from "../utils/helpers";
 import { env } from "../config/environment";
 import { getRolePermissions } from "../config/permissions";
+import RabbitMQPublisher from "../services/rabbitmq.service";
 
 class CompanyController {
   constructor() {
@@ -178,19 +178,25 @@ class CompanyController {
       }
 
       try {
-        await notificationService.sendEmail({
-          to: admin_user.email,
-          subject: "Welcome to ROVEX Fleet Platform",
-          template: "company_welcome",
-          theme: "dark",
+        await RabbitMQPublisher.publishEvent("send-notification", {
+          channels: ["email"],
           data: {
-            company_name: company.name,
-            admin_name: admin_user.name,
             email: admin_user.email,
-            temporary_password: tempPassword,
-            api_key: apiKey,
-            login_url: `${env.DASHBOARD_URL}/login`,
-            support_email: env.SUPPORT_EMAIL,
+            subject: "Welcome to ROVEX Fleet Platform",
+            template: "company_welcome",
+            theme: "dark",
+            data: {
+              company_name: company.name,
+              admin_name: admin_user.name,
+              email: admin_user.email,
+              temporary_password: tempPassword,
+              api_key: apiKey,
+              login_url: `${env.DASHBOARD_URL}/login`,
+              support_email: env.SUPPORT_EMAIL,
+            },
+          },
+          metadata: {
+            timestamp: new Date().toLocaleString(),
           },
         });
       } catch (emailError) {
@@ -527,15 +533,21 @@ class CompanyController {
         });
 
         if (adminUser) {
-          await notificationService.sendEmail({
-            to: adminUser.email,
-            subject: "ROVEX Account Suspended",
-            template: "account_suspended",
-            theme: "dark",
+          await RabbitMQPublisher.publishEvent("send-notification", {
+            channels: ["email"],
             data: {
-              company_name: company.name,
-              reason: reason || "Please contact support for details",
-              support_email: env.SUPPORT_EMAIL || "support@rovex.com",
+              email: adminUser.email,
+              subject: "ROVEX Account Suspended",
+              template: "account_suspended",
+              theme: "dark",
+              data: {
+                company_name: company.name,
+                reason: reason || "Please contact support for details",
+                support_email: env.SUPPORT_EMAIL || "support@rovex.com",
+              },
+            },
+            metadata: {
+              timestamp: new Date().toLocaleString(),
             },
           });
         }
