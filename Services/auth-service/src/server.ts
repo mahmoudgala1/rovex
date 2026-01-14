@@ -15,6 +15,7 @@ import swaggerUi from "swagger-ui-express";
 import { swaggerSpec } from "./config/swagger";
 import jwt from "jsonwebtoken";
 import { JWTPayload } from "types";
+import rabbitmq from "./config/rabbitmq";
 
 const swaggerOptions = {
   customCss: `
@@ -117,6 +118,7 @@ class Server {
   public async start(): Promise<void> {
     try {
       await connectDatabase();
+      await rabbitmq.connect();
 
       const PORT = process.env.PORT || 8000;
       this.app.listen(PORT, () => {

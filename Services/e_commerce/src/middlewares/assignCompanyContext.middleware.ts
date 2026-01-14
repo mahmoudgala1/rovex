@@ -25,7 +25,7 @@ export const assignCompanyContext = (req: Request, res: Response, next: NextFunc
     }
 
     // 4. ATTACH: Make it easy for Controllers
-    (req as any).company = company;
-
+    (req as any).company = new Types.ObjectId(company);
+    
     next();
 };
