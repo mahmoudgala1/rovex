@@ -1,12 +1,12 @@
 import coupon_model from "../models/coupon.models";
 import {UpdateCouponInput} from "../types/cart.types";
 import { AppError } from "../utils/AppError";
-import { ICoupon } from "../types";
+
 import CartModel from "../models/cart.model";  
 import { validateCoupon } from "../helper/validate_coupon.helper";  
 import { calculateCartStats } from "../helper/calculate.cart.price.helper";
 
-import mongoose from "mongoose";
+
 export const createCouponService = async(
     code:string, 
     discount:number,
@@ -32,12 +32,15 @@ export const createCouponService = async(
 
 export const updateCouponService = async(
     code:string,
-     user:string,
-     company:string,
+    company :string,
      updatedBody:UpdateCouponInput
     ) =>{
 
-        const coupon = await coupon_model.findOneAndUpdate({code, company}, {...updatedBody,user}, {new:true});
+        const coupon = await coupon_model.findOneAndUpdate({code,company}, {...updatedBody}, {new:true});
+        if(!coupon)
+        {
+            throw new AppError("coupon not found or access denied",404);
+        }
         return coupon;
     }       
 
@@ -49,7 +52,7 @@ export const getAllCouponsService = async(
     }           
 
 
-export const applyCouponToCartService = async (userId:string, couponCode: string) => {
+export const applyCouponToCartService = async (userId:string, couponCode: string,company:string) => {
     // 1. Find Cart
     const cart = await CartModel.findOne({ user: userId });
     if (!cart) {
@@ -58,7 +61,7 @@ export const applyCouponToCartService = async (userId:string, couponCode: string
 
     // 2. Validate Coupon
     // Checks expiration, min purchase amount, etc.
-    const coupon = await validateCoupon(couponCode, cart.totalCartPrice);
+    const coupon = await validateCoupon(couponCode, company,cart.totalCartPrice);
 
     // 3. Delegate Calculation to Helper
     calculateCartStats(cart, coupon);
@@ -72,7 +75,12 @@ export const applyCouponToCartService = async (userId:string, couponCode: string
 export const removeCouponFromCartService = async (userId:string) => {
     // 1. Find Cart
     const cart = await CartModel.findOne({ user: userId });
+    
     if (!cart) throw new AppError('Cart not found', 404);
+    if(!cart.coupon_id  )
+    {
+        throw new AppError("There is no coupon Applied ",404);
+    }
 
     // 1. Remove Coupon Fields
     cart.coupon_id = null;

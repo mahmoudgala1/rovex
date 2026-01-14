@@ -2,12 +2,15 @@ import { ICoupon } from '../types';
 import CouponModel from '../models/coupon.models';
 import { AppError } from "../utils/AppError";
 
-export const validateCoupon = async (code: string, cartTotal: number): Promise<ICoupon> => {
-       
-    const coupon = await CouponModel.findOne({ 
-        code: code, 
-        expire: { $gt: Date.now() } // Rule: Must not be expired
-    });
+export const validateCoupon = async (code: string,company:string, cartTotal: number): Promise<ICoupon> => {
+
+        const coupon = await CouponModel.findOne({ 
+            code: code, 
+            company,
+            expiration_date: { $gt:  new Date().toISOString() } // Rule: Must not be expired
+        
+        });
+    
 
     if (!coupon) {
         throw new AppError('Coupon is invalid or has expired', 404);

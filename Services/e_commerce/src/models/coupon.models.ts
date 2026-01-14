@@ -13,7 +13,6 @@ const couponSchema = new Schema<ICoupon>(
       type: String,
       trim: true,
       required: [true, 'Coupon name is required'],
-      unique: true,
       uppercase: true, 
     },
     expiration_date: {
@@ -30,8 +29,7 @@ const couponSchema = new Schema<ICoupon>(
         required: [true, 'user ID is required'] ,
     },
     company: {
-      type: String,
-      ref: 'Vendor',  
+      type: String, 
         required: [true, 'Company ID  is required'] ,
     },
     is_deleted: {
@@ -59,6 +57,8 @@ const couponSchema = new Schema<ICoupon>(
   },
     { timestamps: true }
 );
+
+couponSchema.index({ company: 1, code: 1 }, { unique: true });
 
 const coupon_model: Model<ICoupon> = mongoose.model<ICoupon>('Coupon', couponSchema);
 export default coupon_model;

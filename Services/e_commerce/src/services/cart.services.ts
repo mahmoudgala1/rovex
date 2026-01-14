@@ -4,9 +4,8 @@ import { validateCoupon } from "../helper/validate_coupon.helper";
 import CouponModel from "../models/coupon.models";
 import { AppError } from "../utils/AppError";
 import { calculateCartStats } from "../helper/calculate.cart.price.helper";
-import { Types } from "mongoose";
 
-export const addToCartService = async (product: IProduct, userId: string, quantity?: number) => {
+export const addToCartService = async (product: IProduct, userId: string,company:string ,quantity?: number) => {
     let cart = await CartModel.findOne({ user: userId });
 
     // 1. Manage Items (Push or Increment)
@@ -42,7 +41,7 @@ export const addToCartService = async (product: IProduct, userId: string, quanti
             calculateCartStats(cart, coupon); // Updates totalCartPrice & Discount
             
             // Now validate the result
-            await validateCoupon(coupon!.code, cart.totalCartPrice);
+            await validateCoupon(coupon!.code, company,cart.totalCartPrice);
             
         } catch (error) {
             // Validation failed? Recalculate WITHOUT coupon
@@ -57,7 +56,7 @@ export const addToCartService = async (product: IProduct, userId: string, quanti
     return cart;
 };
 
-export const deleteItemFromCartService = async (productId: string, userId: string) => {
+export const deleteItemFromCartService = async (productId: string, userId: string,company:string) => {
     const cart = await CartModel.findOne({ user: userId });
     
     if (!cart) {
@@ -83,7 +82,7 @@ export const deleteItemFromCartService = async (productId: string, userId: strin
             calculateCartStats(cart, coupon);
 
             // Now validate the result
-            await validateCoupon(coupon!.code, cart.totalCartPrice);
+            await validateCoupon(coupon!.code, company,cart.totalCartPrice);
 
         } catch (error) {
             // 3. Validation Failed? Remove coupon & Recalculate
@@ -112,7 +111,7 @@ export const clearCartService = async(userId: string) =>{
         await cart.save();
         return cart;        
 }   
-export const getCartService = async (userId: string) => {
+export const getCartService = async (userId: string,company:string) => {
    
     const cart = await CartModel.findOne({ user: userId }).populate('cartItems.product');
 
@@ -139,7 +138,7 @@ export const getCartService = async (userId: string) => {
             calculateCartStats(cart, coupon);
 
             // Now validate the result
-            await validateCoupon(coupon!.code, cart.totalCartPrice);
+            await validateCoupon(coupon!.code, company,cart.totalCartPrice);
 
         } catch (error) {
             // 3. Validation Failed? Remove coupon & Recalculate
