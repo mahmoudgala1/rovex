@@ -5,6 +5,7 @@ import {  restrictTo } from "../middlewares/auth.middleware";
 import { extractUserFromHeaders } from "../middlewares/auth.middleware";
 const router = Router()
 
+router.use(restrictTo("customer"))
 /**
  * @swagger
  * /cart:

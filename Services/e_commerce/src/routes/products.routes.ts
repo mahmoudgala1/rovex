@@ -8,7 +8,7 @@ import {
 import { assignCompanyContext } from "../middlewares/assignCompanyContext.middleware";
 import { upload } from "../middlewares/multer.middleware";
 const router = Router();
-
+import { MANAGEMENT_ROLES } from "../utils/permissions";
 // get requests
 
 /**
@@ -165,7 +165,7 @@ router.get(
 router.post(
   "/create",
   extractUserFromHeaders,
-  restrictTo("admin"),
+  restrictTo(...MANAGEMENT_ROLES),
   upload.array("images", 5),
   ProductControllers.createProduct
 );
@@ -212,7 +212,7 @@ router.post(
 router.patch(
   "/update/:id",
   extractUserFromHeaders,
-  restrictTo("admin"),
+  restrictTo(...MANAGEMENT_ROLES),
   productIsActive(false),
   ProductControllers.updateProduct
 );

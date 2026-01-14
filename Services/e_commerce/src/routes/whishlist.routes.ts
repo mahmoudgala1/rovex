@@ -1,10 +1,11 @@
 import { Router } from 'express';
 import * as wishlistController from '../controllers/wishlist.controller';
-import { extractUserFromHeaders } from '../middlewares/auth.middleware';
+import { extractUserFromHeaders, restrictTo } from '../middlewares/auth.middleware';
 import { productIsActive } from '../middlewares/productIsActive.middleware';
 const router = Router();
 
 router.use(extractUserFromHeaders)
+router.use(restrictTo("customer"))
 
 
 /**
