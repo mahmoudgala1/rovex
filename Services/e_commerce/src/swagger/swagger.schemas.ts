@@ -196,3 +196,49 @@
  *       scheme: bearer
  *       bearerFormat: JWT
  */
+
+
+//coupons 
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     Coupon:
+ *       type: object
+ *       properties:
+ *         _id:
+ *           type: string
+ *         code:
+ *           type: string
+ *           example: SAVE20
+ *         discount:
+ *           type: number
+ *           example: 20
+ *         discount_type:
+ *           type: string
+ *           enum: [percentage, fixed]
+ *         expiration_date:
+ *           type: string
+ *           format: date
+ *         user:
+ *           type: string
+ *           example: Users12356
+ *         company:
+ *           type: string
+ *           example: companyX120
+ *         max_usage:
+ *           type: number
+ *           example: 100
+ *         min_purchase_amount:
+ *           type: number
+ *           example: 500
+ *         is_deleted:
+ *           type: boolean
+ *           example: false
+ *         used_count:
+ *           type: number
+ *           example: 13
+ *         createdAt:
+ *           type: string
+ *           format: date-time
+ */
