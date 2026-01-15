@@ -10,7 +10,10 @@ router.route('/')
     .post(orderController.placeOrder); //tested and okay 
 
 router.get('/:order_id', orderController.GetOrderDetails); //tested and okay
-router.patch('/:order_id/cancel', restrictTo("customer"),  orderController.cancelOrder);
+
+router.patch('/:order_id', orderController.updateOrder); //tested and okay
+
+router.patch('/:order_id/cancel', restrictTo("customer"),  orderController.cancelOrder); //tested and okay
 router.post('/retry-payment',restrictTo("customer"), orderController.retryPayment); //will handle after payment service
 
 export default router;

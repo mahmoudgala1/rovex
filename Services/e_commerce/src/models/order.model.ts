@@ -46,7 +46,7 @@ const OrderSchema = new Schema<IOrder>(
     },
     order_status: {
       type: String,
-      enum: ['Pending_Payment', 'Processing', 'Shipped', 'Delivered', 'Cancelled'],
+      enum: ['Pending_Payment', 'Processing', 'Shipped', 'Delivered', 'Cancelled',"RETURNED"],
       default: 'Pending_Payment',
     },
     payment_id: { type: String }, 

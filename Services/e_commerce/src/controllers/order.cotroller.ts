@@ -2,6 +2,9 @@ import { Request, Response, NextFunction } from 'express';
 import { asyncHandler } from '../utils/asyncHandler';
 import * as OrderService from '../services/order.services';
 import { PlaceOrderInput, OrderParams } from '../types/order.types';
+import { MANAGEMENT_ROLES } from '../utils/permissions';
+import { FLEET_MANAGMENT_ROLES } from '../utils/permissions';
+import { validateAllowedUpdates } from '../helper/globalUpdateValidator';
 
 export const placeOrder = asyncHandler(
     async (
@@ -138,6 +141,43 @@ export const GetAllOrders = asyncHandler(
             success: true,
             results: orders.length,
             data: orders,
+        });
+    }
+);
+
+
+export const updateOrder = asyncHandler(
+    async (
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ) => {
+        const user_id = (req as any).user.id;
+        const company = (req as any).user.company;
+        const role = (req as any).user.role;
+        const {order_id} = req.params
+
+        // allowed updates based on role
+        let allowedUpdates: string[] = [];
+        let query :object = {}
+        if (role === "customer") {
+            allowedUpdates = ['shipping_address'];
+            query = {_id: order_id,user:user_id}
+            
+        } 
+        else if (MANAGEMENT_ROLES.includes(role) || FLEET_MANAGMENT_ROLES.includes(role)) {
+            allowedUpdates = ['shipping_address', 'order_status', 'payment_status'];
+            query = MANAGEMENT_ROLES.includes(role)? {_id: order_id,company:company} :{_id: order_id}
+        }
+
+        const updateBody = validateAllowedUpdates(req.body,allowedUpdates)
+
+        const updatedOrder = await OrderService.updateOrderService(user_id,company,updateBody,query)
+
+        res.status(200).json({
+            success: true,
+            message :"order updated sucessfully",
+            data: updatedOrder,
         });
     }
 );

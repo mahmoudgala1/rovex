@@ -8,6 +8,7 @@ import coupon_model from '../models/coupon.models';
 import { generateRoleBasedQuery } from '../helper/generateQuery';
 import { QueryBuilder } from '../utils/queryBuilder';
 import { IQueryString } from '../types';
+import { UpdateOrderInput } from '../types/order.types';
 
 // --- CONFIG ---
 const ORDER_EXPIRATION_MINUTES = 20;
@@ -277,6 +278,7 @@ export const cancelOrderService = async (user_id: string, order_id: string) => {
 
     if (bulk_restock_ops.length > 0) {
         await productModel.bulkWrite(bulk_restock_ops);
+
     }
 
     return order;
@@ -311,3 +313,22 @@ export const getAllOrdersService = async (user_id:string, company:string,role:st
 }
 
 
+export const updateOrderService = async(
+    user_id: string, company: string, updateOrderBody: Partial<any>, query: object) =>
+{
+    const order = await OrderModel.findOne(query);
+    if (!order) {
+        throw new Error("Order not found or you do not have permission to access it.");
+    }
+
+    if (updateOrderBody.shipping_address && order.order_status !== 'Processing' && order.order_status !== 'Pending_Payment') {
+        throw new Error(`Cannot update address. Current status is '${order.order_status}', but it must be 'Processing' or 'Pending_Payment'.`);
+    }
+
+    Object.keys(updateOrderBody).forEach((key) => {
+        (order as any)[key] = updateOrderBody[key];
+    });
+    await order.save();
+
+    return order;
+}

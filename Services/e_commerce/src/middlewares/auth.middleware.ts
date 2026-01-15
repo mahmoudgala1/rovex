@@ -19,7 +19,7 @@ export const extractUserFromHeaders = asyncHandler(async (req: Request, res: Res
      //mokup data
 
      const user_id = "hassan123"
-     const user_role = "customer"
+     const user_role = "fleet_admin"
      const user_type = "operator"   
      const company_id = "company_x33"
 
