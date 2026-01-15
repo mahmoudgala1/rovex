@@ -5,7 +5,9 @@ import { productModel } from '../models/product.models';
 import CartModel from '../models/cart.model';
 import { validateCoupon } from '../helper/validate_coupon.helper';
 import coupon_model from '../models/coupon.models';
-
+import { generateRoleBasedQuery } from '../helper/generateQuery';
+import { QueryBuilder } from '../utils/queryBuilder';
+import { IQueryString } from '../types';
 
 // --- CONFIG ---
 const ORDER_EXPIRATION_MINUTES = 20;
@@ -280,17 +282,32 @@ export const cancelOrderService = async (user_id: string, order_id: string) => {
     return order;
 };
 
-export const getOrderDetailsService = async (user_id: string, order_id: string) => { 
-    const order = await OrderModel.findOne({ _id: order_id, user: user_id });
-
+export const getOrderDetailsService = async (user_id: string, order_id: string ,company:string,role:string )=> { 
+  
+  const query = generateRoleBasedQuery(role, user_id,company)
+   if(!query)
+   {
+    throw new AppError("error generation query please try again",400);
+   }
+    const order = await OrderModel.findOne({...query,_id:order_id});
     if (!order) throw new AppError('Order not found', 404);
     return order;
 }
 
-export const getAllOrdersService = async (user_id:string, company:string,isCustomer:boolean) => {
-
-    const query=  isCustomer ? {user:user_id} :{company:company}
-    return await OrderModel.find(query)
-        .sort({ createdAt: -1 }) 
-        .lean(); 
+export const getAllOrdersService = async (user_id:string, company:string,role:string,queryString:IQueryString) => {
+  const query = generateRoleBasedQuery(role, user_id,company)
+  if(!query)
+   {
+    throw new AppError("error generation query or you do not have an accesss please try again ",400);
+   }
+   const features = new QueryBuilder(OrderModel.find(query), queryString)
+        .filter()
+        .sort()
+        .limitFields()
+        .paginate()
+        
+    return await await features.modelQuery;
+       
 }
+
+

@@ -1,8 +1,13 @@
 import mongoose, { Schema } from 'mongoose';
 import { IOrder } from '../types/order.types';
+import { generateId } from '../utils/helpers';
 
 const OrderSchema = new Schema<IOrder>(
   {
+    _id: {
+        type: String,
+        default: () => generateId("ORDER"),
+      },
     user: { type: String, ref: 'User', required: true },
     company: { type: String, ref: 'Company', required: true },
     items: [

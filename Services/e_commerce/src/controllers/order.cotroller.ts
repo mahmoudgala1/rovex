@@ -88,13 +88,13 @@ export const cancelOrder = asyncHandler(
         next: NextFunction
     ) => {
         const user_id = (req as any).user.id;
-        const { order_id } = req.body;
+        const { order_id } = req.params;
      
         const order = await OrderService.cancelOrderService(user_id, order_id);
 
         res.status(200).json({
             success: true,
-            message: 'Order cancelled and stock restored',
+            message: "order canceled successfully ",
             data: {
                 order_id: order._id,
                 status: order.order_status
@@ -110,8 +110,11 @@ export const GetOrderDetails = asyncHandler(
         next: NextFunction
     ) => {
         const user_id = (req as any).user.id;
-        const { order_id } = req.body;
-        const order = await OrderService.getOrderDetailsService(user_id, order_id);
+        const company = (req as any).user.company;
+        const role = (req as any).user.role;
+        const { order_id } = req.params;
+        console.log("controoler",order_id)
+        const order = await OrderService.getOrderDetailsService(user_id, order_id, company, role);
 
         res.status(200).json({
             success: true,
@@ -128,8 +131,8 @@ export const GetAllOrders = asyncHandler(
     ) => {
         const user_id = (req as any).user.id;
         const company = (req as any).user.company
-        const isCustomer= (req as any).user.role =="customer"? true:false
-        const orders = await OrderService.getAllOrdersService(user_id, company, isCustomer);
+        const role= (req as any).user.role 
+        const orders = await OrderService.getAllOrdersService(user_id, company, role,req.query);
 
         res.status(200).json({
             success: true,
