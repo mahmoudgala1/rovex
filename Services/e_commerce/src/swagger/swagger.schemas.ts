@@ -242,3 +242,91 @@
  *           type: string
  *           format: date-time
  */
+
+
+////////////////////////////////////////////////////////////////////
+// Orders  ///////////////////////////////////////
+/////////////////////////////////////////////////
+
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     OrderItem:
+ *       type: object
+ *       properties:
+ *         product_id:
+ *           type: string
+ *         title:
+ *           type: string
+ *         images_URL:
+ *           type: array
+ *           items:
+ *             type: string
+ *         price:
+ *           type: number
+ *         quantity:
+ *           type: number
+ *
+ *     ShippingAddress:
+ *       type: object
+ *       properties:
+ *         address:
+ *           type: string
+ *         city:
+ *           type: string
+ *         phone:
+ *           type: string
+ *
+ *     Order:
+ *       type: object
+ *       properties:
+ *         _id:
+ *           type: string
+ *           example: ORDER12345
+ *         user:
+ *           type: string
+ *         company:
+ *           type: string
+ *         items:
+ *           type: array
+ *           items:
+ *             $ref: '#/components/schemas/OrderItem'
+ *         shipping_address:
+ *           $ref: '#/components/schemas/ShippingAddress'
+ *         total_price:
+ *           type: number
+ *         discount_amount:
+ *           type: number
+ *         final_price:
+ *           type: number
+ *         coupon:
+ *           type: string
+ *           nullable: true
+ *         payment_method:
+ *           type: string
+ *           enum: [Cash, Card]
+ *         payment_status:
+ *           type: string
+ *           enum: [Pending, Paid, Failed, Refund_Pending, Refunded]
+ *         order_status:
+ *           type: string
+ *           enum:
+ *             - Pending_Payment
+ *             - Processing
+ *             - Shipped
+ *             - Delivered
+ *             - Cancelled
+ *             - RETURNED
+ *         payment_id:
+ *           type: string
+ *         expires_at:
+ *           type: string
+ *           format: date-time
+ *         createdAt:
+ *           type: string
+ *           format: date-time
+ *         updatedAt:
+ *           type: string
+ *           format: date-time
+ */
