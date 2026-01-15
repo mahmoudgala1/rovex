@@ -1,49 +1,61 @@
 import axios from 'axios'; // To talk to Payment Microservice
-import {AppError} from '../utils/AppError';
+import { AppError } from '../utils/AppError';
 import { OrderModel } from '../models/order.model';
 import { productModel } from '../models/product.models';
 import CartModel from '../models/cart.model';
-import mongoose,{ Types} from 'mongoose';
+import { validateCoupon } from '../helper/validate_coupon.helper';
+import coupon_model from '../models/coupon.models';
 
 
 // --- CONFIG ---
 const ORDER_EXPIRATION_MINUTES = 20;
 const PAYMENT_SERVICE_URL = process.env.PAYMENT_SERVICE_URL || 'http://localhost:5001/api/payments/initiate';
+
 /**
  * 1. Validates Stock
  * 2. Reserves Stock (Decrements)
  * 3. Creates Order (PendingPayment)
  * 4. Calls Payment Microservice
  */
+
 export const placeOrderService = async (
-  userId: string,
-  items: any[],
-  address: any,
-  paymentMethod: 'Cash' | 'Card'
+  user_id: string,
+  company: string,
+  shipping_address: any,
+  payment_method: 'Cash' | 'Card'
 ) => {
-  // A. Fetch Products
-  
-  const productIds = items.map((i) => i.product_id);
-  const dbProducts = await productModel.find({ _id: { $in: productIds } });
-  
-  if (dbProducts.length !== items.length) throw new AppError('Products not found', 404);
+  // FETCH CART
+  const cart = await CartModel.findOne({ user: user_id });
 
-  // B. Validate Stock & Build Order Items
-  let totalPrice = 0;
-  const orderItems = [];
-  const bulkStockOps = [];
+  if (!cart || cart.cartItems.length === 0) {
+      throw new AppError('Cart is empty. Add items before placing an order.', 400);
+  }
 
-  for (const item of items) {
-    const product = dbProducts.find((p) => p._id == item.product_id);
+  const cart_items = cart.cartItems;
+
+  //  FETCH PRODUCTS
+  const product_ids = cart_items.map((item) => item.product);
+  const db_products = await productModel.find({ _id: { $in: product_ids } });
+
+  if (db_products.length !== cart_items.length) {
+    throw new AppError('Some products in your cart are no longer available', 404);
+  }
+
+  //  VALIDATE STOCK & CALCULATE SUBTOTAL
+  let subtotal_price = 0; 
+  const order_items = [];
+  const bulk_stock_ops = [];
+
+  for (const item of cart_items) {
+    const product = db_products.find((p) => p._id.toString() === item.product.toString());
     
-    // Strict Stock Check
     if (!product || product.stock < item.quantity) {
       throw new AppError(`Insufficient stock: ${product?.title}`, 400);
     }
 
-    totalPrice += product.price * item.quantity;
+    subtotal_price += product.price * item.quantity;
 
-    orderItems.push({
+    order_items.push({
       product_id: product._id,
       title: product.title,
       images_URL: product.images_URL,
@@ -51,8 +63,7 @@ export const placeOrderService = async (
       quantity: item.quantity,
     });
 
-    // Reserve Stock Immediately
-    bulkStockOps.push({
+    bulk_stock_ops.push({
       updateOne: {
         filter: { _id: product._id },
         update: { $inc: { stock: -item.quantity } },
@@ -60,83 +71,131 @@ export const placeOrderService = async (
     });
   }
 
-  // C. Execute Stock Reservation
-  await productModel.bulkWrite(bulkStockOps);
+  
+  // 4. COUPON LOGIC
+  let final_price = subtotal_price;
+  let discount_amount = 0;
+  let coupon_used_id = undefined;
 
-  // D. Create Order
-  // Set expiration time (Now + 20 mins)
-  const expirationDate = new Date();
-  expirationDate.setMinutes(expirationDate.getMinutes() + ORDER_EXPIRATION_MINUTES);
+  // Check if Cart has a coupon applied
+  if (cart.coupon_id) {
+      try {
+          //  return the coupon object if valid, or Throw Error if invalid
+          const coupon = await coupon_model.findById(cart.coupon_id) 
+          if (!coupon) {
+             throw new Error('Coupon not found');
+        }
+          const validCoupon = await validateCoupon(coupon.code, company, subtotal_price);
+
+          //  Calculate Discount
+          if (validCoupon.discount_type === 'percentage') {
+              discount_amount = (subtotal_price * validCoupon.discount) / 100;
+          } else {
+              discount_amount = validCoupon.discount; 
+          }
+
+          final_price = subtotal_price - discount_amount;
+          coupon_used_id = validCoupon._id;
+          console.log(validCoupon)
+          // ATOMIC INCREMENT 
+          const couponUpdate = await coupon_model.findOneAndUpdate(
+              { _id: validCoupon._id, used_count: { $lt: validCoupon.max_usage } },
+              { $inc: { used_count: 1 } }
+          );
+
+          if (!couponUpdate) {
+              throw new Error('Coupon usage limit reached during checkout');
+          }
+
+      } catch (error) {
+          // D. AUTO-REMOVE INVALID COUPON
+          // If validation failed (expired, limit reached, etc.), we remove it from the cart
+          // so the user isn't stuck in a loop.
+          await CartModel.updateOne({ _id: cart._id }, { $unset: { coupon_id: 1 } });
+          
+          throw new AppError(
+              `Coupon removed: ${(error as any).message}. Please review your total price.`, 
+              400
+          );
+      }
+  }
+
+
+  // EXECUTE STOCK RESERVATION
+  await productModel.bulkWrite(bulk_stock_ops);
+
+  //  CREATE ORDER
+  const expiration_date = new Date(); 
+  expiration_date.setMinutes(expiration_date.getMinutes() + ORDER_EXPIRATION_MINUTES);
 
   const order = await OrderModel.create({
-    user: userId,
-    items: orderItems,
-    shippingAddress: address,
-    totalPrice,
-    paymentMethod,
-    orderStatus: paymentMethod === 'Card' ? 'PendingPayment' : 'Processing', // Cash goes directly to Processing
-    expiresAt: paymentMethod === 'Card' ? expirationDate : undefined,
+    user: user_id,
+    company: company,
+    items: order_items,
+    shipping_address: shipping_address,
+    total_price: subtotal_price,     // Original Price
+    discount_amount: discount_amount,// How much user saved
+    final_price: final_price,        // What  actually user pays
+    coupon: coupon_used_id,          // Link to coupon
+    payment_method,
+    order_status: payment_method === 'Card' ? 'PendingPayment' : 'Processing', 
+    expires_at: payment_method === 'Card' ? expiration_date : undefined,
   });
 
-  // E. Clear Cart
-  await CartModel.findOneAndDelete({ user: userId });
+  // CLEAR CART
+  await CartModel.findOneAndDelete({ user: user_id });
 
-  // F. Handle Payment Microservice Interaction
-  let paymentData = null;
-   let paymentError = null;
-  if (paymentMethod === 'Card') {
+  // HANDLE PAYMENT
+  let payment_data = null;  
+  let payment_error = null;  
+  
+  if (payment_method === 'Card') {
     try {
-      // Call External Service
+      /*
       const response = await axios.post(PAYMENT_SERVICE_URL, {
-        orderId: order._id,
-        amount: totalPrice,
-        userId: userId,
-        currency: 'USD'
+         amount: final_price, 
+         ...
       });
-      
-      paymentData = response.data; // Should contain redirect_url
+      */
     } catch (error) {
-       // 2. SENIOR HANDLING: Swallow the error, don't throw it!
        console.error("Payment Gateway Down:", (error as any).message);
-       
-       // We leave the Order Status as 'PendingPayment'.
-       // The Cron Job will clean it up in 20 mins if they don't retry.
-       paymentError = "Payment system unavailable. Please retry from My Orders.";
+       payment_error = "Payment system unavailable. Please retry from My Orders.";
     }
   }
 
-  return { order, paymentData, paymentError };
+  return { order, payment_data, payment_error };
 };
+
 
 /**
  * CRON LOGIC: Releases stock for expired orders
- * This is called by the Cron Job
+ * 
  */
 export const releaseExpiredStockService = async () => {
   const now = new Date();
 
-  // 1. Find Expired Orders
-  const expiredOrders = await OrderModel.find({
-    orderStatus: 'PendingPayment',
-    expiresAt: { $lte: now }, // Expired before now
+  //  Find Expired Orders
+  const expired_orders = await OrderModel.find({ 
+    order_status: 'Pending_Payment',   
+    expires_at: { $lte: now },       
   });
 
-  if (expiredOrders.length === 0) return;
+  if (expired_orders.length === 0) return;
 
-  console.log(`Found ${expiredOrders.length} expired orders. Releasing stock...`);
+  console.log(`Found ${expired_orders.length} expired orders. Releasing stock...`);
 
-  const bulkRestockOps = [];
+  const bulk_restock_ops = [];
 
-  // 2. Loop and Prepare Restock
-  for (const order of expiredOrders) {
+  // Loop and Prepare Restock
+  for (const order of expired_orders) {
     // Mark as Cancelled
-    order.orderStatus = 'Cancelled';
-    order.paymentStatus = 'Failed';
+    order.order_status = 'Cancelled';  
+    order.payment_status = 'Failed';    
     await order.save();
 
     // Prepare Stock Increment for each item
     for (const item of order.items) {
-      bulkRestockOps.push({
+      bulk_restock_ops.push({
         updateOne: {
           filter: { _id: item.product_id },
           update: { $inc: { stock: item.quantity } },
@@ -145,99 +204,93 @@ export const releaseExpiredStockService = async () => {
     }
   }
 
-  // 3. Execute Bulk Restock
-  if (bulkRestockOps.length > 0) {
-    await productModel.bulkWrite(bulkRestockOps);
+  //  Execute Bulk Restock
+  if (bulk_restock_ops.length > 0) {
+    await productModel.bulkWrite(bulk_restock_ops);
   }
   
-  console.log(`Restocked ${bulkRestockOps.length} items.`);
+  console.log(`Restocked ${bulk_restock_ops.length} items.`);
 };
 
 
 /**
  * Re-attempts payment for an existing "PendingPayment" order
  */
-export const retryPaymentService = async (user_id: string, orderId: string) => {
-    const order = await OrderModel.findOne({ _id: orderId, user: user_id });
+export const retryPaymentService = async (user_id: string, order_id: string) => { 
+    const order = await OrderModel.findOne({ _id: order_id, user: user_id });
 
     if (!order) throw new AppError('Order not found', 404);
 
     // Validation
-    if (order.orderStatus !== 'PendingPayment') {
+    if (order.order_status !== 'Pending_Payment') { 
         throw new AppError('This order is not waiting for payment', 400);
     }
 
     // Expiration Check
-    if (order.expiresAt && new Date() > order.expiresAt) {
+    if (order.expires_at && new Date() > order.expires_at) { 
         throw new AppError('Order has expired. Please place a new order.', 400);
     }
 
     try {
-        const response = await axios.post(PAYMENT_SERVICE_URL, {
-            orderId: order._id,
-            amount: order.totalPrice,
-            userId: user_id,
-            currency: 'USD'
-        });
-        return response.data;
+        // const response = await axios.post(PAYMENT_SERVICE_URL, {
+        //     orderId: order._id,
+        //     amount: order.total_price, // Changed property
+        //     userId: user_id,
+        //     currency: 'USD'
+        // });
+        // return response.data;
     } catch (error) {
         throw new AppError('Payment system still down. Please try again later.', 503);
     }
 };
 
-/**
- * Get User's Order History (Newest first)
- */
-export const getMyOrdersService = async (userId: string) => {
-    return await OrderModel.find({ user: userId })
-        .sort({ createdAt: -1 }) // Newest on top
-        .lean(); // Performance optimization
-};
 
 /**
  * Cancel Order & RESTORE Stock
  */
-export const cancelOrderService = async (userId: string, orderId:string) => {
-    // 1. Find Order
-    const order = await OrderModel.findOne({ _id: orderId, user: userId });
+export const cancelOrderService = async (user_id: string, order_id: string) => { 
+    //  Find Order
+    const order = await OrderModel.findOne({ _id: order_id, user: user_id });
 
     if (!order) throw new AppError('Order not found', 404);
 
-    // 2. Validation: Only allow cancellation if it hasn't shipped yet
-    const cancellableStatuses = ['Pending', 'PendingPayment', 'Processing'];
-    if (!cancellableStatuses.includes(order.orderStatus)) {
+    // Validation
+    const cancellable_statuses = ['Pending', 'Pending_Payment', 'Processing']; 
+    if (!cancellable_statuses.includes(order.order_status)) { 
         throw new AppError('Cannot cancel order that has already been shipped or delivered', 400);
     }
 
-    // 3. Update Status
-    order.orderStatus = 'Cancelled';
-    order.paymentStatus = 'Refund_Pending'; 
+    //  Update Status
+    order.order_status = 'Cancelled';     
+    order.payment_status = 'Refund_Pending'; 
     await order.save();
 
-    // 4. RESTORE STOCK (The most important part!)
-    const bulkRestockOps = order.items.map(item => ({
+    // RESTORE STOCK
+    const bulk_restock_ops = order.items.map(item => ({ 
         updateOne: {
             filter: { _id: item.product_id },
-            update: { $inc: { stock: item.quantity } } // Increment back
+            update: { $inc: { stock: item.quantity } } 
         }
     }));
 
-    if (bulkRestockOps.length > 0) {
-        await productModel.bulkWrite(bulkRestockOps);
+    if (bulk_restock_ops.length > 0) {
+        await productModel.bulkWrite(bulk_restock_ops);
     }
 
     return order;
 };
 
-export const getOrderDetailsService = async (userId: string, orderId: string) => {
-    const order = await OrderModel.findOne({ _id: orderId, user: userId });
+export const getOrderDetailsService = async (user_id: string, order_id: string) => { 
+    const order = await OrderModel.findOne({ _id: order_id, user: user_id });
 
     if (!order) throw new AppError('Order not found', 404);
     return order;
 }
 
-export const getAllOrdersService = async () => {
-    return await OrderModel.find()
-        .sort({ createdAt: -1 }) // Newest on top
-        .lean(); // Performance optimization
+export const getAllOrdersService = async (user_id:string, company:string,isCustomer:boolean) => {
+
+    const query=  isCustomer ? {user:user_id} :{company:company}
+    return await OrderModel.find(query)
+        .sort({ createdAt: -1 }) 
+        .lean(); 
 }

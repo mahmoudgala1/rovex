@@ -1,16 +1,17 @@
 import { Router } from 'express';
 
 import * as orderController from '../controllers/order.cotroller';
-
+import { extractUserFromHeaders, restrictTo } from '../middlewares/auth.middleware';
+import { MANAGEMENT_ROLES } from '../utils/permissions';
 const router = Router();
-router.use();
+router.use(extractUserFromHeaders);
 
 router.route('/')
-    .get(orderController.getMyOrders)
-    .post(orderController.placeOrder);
-router.get('/all', orderController.GetAllOrders);
+    .get(orderController.GetAllOrders)
+    .post(orderController.placeOrder); //tested and okay 
+
 router.get('/:orderId', orderController.GetOrderDetails);
-router.put('/:orderId/cancel', orderController.cancelOrder);
-router.post('/:orderId/retry-payment', orderController.retryPayment);
+router.put('/cancel', orderController.cancelOrder);
+router.post('/retry-payment',restrictTo("customer"), orderController.retryPayment);
 
 export default router;

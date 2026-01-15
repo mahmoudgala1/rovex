@@ -26,7 +26,6 @@ export const validateCoupon = async (code: string,company:string, cartTotal: num
     }
 
     // 3. Rule: Usage Limit (Global Scarcity)
-    // "Only first 100 people can use this"
     if (coupon.used_count >= coupon.max_usage) {
         throw new AppError('Coupon limit has been reached', 400);
     }

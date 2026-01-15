@@ -2,7 +2,6 @@ import { Request, Response, NextFunction } from 'express';
 import { asyncHandler } from '../utils/asyncHandler';
 import * as OrderService from '../services/order.services';
 import { PlaceOrderInput, OrderParams } from '../types/order.types';
-import mongoose from 'mongoose';
 
 export const placeOrder = asyncHandler(
     async (
@@ -10,57 +9,55 @@ export const placeOrder = asyncHandler(
         res: Response,
         next: NextFunction
     ) => {
-        const userId = (req as any).user.id;
-        const { items, shippingAddress, paymentMethod } = req.body;
-
-        // Call Service
-        const { order, paymentData, paymentError } = await OrderService.placeOrderService(
-            userId,
-            items,
-            shippingAddress,
-            paymentMethod
+        const user_id = (req as any).user.id; 
+        const company = (req as any).user.company; 
+        const { shipping_address, payment_method } = req.body; 
+        const { order, payment_data, payment_error } = await OrderService.placeOrderService(
+            user_id,
+            company,
+            shipping_address,
+            payment_method
         );
 
-        // SCENARIO 1: Cash Order (Instant Success)
-        if (paymentMethod === 'Cash') {
+        //Cash Order (Instant Success)
+        if (payment_method === 'Cash') {
             res.status(201).json({
                 success: true,
                 message: 'Order placed successfully',
                 data: {
-                    orderId: order._id,
-                    status: order.orderStatus
+                    order_id: order._id,
+                    status: order.order_status 
                 }
             });
             return;
         }
 
-        // SCENARIO 2: Card Order - Payment Gateway Failed (Soft Fail)
-        // We saved the order, but couldn't get the payment link.
-        if (paymentError) {
-            res.status(202).json({ // 202 Accepted = "We took the order, but processing isn't done"
+        //  Card Order - Payment Gateway Failed (Soft Fail)
+        if (payment_error) {
+            res.status(202).json({ 
                 success: true,
                 message: "Order placed, but payment system is currently unavailable. Please retry via My Orders.",
                 data: {
-                    orderId: order._id,
-                    paymentUrl: null,
-                    actionRequired: "RETRY_PAYMENT"
+                    order_id: order._id,
+                    payment_url: null,
+                    action_required: "RETRY_PAYMENT"
                 }
             });
             return;
         }
 
-        // SCENARIO 3: Card Order - Success (Redirect User)
+        // Card Order - Success (Redirect User)
         res.status(201).json({
             success: true,
             message: "Order initialized. Proceed to payment.",
             data: {
-                orderId: order._id,
-                paymentUrl: paymentData?.redirectUrl // URL from Stripe/Paymob
+                order_id: order._id,
+                // ✅ This must be uncommented so the frontend can redirect the user
+               // payment_url: payment_data?.redirect_url 
             }
         });
     }
 );
-
 
 export const retryPayment = asyncHandler(
     async (
@@ -68,41 +65,21 @@ export const retryPayment = asyncHandler(
         res: Response,
         next: NextFunction
     ) => {
-        const userId = (req as any).user.id;
-        const { orderId } = req.params;
+        const user_id = (req as any).user.id;
+        const { order_id } = req.body; 
 
-        const paymentData = await OrderService.retryPaymentService(userId, orderId);
+        const payment_data = await OrderService.retryPaymentService(user_id, order_id);
 
         res.status(200).json({
             success: true,
             message: "Payment link generated successfully",
             data: {
-                orderId,
-                paymentUrl: paymentData.redirectUrl
+                order_id,
+               // payment_url: payment_data.redirect_url
             }
         });
     }
 );
-
-
-export const getMyOrders = asyncHandler(
-    async (
-        req: Request,
-        res: Response,
-        next: NextFunction
-    ) => {
-        const userId = (req as any).user.id;
-        
-        const orders = await OrderService.getMyOrdersService(userId);
-
-        res.status(200).json({
-            success: true,
-            results: orders.length,
-            data: orders,
-        });
-    }
-);
-
 
 export const cancelOrder = asyncHandler(
     async (
@@ -110,17 +87,17 @@ export const cancelOrder = asyncHandler(
         res: Response,
         next: NextFunction
     ) => {
-        const userId = (req as any).user.id;
-        const { orderId } = req.params;
+        const user_id = (req as any).user.id;
+        const { order_id } = req.body;
      
-        const order = await OrderService.cancelOrderService(userId, orderId);
+        const order = await OrderService.cancelOrderService(user_id, order_id);
 
         res.status(200).json({
             success: true,
             message: 'Order cancelled and stock restored',
             data: {
-                orderId: order._id,
-                status: order.orderStatus
+                order_id: order._id,
+                status: order.order_status
             },
         });
     }
@@ -132,9 +109,9 @@ export const GetOrderDetails = asyncHandler(
         res: Response,
         next: NextFunction
     ) => {
-        const userId = (req as any).user.id;
-        const { orderId } = req.params;
-        const order = await OrderService.getOrderDetailsService(userId, orderId);
+        const user_id = (req as any).user.id;
+        const { order_id } = req.body;
+        const order = await OrderService.getOrderDetailsService(user_id, order_id);
 
         res.status(200).json({
             success: true,
@@ -142,13 +119,17 @@ export const GetOrderDetails = asyncHandler(
         });
     }
 );
+
 export const GetAllOrders = asyncHandler(
     async (
         req: Request,
         res: Response,
         next: NextFunction
     ) => {
-        const orders = await OrderService.getAllOrdersService();
+        const user_id = (req as any).user.id;
+        const company = (req as any).user.company
+        const isCustomer= (req as any).user.role =="customer"? true:false
+        const orders = await OrderService.getAllOrdersService(user_id, company, isCustomer);
 
         res.status(200).json({
             success: true,
@@ -156,4 +137,4 @@ export const GetAllOrders = asyncHandler(
             data: orders,
         });
     }
-);  
+);

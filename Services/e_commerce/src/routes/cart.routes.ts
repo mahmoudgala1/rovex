@@ -4,7 +4,7 @@ import { productIsActive } from "../middlewares/productIsActive.middleware";
 import {  restrictTo } from "../middlewares/auth.middleware";
 import { extractUserFromHeaders } from "../middlewares/auth.middleware";
 const router = Router()
-
+router.use(extractUserFromHeaders)
 router.use(restrictTo("customer"))
 /**
  * @swagger
@@ -42,7 +42,7 @@ router.use(restrictTo("customer"))
  */
 
 //get requests  
-router.get("/",extractUserFromHeaders,cartControllers.getCart);
+router.get("/",cartControllers.getCart);
 
 /**
  * @swagger
@@ -91,7 +91,7 @@ router.get("/",extractUserFromHeaders,cartControllers.getCart);
  */
 
 // post requests
-router.post("/additem",extractUserFromHeaders,productIsActive(true),cartControllers.addToCart);
+router.post("/additem",productIsActive(true),cartControllers.addToCart);
 
 //patch requests S
 
@@ -132,7 +132,7 @@ router.post("/additem",extractUserFromHeaders,productIsActive(true),cartControll
  *               $ref: '#/components/schemas/APIError'
  */
 
-router.delete("/deleteitem/:id",extractUserFromHeaders,productIsActive(true,false),cartControllers.delteItemFromCart);
+router.delete("/deleteitem/:id",productIsActive(true,false),cartControllers.delteItemFromCart);
 /**
  * @swagger
  * /cart:
@@ -155,6 +155,6 @@ router.delete("/deleteitem/:id",extractUserFromHeaders,productIsActive(true,fals
  *                       $ref: '#/components/schemas/Cart'
  */
 
-router.delete("/",extractUserFromHeaders,cartControllers.clearCart);
+router.delete("/",cartControllers.clearCart);
 
 export default router;

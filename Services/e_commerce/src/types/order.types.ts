@@ -1,7 +1,8 @@
 import { Document, Types } from 'mongoose';
 import { BaseDocument } from './base.types';
+
 export interface IOrderItem {
-  product_id: string;
+  product_id: string; 
   name: string;
   image: string;
   price: number;
@@ -10,30 +11,36 @@ export interface IOrderItem {
 
 export interface IOrder extends BaseDocument {
   user: string;
+  company: string ;
   items: IOrderItem[];
-  shippingAddress: {
+  
+  shipping_address: { 
     address: string;
     city: string;
     phone: string;
   };
-  totalPrice: number;
-  paymentMethod: 'Cash' | 'Card';
-  paymentStatus: 'Pending' | 'Paid' | 'Failed' | 'Refund_Pending' | 'Refunded';
-  orderStatus: 'PendingPayment' | 'Processing' | 'Shipped' | 'Delivered' | 'Cancelled';
-  paymentId?: string; // ID from the Payment Microservice
-  expiresAt?: Date;   // When this order should be auto-cancelled if unpaid
+
+  total_price: number;     
+  discount_amount: Number;   
+  final_price: Number;
+  coupon: String ;
+  payment_method: 'Cash' | 'Card'; 
+  payment_status: 'Pending' | 'Paid' | 'Failed' | 'Refund_Pending' | 'Refunded'; 
+  order_status: 'Pending_Payment' | 'Processing' | 'Shipped' | 'Delivered' | 'Cancelled'; 
+  payment_id?: string; 
+  expires_at?: Date;   
 }
 
 export interface PlaceOrderInput {
-    items: { product_id: string; quantity: number }[];
-    shippingAddress: {
+    items: { product_id: string; quantity: number }[]; 
+    shipping_address: {
         address: string;
         city: string;
         phone: string;
     };
-    paymentMethod: 'Cash' | 'Card';
+    payment_method: 'Cash' | 'Card';
 }
 
 export interface OrderParams {
-    orderId: string;
+    order_id: string;
 }

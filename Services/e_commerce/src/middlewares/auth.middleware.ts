@@ -6,7 +6,7 @@ import { Types } from 'mongoose';
 
 export const extractUserFromHeaders = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
     
-    // 1. Extract user info from custom headers set by Nginx
+   //1. Extract user info from custom headers set by Nginx
     const user_id = req.headers['x-user-id'] ||null
      const user_role = req.headers['x-user-role'] ||null
      const user_type = req.headers['x-user-type'] as string  ||null
@@ -18,8 +18,8 @@ export const extractUserFromHeaders = asyncHandler(async (req: Request, res: Res
      }
      //mokup data
 
-    //  const user_id = "galal123"
-    //  const user_role = "customer"
+    //  const user_id = "hassan123"
+    //  const user_role = "admin"
     //  const user_type = "operator"   
     //  const company_id = "company_x33"
 
@@ -32,6 +32,7 @@ export const extractUserFromHeaders = asyncHandler(async (req: Request, res: Res
     
     }
 
+   
 
     // 3. Construct the User Object
     (req as any).user = {
@@ -50,6 +51,7 @@ export const restrictTo = (...allowedRoles: string[]) => {
     
         if (!(req as any).user || !allowedRoles.includes((req as any).user.role)) {
             return next(
+               
                 new AppError('You do not have permission to perform this action', 403)
             );
         }

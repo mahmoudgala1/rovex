@@ -1,38 +1,56 @@
-import mongoose, { Schema, Document, Types } from 'mongoose';
+import mongoose, { Schema } from 'mongoose';
 import { IOrder } from '../types/order.types';
 
 const OrderSchema = new Schema<IOrder>(
   {
-    user: { type:String, ref: 'User', required: true },
+    user: { type: String, ref: 'User', required: true },
+    company: { type: String, ref: 'Company', required: true },
     items: [
       {
         product_id: { type: String, ref: 'Product', required: true },
-        name: { type: String, required: true },
-        image: { type: String, required: true },
+        title: { type: String, required: true },
+       images_URL: { 
+          type: [String], 
+          required: true 
+        },
         price: { type: Number, required: true },
         quantity: { type: Number, required: true },
+       
       },
     ],
-    shippingAddress: {
+    
+    shipping_address: { 
       address: { type: String, required: true },
       city: { type: String, required: true },
       phone: { type: String, required: true },
     },
-    totalPrice: { type: Number, required: true },
-    paymentMethod: { type: String, enum: ['Cash', 'Card'], required: true },
-    paymentStatus: { type: String, enum: ['Pending', 'Paid', 'Failed',"Refund_Pending","Refunded"], default: 'Pending' },
-    orderStatus: {
-      type: String,
-      enum: ['PendingPayment', 'Processing', 'Shipped', 'Delivered', 'Cancelled'],
-      default: 'PendingPayment',
+    total_price: { type: Number, required: true },
+
+    discount_amount: Number,    
+    final_price: Number,  
+    coupon: String ||null,
+    payment_method: { 
+      type: String, 
+      enum: ['Cash', 'Card'], 
+      required: true 
     },
-    paymentId: { type: String }, // ID from the Payment Microservice
-    expiresAt: { type: Date },  // When this order should be auto-cancelled if unpaid
+    payment_status: { 
+      type: String, 
+      enum: ['Pending', 'Paid', 'Failed', 'Refund_Pending', 'Refunded'], 
+      default: 'Pending' 
+    },
+    order_status: {
+      type: String,
+      enum: ['Pending_Payment', 'Processing', 'Shipped', 'Delivered', 'Cancelled'],
+      default: 'Pending_Payment',
+    },
+    payment_id: { type: String }, 
+    expires_at: { type: Date },   
   },
   { timestamps: true }
 );
 
-// Index for the Cron Job (Makes queries super fast)
-OrderSchema.index({ orderStatus: 1, expiresAt: 1 });
+
+OrderSchema.index({ order_status: 1, expires_at: 1 });
 
 export const OrderModel = mongoose.model<IOrder>('Order', OrderSchema);

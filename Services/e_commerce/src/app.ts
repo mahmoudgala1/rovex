@@ -5,6 +5,7 @@ import cartRoutes from "./routes/cart.routes";
 import couponRoutes from "./routes/coupon.routes"
 import { globalErrorHandeler } from "./middlewares/globalerror.middleware";
 import wishlistRoutes from "./routes/whishlist.routes";
+import orderRoutes from "./routes/order.routes"
 import swaggerJsDoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
 import { swaggerOptions } from './swagger/swagger';
@@ -31,7 +32,7 @@ app.use("/api/v1/products", productRoutes);
 app.use("/api/v1/cart", cartRoutes);
 app.use("/api/v1/coupon", couponRoutes);
 app.use("/api/v1/wishlist", wishlistRoutes);
-app.use("/api/v1/orders", wishlistRoutes);
+app.use("/api/v1/orders", orderRoutes);
 
 
 
