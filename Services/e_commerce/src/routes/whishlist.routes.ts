@@ -96,7 +96,7 @@ router.get("/ids", wishlistController.getWishlistIds);
 
 /**
  * @swagger
- * /wishlist/clear:
+ * /wishlist:
  *   delete:
  *     summary: Clear all items from the authenticated user's wishlist
  *     tags: [Wishlist]
@@ -135,7 +135,7 @@ router.delete("/", wishlistController.clearWishlist);
 /**
  * @swagger
  * /wishlist/remove:
- *   post:
+ *   delete:
  *     summary: Remove product from user wishlist
  *     tags: [Wishlist]
  *     security:

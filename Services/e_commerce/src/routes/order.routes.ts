@@ -158,7 +158,7 @@ router.get('/:order_id', orderController.GetOrderDetails); //tested and okay
  *           application/json:
  *             schema:
  *               allOf:
- *                 - $ref: '#/components/schemas/ApiSuccess'
+ *                 - $ref: '#/components/schemas/APIResponse'
  *                 - type: object
  *                   properties:
  *                     data:
