@@ -252,6 +252,26 @@
  * @swagger
  * components:
  *   schemas:
+ *     Location:
+ *       type: object
+ *       required:
+ *         - type
+ *         - coordinates
+ *       properties:
+ *         type:
+ *           type: string
+ *           enum: ['Point']
+ *           default: 'Point'
+ *           example: 'Point'
+ *         coordinates:
+ *           type: array
+ *           description: "Format must be [Longitude, Latitude]"
+ *           items:
+ *             type: number
+ *           minItems: 2
+ *           maxItems: 2
+ *           example: [31.2357, 30.0444]
+ *
  *     OrderItem:
  *       type: object
  *       properties:
@@ -267,16 +287,6 @@
  *           type: number
  *         quantity:
  *           type: number
- *
- *     ShippingAddress:
- *       type: object
- *       properties:
- *         address:
- *           type: string
- *         city:
- *           type: string
- *         phone:
- *           type: string
  *
  *     Order:
  *       type: object

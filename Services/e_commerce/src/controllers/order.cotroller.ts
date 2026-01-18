@@ -14,11 +14,11 @@ export const placeOrder = asyncHandler(
     ) => {
         const user_id = (req as any).user.id; 
         const company = (req as any).user.company; 
-        const { shipping_address, payment_method } = req.body; 
+        const { location, payment_method } = req.body; 
         const { order, payment_data, payment_error } = await OrderService.placeOrderService(
             user_id,
             company,
-            shipping_address,
+            location,
             payment_method
         );
 
@@ -161,12 +161,12 @@ export const updateOrder = asyncHandler(
         let allowedUpdates: string[] = [];
         let query :object = {}
         if (role === "customer") {
-            allowedUpdates = ['shipping_address'];
+            allowedUpdates = ['location'];
             query = {_id: order_id,user:user_id}
             
         } 
         else if (MANAGEMENT_ROLES.includes(role) || FLEET_MANAGMENT_ROLES.includes(role)) {
-            allowedUpdates = ['shipping_address', 'order_status', 'payment_status'];
+            allowedUpdates = ['location', 'order_status', 'payment_status'];
             query = MANAGEMENT_ROLES.includes(role)? {_id: order_id,company:company} :{_id: order_id}
         }
 

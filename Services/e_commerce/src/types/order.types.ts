@@ -14,10 +14,9 @@ export interface IOrder extends BaseDocument {
   company: string ;
   items: IOrderItem[];
   
-  shipping_address: { 
-    address: string;
-    city: string;
-    phone: string;
+  location: {
+    type: 'Point';
+    coordinates: number[]; 
   };
 
   total_price: number;     
@@ -33,11 +32,10 @@ export interface IOrder extends BaseDocument {
 
 export interface PlaceOrderInput {
     items: { product_id: string; quantity: number }[]; 
-    shipping_address: {
-        address: string;
-        city: string;
-        phone: string;
-    };
+    location: {
+    type: 'Point';
+    coordinates: number[]; 
+  };
     payment_method: 'Cash' | 'Card';
 }
 

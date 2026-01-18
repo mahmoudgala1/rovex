@@ -24,10 +24,12 @@ const OrderSchema = new Schema<IOrder>(
       },
     ],
     
-    shipping_address: { 
-      address: { type: String, required: true },
-      city: { type: String, required: true },
-      phone: { type: String, required: true },
+    location:{
+    type: { type: String, default: "Point" },
+    coordinates: { 
+      type: [Number], 
+      index: "2dsphere" 
+    }
     },
     total_price: { type: Number, required: true },
 

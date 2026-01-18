@@ -135,7 +135,7 @@ router.post("/apply",restrictTo("customer"), couponControllers.applyCoupon);
 /**
  * @swagger
  * /coupons/remove:
- *   delete:
+ *   post:
  *     summary: Remove coupon from user's cart
  *     tags: [Coupons]
  *     security:

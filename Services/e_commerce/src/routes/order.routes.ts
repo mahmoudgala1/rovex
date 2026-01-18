@@ -20,10 +20,10 @@ router.use(extractUserFromHeaders);
  *         application/json:
  *           schema:
  *             type: object
- *             required: [shipping_address, payment_method]
+ *             required: [location, payment_method]
  *             properties:
- *               shipping_address:
- *                 $ref: '#/components/schemas/ShippingAddress'
+ *               location:
+ *                 $ref: '#/components/schemas/Location'
  *               payment_method:
  *                 type: string
  *                 enum: [Cash, Card]
@@ -119,14 +119,14 @@ router.get('/:order_id', orderController.GetOrderDetails); //tested and okay
  *     summary: Update order (role-based permissions)
  *     description: |
  *       Customer:
- *       - shipping_address only
+ *       - location only
  *
  *       Management / Fleet:
- *       - shipping_address
+ *       - location
  *       - order_status
  *       - payment_status
  *
- *       Address update allowed only in:
+ *       Location update allowed only in:
  *       - Processing
  *       - Pending_Payment
  *     tags: [Orders]
@@ -145,8 +145,8 @@ router.get('/:order_id', orderController.GetOrderDetails); //tested and okay
  *           schema:
  *             type: object
  *             properties:
- *               shipping_address:
- *                 $ref: '#/components/schemas/ShippingAddress'
+ *               location:
+ *                 $ref: '#/components/schemas/Location'
  *               order_status:
  *                 type: string
  *               payment_status:
@@ -173,7 +173,7 @@ router.patch('/:order_id', orderController.updateOrder); //tested and okay
 
 /**
  * @swagger
- * /orders/{order_id}/cancel:
+ * /orders/cancel/:order_id:
  *   post:
  *     summary: Cancel an order and restore stock
  *     tags: [Orders]
@@ -194,7 +194,7 @@ router.patch('/:order_id', orderController.updateOrder); //tested and okay
  *         description: Order not found
  */
 
-router.patch('/:order_id/cancel', restrictTo("customer"),  orderController.cancelOrder); //tested and okay
+router.patch('/cancel/:order_id', restrictTo("customer"),  orderController.cancelOrder); //tested and okay
 router.post('/retry-payment',restrictTo("customer"), orderController.retryPayment); //will handle after payment service
 
 export default router;

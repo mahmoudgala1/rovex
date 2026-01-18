@@ -24,7 +24,7 @@ const PAYMENT_SERVICE_URL = process.env.PAYMENT_SERVICE_URL || 'http://localhost
 export const placeOrderService = async (
   user_id: string,
   company: string,
-  shipping_address: any,
+  location: any,
   payment_method: 'Cash' | 'Card'
 ) => {
   // FETCH CART
@@ -135,7 +135,7 @@ export const placeOrderService = async (
     user: user_id,
     company: company,
     items: order_items,
-    shipping_address: shipping_address,
+    location: location,
     total_price: subtotal_price,     // Original Price
     discount_amount: discount_amount,// How much user saved
     final_price: final_price,        // What  actually user pays
@@ -321,8 +321,8 @@ export const updateOrderService = async(
         throw new Error("Order not found or you do not have permission to access it.");
     }
 
-    if (updateOrderBody.shipping_address && order.order_status !== 'Processing' && order.order_status !== 'Pending_Payment') {
-        throw new Error(`Cannot update address. Current status is '${order.order_status}', but it must be 'Processing' or 'Pending_Payment'.`);
+    if (updateOrderBody.location && order.order_status !== 'Processing' && order.order_status !== 'Pending_Payment') {
+        throw new Error(`Cannot update location. Current status is '${order.order_status}', but it must be 'Processing' or 'Pending_Payment'.`);
     }
 
     Object.keys(updateOrderBody).forEach((key) => {
