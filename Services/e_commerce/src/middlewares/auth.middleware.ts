@@ -16,12 +16,12 @@ export const extractUserFromHeaders = asyncHandler(async (req: Request, res: Res
      {
         company_id=="COMP_MJ6C7OD5JRCX9"
      }
-    //  //mokup data
+     //mokup data
 
     //  const user_id = "hassan123"
-    //  const user_role = "customer"
+    //  const user_role = "company_admin"
     //  const user_type = "operator"   
-    //  const company_id = "company_x33"
+    //  const company_id = "COMP_MJ6C7OD5JRCX9"
 
      console.log(user_id,user_role,user_type,company_id);
    

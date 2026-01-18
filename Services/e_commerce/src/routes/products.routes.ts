@@ -15,7 +15,7 @@ import { MANAGEMENT_ROLES } from "../utils/permissions";
  * @swagger
  * /products:
  *   get:
- *     summary: Get all products for a specific company
+ *     summary: Get all products for a specific company (you can filter by any property using the same query structure propery[gte]=number, propery[lte]=number, etc.  property=string )
  *     tags: [Products]
  *     security:
  *       - bearerAuth: []
