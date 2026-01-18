@@ -40,7 +40,7 @@ import { MANAGEMENT_ROLES } from "../utils/permissions";
  *         description: Number of products per page
  *
  *       - in: query
- *         name: search
+ *         name: title
  *         schema:
  *           type: string
  *         description: Search by product title
