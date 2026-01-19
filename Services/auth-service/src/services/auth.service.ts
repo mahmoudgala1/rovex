@@ -39,7 +39,7 @@ class AuthService {
     return {
       access_token,
       refresh_token,
-      expires_in: 3600,
+      expires_in: parseInt(env.JWT_EXPIRES_IN) * 3600,
     };
   }
 
@@ -200,7 +200,7 @@ class AuthService {
 
       return {
         access_token,
-        expires_in: 3600,
+        expires_in: parseInt(env.JWT_EXPIRES_IN) * 3600,
       };
     } catch (error: any) {
       if (error.name === "TokenExpiredError") {

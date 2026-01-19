@@ -21,7 +21,7 @@ export const swaggerOptions: Options = {
         description: "Staging development",
       },
       {
-        url: "https://rovex.duckdns.org/ecommerce/api/v1",
+        url: "https://rovex.click/ecommerce/api/v1",
         description: "Production environment",
       },
     ],

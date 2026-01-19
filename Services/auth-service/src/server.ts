@@ -16,17 +16,56 @@ import { swaggerSpec } from "./config/swagger";
 import jwt from "jsonwebtoken";
 import { JWTPayload } from "types";
 import rabbitmq from "./config/rabbitmq";
+import path from "path";
 
 const swaggerOptions = {
   customCss: `
-    .swagger-ui .info { margin: 50px 0 }
-    .swagger-ui .info .title { color: #1f77b4 }
+    .swagger-ui .topbar {
+      display: flex;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 999;
+    }
+
+    .btn-back-dashboard {
+      padding: 8px 16px;
+      background: linear-gradient(135deg, #2da44e, #3fb950);
+      color: #ffffff;
+      border: 1px solid #2da44e;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.25s ease;
+      text-decoration: none;
+      box-shadow: 0 2px 6px rgba(45, 164, 78, 0.35);
+    }
+
+    .btn-back-dashboard:hover {
+      background: linear-gradient(135deg, #238636, #2ea043);
+      box-shadow: 0 4px 12px rgba(45, 164, 78, 0.45);
+      transform: translateY(-1px);
+    }
+  
+    @media (max-width: 768px) {
+      .custom-nav {
+        flex-direction: column;
+        gap: 10px;
+      }
+    }
   `,
   customSiteTitle: "ROVEX Auth API Docs",
+  customJs:
+    env.NODE_ENV !== "development"
+      ? "/auth/swagger-custom.js"
+      : "/swagger-custom.js",
   swaggerOptions: {
     persistAuthorization: true,
     displayRequestDuration: true,
-    docExpansion: "none",
     filter: true,
     showExtensions: true,
     showCommonExtensions: true,
@@ -51,6 +90,7 @@ class Server {
     this.app.use(express.json({ limit: "10mb" }));
     this.app.use(express.urlencoded({ extended: true, limit: "10mb" }));
     this.app.use(compression());
+    this.app.use(express.static(path.join(__dirname, "public")));
 
     if (env.NODE_ENV === "development") {
       this.app.use(morgan("dev"));
@@ -58,7 +98,7 @@ class Server {
       this.app.use(
         morgan("combined", {
           stream: { write: (message) => logger.info(message.trim()) },
-        })
+        }),
       );
     }
   }
@@ -72,7 +112,7 @@ class Server {
     this.app.use(
       "/api-docs",
       swaggerUi.serve,
-      swaggerUi.setup(swaggerSpec, swaggerOptions)
+      swaggerUi.setup(swaggerSpec, swaggerOptions),
     );
 
     this.app.get("/health", (req, res) => {
@@ -82,6 +122,37 @@ class Server {
         uptime: process.uptime(),
         service: "rovex-auth-service",
       });
+    });
+
+    this.app.post("/dashboard-login", async (req, res) => {
+      try {
+        const { username, password } = req.body;
+
+        if (!username || !password) {
+          return res.status(400).json({
+            success: false,
+            message: "Username and password are required",
+          });
+        }
+        if (
+          username !== env.DASHBOARD_USERNAME ||
+          password !== env.DASHBOARD_PASSWORD
+        ) {
+          return res.status(401).json({
+            success: false,
+            message: "Invalid credentials",
+          });
+        }
+        return res.status(200).json({
+          success: true,
+          message: "Login successful",
+        });
+      } catch (error) {
+        return res.status(500).json({
+          success: false,
+          message: "Internal server error",
+        });
+      }
     });
 
     this.app.get("/validate", async (req, res) => {
