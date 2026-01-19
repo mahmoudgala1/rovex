@@ -3,7 +3,7 @@ import path from "path";
 
 const isDevelopment = process.env.NODE_ENV !== "production";
 
-export const swaggerOptions: Options = {
+export const swaggerSpec: Options = {
   definition: {
     openapi: "3.0.0",
     info: {
