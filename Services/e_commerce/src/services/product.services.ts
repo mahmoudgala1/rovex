@@ -29,12 +29,16 @@ export const CreateProductService = async(ProdctBody:CreateProductInput,company:
 
 export const getAllProductsService = async(queryString:IQueryString,company:string) =>
 {
-    const features = new QueryBuilder(productModel.find({ is_active: true, company: company }), queryString)
-      .filter()
-      .sort()
-      .limitFields()
-      .paginate();
+      const queryObj = { ...queryString };
 
+      if (queryObj.title && typeof queryObj.title === 'string') {
+          queryObj.title = { $regex: queryObj.title, $options: 'i' };
+      }
+      const features = new QueryBuilder(productModel.find({ is_active: true, company: company }), queryObj)
+            .filter()
+            .sort()
+            .limitFields()
+            .paginate();
    
     const allProducts = await features.modelQuery;
     
