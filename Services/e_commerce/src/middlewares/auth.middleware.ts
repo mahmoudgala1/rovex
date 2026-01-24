@@ -10,11 +10,11 @@ export const extractUserFromHeaders = asyncHandler(async (req: Request, res: Res
     const user_id = req.headers['x-user-id'] ||null
      const user_role = req.headers['x-user-role'] ||null
      const user_type = req.headers['x-user-type'] as string  ||null
-     const company_id = req.headers['x-company-id'] || null;
+     let company_id = req.headers['x-company-id'] || null;
 
      if(user_role =="customer")
      {
-        company_id=="COMP_MJ6C7OD5JRCX9"
+        company_id="COMP_MJ6C7OD5JRCX9"
      }
      //mokup data
 
