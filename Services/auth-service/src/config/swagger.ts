@@ -36,7 +36,7 @@ Complete authentication and user management API for ROVEX fleet management platf
 - **Refresh Token**: 7 days
 
 ## Base URL
-- Production: \`https://rovex.duckdns.org/auth/api/v1\`
+- Production: \`https://rovex.click/auth/api/v1\`
       `,
       contact: {
         name: "ROVEX Development Team",
@@ -57,7 +57,7 @@ Complete authentication and user management API for ROVEX fleet management platf
         description: "Staging development",
       },
       {
-        url: "https://rovex.duckdns.org/auth/api/v1",
+        url: "https://rovex.click/auth/api/v1",
         description: "Production environment",
       },
     ],

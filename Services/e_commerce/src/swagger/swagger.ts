@@ -3,7 +3,7 @@ import path from "path";
 
 const isDevelopment = process.env.NODE_ENV !== "production";
 
-export const swaggerOptions: Options = {
+export const swaggerSpec: Options = {
   definition: {
     openapi: "3.0.0",
     info: {
@@ -21,7 +21,7 @@ export const swaggerOptions: Options = {
         description: "Staging development",
       },
       {
-        url: "https://rovex.duckdns.org/ecommerce/api/v1",
+        url: "https://rovex.click/ecommerce/api/v1",
         description: "Production environment",
       },
     ],
