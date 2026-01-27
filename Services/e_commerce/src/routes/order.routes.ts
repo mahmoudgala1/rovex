@@ -173,7 +173,7 @@ router.patch('/:order_id', orderController.updateOrder); //tested and okay
 
 /**
  * @swagger
- * /orders/cancel/:order_id:
+ * /orders/cancel/{order_id}:
  *   post:
  *     summary: Cancel an order and restore stock
  *     tags: [Orders]
@@ -194,7 +194,11 @@ router.patch('/:order_id', orderController.updateOrder); //tested and okay
  *         description: Order not found
  */
 
-router.patch('/cancel/:order_id', restrictTo("customer"),  orderController.cancelOrder); //tested and okay
+router.post(
+  "/cancel/:order_id",
+  restrictTo("customer"),
+  orderController.cancelOrder,
+); //tested and okay
 router.post('/retry-payment',restrictTo("customer"), orderController.retryPayment); //will handle after payment service
 
 export default router;

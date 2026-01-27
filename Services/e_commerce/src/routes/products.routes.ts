@@ -173,7 +173,7 @@ router.post(
 
 /**
  * @swagger
- * /products/{id}:
+ * /products/update/{id}:
  *   patch:
  *     summary: Update product or soft delete it
  *     tags: [Products]
