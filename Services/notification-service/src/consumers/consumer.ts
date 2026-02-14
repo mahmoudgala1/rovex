@@ -3,6 +3,7 @@ import rabbitmq from "../config/rabbitmq";
 import { NotificationEvent, NotificationChannel } from "../types";
 import { EmailChannel } from "../channels/email.channel";
 import { BaseNotificationChannel } from "../channels/base.channel";
+import { PushChannel } from "../channels/push.channel";
 
 export class NotificationConsumer {
   private channels: Map<NotificationChannel, BaseNotificationChannel>;
@@ -11,6 +12,7 @@ export class NotificationConsumer {
   constructor() {
     this.channels = new Map<NotificationChannel, BaseNotificationChannel>([
       [NotificationChannel.EMAIL, new EmailChannel()],
+      [NotificationChannel.PUSH, new PushChannel()],
     ]);
   }
 

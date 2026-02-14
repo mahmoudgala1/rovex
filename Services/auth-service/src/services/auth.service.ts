@@ -195,7 +195,7 @@ class AuthService {
 
       const access_token = jwt.sign(accessPayload, env.JWT_SECRET, {
         ...signOptions,
-        expiresIn: env.JWT_EXPIRES_IN || "1h",
+        expiresIn: env.JWT_EXPIRES_IN || "24h",
       } as SignOptions);
 
       return {

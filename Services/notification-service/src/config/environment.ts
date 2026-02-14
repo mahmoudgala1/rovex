@@ -16,6 +16,9 @@ interface Environment {
   SUPPORT_EMAIL: string;
   RABBITMQ_URL: string;
   SMTP_FROM_NAME: string;
+  FIREBASE_PROJECT_ID: string;
+  FIREBASE_CLIENT_EMAIL: string;
+  FIREBASE_PRIVATE_KEY: string;
 }
 
 export const env: Environment = {
@@ -31,4 +34,7 @@ export const env: Environment = {
   SUPPORT_EMAIL: process.env.SUPPORT_EMAIL || "",
   RABBITMQ_URL: process.env.RABBITMQ_URL || "",
   SMTP_FROM_NAME: process.env.SMTP_FROM_NAME || "ROVEX",
+  FIREBASE_PROJECT_ID: process.env.FIREBASE_PROJECT_ID || "",
+  FIREBASE_CLIENT_EMAIL: process.env.FIREBASE_CLIENT_EMAIL || "",
+  FIREBASE_PRIVATE_KEY: process.env.FIREBASE_PRIVATE_KEY || "",
 };

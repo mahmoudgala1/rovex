@@ -16,6 +16,7 @@ import jwt from "jsonwebtoken";
 import { JWTPayload } from "types";
 import rabbitmq from "./config/rabbitmq";
 import path from "path";
+import { AppError } from "./utils/errors";
 
 const swaggerOptions = {
   customCss: `
@@ -154,9 +155,13 @@ class Server {
       }
     });
 
-    this.app.get("/validate", async (req, res) => {
+    this.app.get("/validate", async (req, res, next) => {
       const token = req.headers.authorization?.split(" ")[1];
-      if (!token) return res.sendStatus(401);
+      if (!token)
+        return next(
+          new AppError("Access token is required", 401, "AUTH_TOKEN_REQUIRED"),
+        );
+
       try {
         const decoded = jwt.verify(token, env.JWT_SECRET) as JWTPayload;
         res.set("X-User-Id", decoded.user_id);
@@ -164,8 +169,16 @@ class Server {
         res.set("X-User-Type", decoded.user_type);
         if (decoded.company_id) res.set("X-Company-Id", decoded.company_id);
         return res.sendStatus(200);
-      } catch (error) {
-        return res.sendStatus(403);
+      } catch (error: any) {
+        if (error.name === "TokenExpiredError") {
+          return next(
+            new AppError("Token has expired", 401, "AUTH_TOKEN_EXPIRED"),
+          );
+        } else if (error.name === "JsonWebTokenError") {
+          return next(new AppError("Invalid token", 401, "AUTH_INVALID_TOKEN"));
+        } else {
+          return next(error);
+        }
       }
     });
 
