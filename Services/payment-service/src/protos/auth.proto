@@ -1,0 +1,53 @@
+syntax = "proto3";
+
+package auth;
+
+service AuthService {
+  // Verify JWT token and return user data
+  rpc VerifyToken(VerifyTokenRequest) returns (VerifyTokenResponse);
+  
+  // Get user by ID
+  rpc GetUser(GetUserRequest) returns (GetUserResponse);
+  
+  // Check user permissions
+  rpc CheckPermission(CheckPermissionRequest) returns (CheckPermissionResponse);
+}
+
+message VerifyTokenRequest {
+  string token = 1;
+}
+
+message VerifyTokenResponse {
+  bool valid = 1;
+  User user = 2;
+  string error = 3;
+}
+
+message GetUserRequest {
+  string user_id = 1;
+}
+
+message GetUserResponse {
+  bool success = 1;
+  User user = 2;
+  string error = 3;
+}
+
+message CheckPermissionRequest {
+  string user_id = 1;
+  string permission = 2;
+}
+
+message CheckPermissionResponse {
+  bool allowed = 1;
+  string error = 2;
+}
+
+message User {
+  string id = 1;
+  string email = 2;
+  string name = 3;
+  string role = 4;
+  repeated string permissions = 5;
+  map<string, string> metadata = 6;
+}

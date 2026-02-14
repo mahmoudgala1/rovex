@@ -1,5 +1,6 @@
 import { stripe } from "../config/stripe.config";
 import { CreateCustomerDTO } from "../types/stripe.types";
+import { authGrpcClient } from "../grpc/clients/auth.client";
 
 export class CustomerService {
   async createCustomer(data: CreateCustomerDTO) {

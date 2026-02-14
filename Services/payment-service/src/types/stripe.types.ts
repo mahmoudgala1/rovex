@@ -8,6 +8,16 @@ export interface AuthenticatedRequest extends Request {
   };
 }
 
+export interface User {
+  id: string;
+  email: string;
+  name: string;
+  role: string;
+  permissions: string[];
+  metadata: Record<string, string>;
+}
+
+
 export interface CreateCustomerDTO {
   email: string;
   name: string;
