@@ -17,6 +17,7 @@ import { JWTPayload } from "types";
 import rabbitmq from "./config/rabbitmq";
 import path from "path";
 import { AppError } from "./utils/errors";
+import { startGrpcServer } from "./grpc/server";
 
 const swaggerOptions = {
   customCss: `
@@ -86,7 +87,6 @@ class Server {
 
   private configureMiddleware(): void {
     this.app.use(cors());
-
     this.app.use(express.json({ limit: "10mb" }));
     this.app.use(express.urlencoded({ extended: true, limit: "10mb" }));
     this.app.use(compression());
@@ -202,6 +202,7 @@ class Server {
     try {
       await connectDatabase();
       await rabbitmq.connect();
+      startGrpcServer();
 
       const PORT = process.env.PORT || 8000;
       this.app.listen(PORT, () => {
