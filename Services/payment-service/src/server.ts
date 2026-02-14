@@ -4,6 +4,8 @@ import { env } from "./config/environment";
 import path from "path";
 import { swaggerSpec } from "./config/swagger";
 import swaggerUi from "swagger-ui-express";
+import routes from "./routes";
+import { errorMiddleware } from "./middleware/error.middleware";
 
 const swaggerOptions = {
   customCss: `
@@ -67,14 +69,18 @@ class Server {
   constructor() {
     this.app = express();
     this.configureMiddleware();
+    this.configureRoutes();
+    this.configureErrorHandling();
   }
 
   private configureMiddleware(): void {
     this.app.use(cors());
-    this.app.use(express.static(path.join(__dirname, "public")));
     this.app.use(express.json({ limit: "10mb" }));
     this.app.use(express.urlencoded({ extended: true, limit: "10mb" }));
+    this.app.use(express.static(path.join(__dirname, "public")));
+  }
 
+  private configureRoutes(): void {
     this.app.get("/api-docs.json", (req, res) => {
       res.setHeader("Content-Type", "application/json");
       res.send(swaggerSpec);
@@ -95,6 +101,8 @@ class Server {
       });
     });
 
+    this.app.use(`/api/${env.API_VERSION}`, routes);
+
     this.app.use("*", (req, res) => {
       res.status(404).json({
         status: "error",
@@ -102,6 +110,10 @@ class Server {
         path: req.originalUrl,
       });
     });
+  }
+
+  private configureErrorHandling(): void {
+    this.app.use(errorMiddleware);
   }
 
   public async start(): Promise<void> {

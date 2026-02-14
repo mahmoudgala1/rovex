@@ -46,8 +46,44 @@ const options: swaggerJsdoc.Options = {
           description: 'Enter your JWT access token (without "Bearer" prefix)',
         },
       },
+      schemas: {
+        Error: {
+          type: "object",
+          properties: {
+            success: {
+              type: "boolean",
+              example: false,
+            },
+            error: {
+              type: "string",
+              example: "Error message",
+            },
+          },
+        },
+        Success: {
+          type: "object",
+          properties: {
+            success: {
+              type: "boolean",
+              example: true,
+            },
+            message: {
+              type: "string",
+              example: "Operation successful",
+            },
+            data: {
+              type: "object",
+            },
+          },
+        },
+      },
     },
-    tags: [],
+    tags: [
+      {
+        name: "Customers",
+        description: "Customer management endpoints",
+      },
+    ],
   },
   apis: isDevelopment
     ? ["./src/routes/*.ts", "./src/controllers/*.ts"]
