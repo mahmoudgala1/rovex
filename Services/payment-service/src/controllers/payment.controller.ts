@@ -56,7 +56,6 @@ export class PaymentController {
       return errorResponse(res, (error as Error).message, 500);
     }
   };
-  // ❌
   confirmPayment = async (req: AuthenticatedRequest, res: Response) => {
     try {
       const paymentIntentId = String(req.params.paymentIntentId);
@@ -119,7 +118,6 @@ export class PaymentController {
       return errorResponse(res, (error as Error).message, 500);
     }
   };
-  // ❌
   listPayments = async (req: AuthenticatedRequest, res: Response) => {
     try {
       const { customerId, limit } = req.query;

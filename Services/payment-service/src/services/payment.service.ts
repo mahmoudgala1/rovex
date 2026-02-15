@@ -11,6 +11,7 @@ export class PaymentService {
       metadata: data.metadata,
       automatic_payment_methods: {
         enabled: true,
+        allow_redirects: "never",
       },
     });
 
@@ -25,6 +26,7 @@ export class PaymentService {
   async confirmPaymentIntent(paymentIntentId: string, paymentMethodId: string) {
     const paymentIntent = await stripe.paymentIntents.confirm(paymentIntentId, {
       payment_method: paymentMethodId,
+      off_session: true,
     });
     return paymentIntent;
   }
