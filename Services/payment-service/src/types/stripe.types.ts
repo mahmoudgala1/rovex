@@ -17,6 +17,12 @@ export interface User {
   metadata: Record<string, string>;
 }
 
+export interface CreatePaymentDTO {
+  amount: number;
+  currency: string;
+  description?: string;
+  metadata?: Record<string, string>;
+}
 
 export interface CreateCustomerDTO {
   email: string;
