@@ -24,6 +24,12 @@ export interface CreatePaymentDTO {
   metadata?: Record<string, string>;
 }
 
+export interface CreateSubscriptionDTO {
+  priceId: string;
+  trialDays?: number;
+  metadata?: Record<string, string>;
+}
+
 export interface CreateCustomerDTO {
   email: string;
   name: string;

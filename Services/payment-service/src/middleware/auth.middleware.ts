@@ -13,21 +13,21 @@ export async function authMiddleware(
     const user_type = (req.headers["x-user-type"] as string) || null;
     let company_id = req.headers["x-company-id"] || null;
 
-    // if (!user_id || !user_role) {
-    //   errorResponse(res, "Unauthorized", 401);
-    //   return;
-    // }
+    if (!user_id || !user_role) {
+      errorResponse(res, "Unauthorized", 401);
+      return;
+    }
 
-    // if (user_role == "customer") {
-    //   company_id = "COMP_MJ6C7OD5JRCX9";
-    // }
+    if (user_role == "customer") {
+      company_id = "COMP_MJ6C7OD5JRCX9";
+    }
 
-    // (req as any).user = {
-    //   id: user_id,
-    //   role: user_role,
-    //   type: user_type,
-    //   company: company_id,
-    // };
+    (req as any).user = {
+      id: user_id,
+      role: user_role,
+      type: user_type,
+      company: company_id,
+    };
 
     next();
   } catch (error) {
