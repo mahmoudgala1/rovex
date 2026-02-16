@@ -5,6 +5,7 @@ import subscriptionRoutes from "./subscription.routes";
 import paymentMethodRoutes from "./paymentMethod.routes";
 import productRoutes from "./product.routes";
 import priceRoutes from "./price.routes";
+import webhookRoutes from "./webhook.routes";
 
 const router = Router();
 
@@ -14,5 +15,6 @@ router.use("/subscriptions", subscriptionRoutes);
 router.use("/payment-methods", paymentMethodRoutes);
 router.use("/products", productRoutes);
 router.use("/prices", priceRoutes);
+router.use("/webhooks", webhookRoutes);
 
 export default router;
