@@ -99,6 +99,14 @@ const options: swaggerJsdoc.Options = {
         name: "Products",
         description: "Product endpoints",
       },
+      {
+        name: "Prices",
+        description: "Price endpoints",
+      },
+      {
+        name: "Webhooks",
+        description: "Stripe webhook endpoints",
+      },
     ],
   },
   apis: isDevelopment
