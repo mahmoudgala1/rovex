@@ -1,10 +1,9 @@
 import "./config/dotenv"
 import {logger} from "./utils/logger"
-
+import {startDispatchWorker} from "./workers/orders.worker"
 import app from "./app";
 
 const port = process.env.PORT;
- logger.info(port);
 
 const startServer = async () => {
   try {
@@ -12,6 +11,13 @@ const startServer = async () => {
         logger.info(`Server running in ${process.env.NODE_ENV} mode on port ${port}`)
     });
 
+    try{
+      startDispatchWorker();
+    }
+    catch(error)
+    {
+      
+    }
     const shutdown = () => {
         logger.info("Shutting down server...")
       server.close(() => {
