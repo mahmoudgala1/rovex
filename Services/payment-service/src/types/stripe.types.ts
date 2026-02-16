@@ -36,3 +36,48 @@ export interface CreateCustomerDTO {
   phone?: string;
   metadata?: Record<string, string>;
 }
+
+export interface CreateProductDTO {
+  name: string;
+  description?: string;
+  active?: boolean;
+  metadata?: Record<string, string>;
+  images?: string[];
+  defaultPriceData?: {
+    currency: string;
+    unitAmount: number;
+    recurring?: {
+      interval: "day" | "week" | "month" | "year";
+      intervalCount?: number;
+    };
+  };
+}
+
+export interface UpdateProductDTO {
+  name?: string;
+  description?: string;
+  active?: boolean;
+  metadata?: Record<string, string>;
+  images?: string[];
+  defaultPrice?: string;
+}
+
+export interface CreatePriceDTO {
+  productId: string;
+  currency: string;
+  unitAmount: number;
+  recurring?: {
+    interval: "day" | "week" | "month" | "year";
+    intervalCount?: number;
+    trialPeriodDays?: number;
+  };
+  active?: boolean;
+  nickname?: string;
+  metadata?: Record<string, string>;
+}
+
+export interface UpdatePriceDTO {
+  active?: boolean;
+  nickname?: string;
+  metadata?: Record<string, string>;
+}

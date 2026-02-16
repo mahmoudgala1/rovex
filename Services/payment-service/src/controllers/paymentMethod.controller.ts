@@ -13,8 +13,6 @@ export class PaymentMethodController {
     this.logger = new Logger("PaymentMethodController");
   }
 
-  // ============ CREATE & ATTACH ============
-
   createPaymentMethod = async (
     req: AuthenticatedRequest,
     res: Response,
@@ -106,8 +104,6 @@ export class PaymentMethodController {
     }
   };
 
-  // ============ RETRIEVE & LIST ============
-
   getPaymentMethod = async (
     req: AuthenticatedRequest,
     res: Response,
@@ -146,8 +142,6 @@ export class PaymentMethodController {
     }
   };
 
-  // ============ UPDATE ============
-
   updatePaymentMethod = async (
     req: AuthenticatedRequest,
     res: Response,
@@ -172,8 +166,6 @@ export class PaymentMethodController {
       errorResponse(res, (error as Error).message, 500);
     }
   };
-
-  // ============ DEFAULT PAYMENT METHOD ============
 
   setDefaultPaymentMethod = async (
     req: AuthenticatedRequest,
@@ -227,8 +219,6 @@ export class PaymentMethodController {
       errorResponse(res, (error as Error).message, 500);
     }
   };
-
-  // ============ SETUP INTENT ============
 
   createSetupIntent = async (
     req: AuthenticatedRequest,
@@ -324,8 +314,6 @@ export class PaymentMethodController {
     }
   };
 
-  // ============ COMBINED OPERATIONS ============
-
   createAndAttachPaymentMethod = async (
     req: AuthenticatedRequest,
     res: Response,
@@ -362,8 +350,6 @@ export class PaymentMethodController {
       errorResponse(res, (error as Error).message, 500);
     }
   };
-
-  // ============ VALIDATION ============
 
   validateCard = async (
     req: AuthenticatedRequest,

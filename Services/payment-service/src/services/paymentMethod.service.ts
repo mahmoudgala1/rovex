@@ -2,7 +2,6 @@ import { stripe } from "../config/stripe.config";
 import Stripe from "stripe";
 
 export class PaymentMethodService {
-  // ============ CREATE & ATTACH ============
 
   async createPaymentMethod(data: {
     type: string;
@@ -38,8 +37,6 @@ export class PaymentMethodService {
     return paymentMethod;
   }
 
-  // ============ RETRIEVE & LIST ============
-
   async getPaymentMethod(
     paymentMethodId: string,
   ): Promise<Stripe.PaymentMethod> {
@@ -65,8 +62,6 @@ export class PaymentMethodService {
     return paymentMethods;
   }
 
-  // ============ UPDATE ============
-
   async updatePaymentMethod(
     paymentMethodId: string,
     data: {
@@ -83,8 +78,6 @@ export class PaymentMethodService {
 
     return paymentMethod;
   }
-
-  // ============ DEFAULT PAYMENT METHOD ============
 
   async setDefaultPaymentMethod(
     customerId: string,
@@ -116,8 +109,6 @@ export class PaymentMethodService {
 
     return null;
   }
-
-  // ============ SETUP INTENT (for collecting payment method) ============
 
   async createSetupIntent(
     customerId: string,
@@ -153,8 +144,6 @@ export class PaymentMethodService {
     return setupIntent;
   }
 
-  // ============ COMBINED OPERATIONS ============
-
   async createAndAttachPaymentMethod(
     customerId: string,
     data: {
@@ -167,17 +156,15 @@ export class PaymentMethodService {
     paymentMethod: Stripe.PaymentMethod;
     customer?: Stripe.Customer;
   }> {
-    // Create payment method
+
     const paymentMethod = await this.createPaymentMethod({
       type: data.type,
       card: data.card,
       billingDetails: data.billingDetails,
     });
 
-    // Attach to customer
     await this.attachPaymentMethod(paymentMethod.id, customerId);
 
-    // Set as default if requested
     let customer: Stripe.Customer | undefined;
     if (data.setAsDefault) {
       customer = await this.setDefaultPaymentMethod(
@@ -189,8 +176,6 @@ export class PaymentMethodService {
     return { paymentMethod, customer };
   }
 
-  // ============ VALIDATION ============
-
   async validateCard(
     cardNumber: string,
     expMonth: number,
@@ -199,7 +184,6 @@ export class PaymentMethodService {
   ): Promise<{ valid: boolean; errors: string[] }> {
     const errors: string[] = [];
 
-    // Basic validation
     const cleanNumber = cardNumber.replace(/\s/g, "");
 
     if (cleanNumber.length < 13 || cleanNumber.length > 19) {
