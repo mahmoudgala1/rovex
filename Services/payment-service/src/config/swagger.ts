@@ -91,6 +91,10 @@ const options: swaggerJsdoc.Options = {
         name: "Subscriptions",
         description: "Subscription management endpoints",
       },
+      {
+        name: "Payment Methods",
+        description: "Payment method management endpoints",
+      },
     ],
   },
   apis: isDevelopment
