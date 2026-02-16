@@ -28,16 +28,16 @@ export async function startDispatchWorker() {
       }
 
       const orderData = JSON.parse(msg.content.toString());
-      logger.info(` Received Order: ${orderData.orderId} from ${msg.fields.routingKey}`);
+      logger.info(` Received Order: ${orderData._id} from ${msg.fields.routingKey}`);
 
       try {
         processOrder(orderData)
 
         channel.ack(msg);
-        logger.info(`Order ${orderData.orderId} Processed & Ack'd`);
+        logger.info(`Order ${orderData._id} Processed & Ack'd`);
 
       } catch (error) {
-        logger.error(`Error processing order ${orderData.orderId}`, error);
+        logger.error(`Error processing order ${orderData._id}`, error);
         
         // Negative Acknowledge (Nack)
         channel.nack(msg, false, false); 
@@ -60,10 +60,10 @@ async function processOrder(order: any) {
   return new Promise((resolve) => {
     setTimeout(() => {
       
-      logger.debug(`🧠 AI assigning rover for Order ${order.orderId}...`);
+      logger.debug(`🧠 AI assigning rover for Order ${order._id}...`);
       resolve(true);
     }, 2000); 
-        logger.info(` ${order.orderId} processing is done`);
+        logger.info(` ${order._id} processing is done`);
   });
 
 }
