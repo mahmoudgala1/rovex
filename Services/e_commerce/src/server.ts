@@ -1,6 +1,7 @@
 import dotenv from "dotenv";
 dotenv.config();
 import app from "./app";
+import {publishOrder} from "../src/services/rabbitmq.services"
 import { connectDB } from "./config/db";
 
 
@@ -14,6 +15,8 @@ const startServer = async () => {
     const server = app.listen(port, () => {
       console.log(`Server running in ${process.env.NODE_ENV} mode on port ${port}`);
     });
+   
+
     const shutdown = () => {
       console.log("Shutting down server...");
       server.close(() => {

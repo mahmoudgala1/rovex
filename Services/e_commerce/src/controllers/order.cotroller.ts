@@ -5,6 +5,7 @@ import { PlaceOrderInput, OrderParams } from '../types/order.types';
 import { MANAGEMENT_ROLES } from '../utils/permissions';
 import { FLEET_MANAGMENT_ROLES } from '../utils/permissions';
 import { validateAllowedUpdates } from '../helper/globalUpdateValidator';
+import {publishOrder} from "../services/rabbitmq.services"
 
 export const placeOrder = asyncHandler(
     async (
@@ -173,6 +174,19 @@ export const updateOrder = asyncHandler(
         const updateBody = validateAllowedUpdates(req.body,allowedUpdates)
 
         const updatedOrder = await OrderService.updateOrderService(user_id,company,updateBody,query)
+
+        // push the order to the queue if the new status is ready_to_dispacth
+        if (
+            updateBody.order_status === 'ready_to_dispatch' && 
+            updatedOrder
+        ) {
+            await publishOrder({
+                _id: updatedOrder._id,
+                company: updatedOrder.company,
+                order_status:updatedOrder.order_status,
+                location:updatedOrder.location
+            });
+        }
 
         res.status(200).json({
             success: true,

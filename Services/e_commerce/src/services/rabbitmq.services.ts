@@ -1,18 +1,23 @@
 import amqp from "amqplib";
 import {logger} from "../utils/logger"
+interface GeoPoint {
+  type: "Point";
+  coordinates: number[]; 
+}
 
 interface OrderMessage {
-  orderId: string;
-  companyId:string;
-
+  _id: string;
+  company: string;
+  order_status: string;
+  location: GeoPoint;
 }
 
 const RABBITMQ_URL = process.env.RABBITMQ_URL || "amqp://localhost";
 const EXCHANGE_NAME = "ecommerce_exchange";
 
 export async function publishOrder(order: OrderMessage) {
-  const companyId= order.companyId  
-  const ROUTING_KEY = `order.ready${companyId}`;
+  const companyId= order.company  
+  const ROUTING_KEY = `order.ready.${companyId}`;
   let connection = null;
   let channel = null;
   
@@ -29,7 +34,7 @@ export async function publishOrder(order: OrderMessage) {
       persistent: true,
     });
 
-    logger.info(`[x] Order published: ${order.orderId}`);
+    logger.info(`[x] Order published: ${order._id}`);
     
   } catch (error) {
     logger.error("Failed to publish order:", error);
