@@ -15,17 +15,17 @@ export class CustomerController {
 
   createCustomer = async (req: AuthenticatedRequest, res: Response) => {
     try {
-      const { email, name, phone, metadata } = req.body;
+      const { email, name, phone } = req.body;
 
       if (!email || !name) {
         return errorResponse(res, "Email and name are required", 400);
       }
 
       const customer = await this.customerService.createCustomer({
-        email,
+        customerId: (req as any).user.id,
         name,
+        email,
         phone,
-        metadata,
       });
 
       this.logger.info(`Customer created: ${customer.id}`);

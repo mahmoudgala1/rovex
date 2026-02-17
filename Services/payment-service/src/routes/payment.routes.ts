@@ -33,9 +33,6 @@ const paymentController = new PaymentController();
  *                 type: string
  *                 description: Three-letter ISO currency code
  *                 example: usd
- *               customerId:
- *                 type: string
- *                 example: cus_xxxxx
  *               description:
  *                 type: string
  *                 example: ROVEX Order #123
@@ -208,11 +205,6 @@ router.post(
  *     security:
  *       - bearerAuth: []
  *     parameters:
- *       - in: query
- *         name: customerId
- *         schema:
- *           type: string
- *         example: cus_xxxxx
  *       - in: query
  *         name: limit
  *         schema:

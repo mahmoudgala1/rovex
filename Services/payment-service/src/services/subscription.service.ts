@@ -40,8 +40,9 @@ export class SubscriptionService {
     const subscriptionData: any = {
       customer: customerId,
       items: [{ price: data.priceId }],
-      payment_behavior: "default_incomplete",
+      // payment_behavior: "default_incomplete",
       payment_settings: {
+        payment_method_types: ["card"],
         save_default_payment_method: "on_subscription",
       },
       expand: ["latest_invoice.payment_intent"],

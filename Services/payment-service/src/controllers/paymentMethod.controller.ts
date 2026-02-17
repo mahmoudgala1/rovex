@@ -52,9 +52,10 @@ export class PaymentMethodController {
     res: Response,
   ): Promise<void> => {
     try {
-      const { paymentMethodId, customerId } = req.body;
+      const { paymentMethodId } = req.body;
+      const stripeCustomerId = (req as any).user.stripeCustomerId;
 
-      if (!paymentMethodId || !customerId) {
+      if (!paymentMethodId || !stripeCustomerId) {
         errorResponse(
           res,
           "Payment method ID and customer ID are required",
@@ -65,11 +66,11 @@ export class PaymentMethodController {
 
       const paymentMethod = await this.paymentMethodService.attachPaymentMethod(
         paymentMethodId,
-        customerId,
+        stripeCustomerId,
       );
 
       this.logger.info(
-        `Payment method attached: ${paymentMethodId} to ${customerId}`,
+        `Payment method attached: ${paymentMethodId} to ${stripeCustomerId}`,
       );
       successResponse(
         res,
@@ -126,11 +127,11 @@ export class PaymentMethodController {
     res: Response,
   ): Promise<void> => {
     try {
-      const customerId = String(req.params.customerId);
+      const stripeCustomerId = (req as any).user.stripeCustomerId;
       const { type, limit } = req.query;
 
       const paymentMethods = await this.paymentMethodService.listPaymentMethods(
-        customerId,
+        stripeCustomerId,
         type as string,
         limit ? parseInt(limit as string) : 10,
       );
@@ -172,9 +173,10 @@ export class PaymentMethodController {
     res: Response,
   ): Promise<void> => {
     try {
-      const { customerId, paymentMethodId } = req.body;
+      const {  paymentMethodId } = req.body;
+      const stripeCustomerId = (req as any).user.stripeCustomerId;
 
-      if (!customerId || !paymentMethodId) {
+      if (!stripeCustomerId || !paymentMethodId) {
         errorResponse(
           res,
           "Customer ID and payment method ID are required",
@@ -184,12 +186,12 @@ export class PaymentMethodController {
       }
 
       const customer = await this.paymentMethodService.setDefaultPaymentMethod(
-        customerId,
+        stripeCustomerId,
         paymentMethodId,
       );
 
       this.logger.info(
-        `Default payment method set for customer: ${customerId}`,
+        `Default payment method set for customer: ${stripeCustomerId}`,
       );
       successResponse(res, customer, "Default payment method set successfully");
     } catch (error) {
@@ -203,10 +205,10 @@ export class PaymentMethodController {
     res: Response,
   ): Promise<void> => {
     try {
-      const customerId = String(req.params.customerId);
+      const stripeCustomerId = (req as any).user.stripeCustomerId;
 
       const paymentMethod =
-        await this.paymentMethodService.getDefaultPaymentMethod(customerId);
+        await this.paymentMethodService.getDefaultPaymentMethod(stripeCustomerId);
 
       if (!paymentMethod) {
         successResponse(res, null, "No default payment method found");
@@ -225,15 +227,16 @@ export class PaymentMethodController {
     res: Response,
   ): Promise<void> => {
     try {
-      const { customerId, paymentMethodTypes } = req.body;
+      const { paymentMethodTypes } = req.body;
+      const stripeCustomerId = (req as any).user.stripeCustomerId;
 
-      if (!customerId) {
+      if (!stripeCustomerId) {
         errorResponse(res, "Customer ID is required", 400);
         return;
       }
 
       const setupIntent = await this.paymentMethodService.createSetupIntent(
-        customerId,
+        stripeCustomerId,
         paymentMethodTypes,
       );
 
@@ -319,9 +322,10 @@ export class PaymentMethodController {
     res: Response,
   ): Promise<void> => {
     try {
-      const { customerId, type, card, billingDetails, setAsDefault } = req.body;
+      const { type, card, billingDetails, setAsDefault } = req.body;
+      const stripeCustomerId = (req as any).user.stripeCustomerId;
 
-      if (!customerId || !type) {
+      if (!stripeCustomerId || !type) {
         errorResponse(
           res,
           "Customer ID and payment method type are required",
@@ -332,7 +336,7 @@ export class PaymentMethodController {
 
       const result =
         await this.paymentMethodService.createAndAttachPaymentMethod(
-          customerId,
+          stripeCustomerId,
           { type, card, billingDetails, setAsDefault },
         );
 

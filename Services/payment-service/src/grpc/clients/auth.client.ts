@@ -80,12 +80,10 @@ class AuthGrpcClient {
           success: response.success,
           user: response.user
             ? {
-                id: response.user.id,
+                customer_id: response.user.customer_id,
                 email: response.user.email,
                 name: response.user.name,
-                role: response.user.role,
-                permissions: response.user.permissions || [],
-                metadata: response.user.metadata || {},
+                phone: response.user.phone,
               }
             : undefined,
           error: response.error,

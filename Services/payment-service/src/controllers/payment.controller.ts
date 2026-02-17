@@ -6,7 +6,7 @@ import { Logger } from "../utils/logger";
 
 export class PaymentController {
   private paymentService: PaymentService;
-  private logger:Logger;
+  private logger: Logger;
 
   constructor() {
     this.paymentService = new PaymentService();
@@ -15,7 +15,8 @@ export class PaymentController {
 
   createPayment = async (req: AuthenticatedRequest, res: Response) => {
     try {
-      const { amount, currency, description, metadata, customerId } = req.body;
+      const { amount, currency, description, metadata } = req.body;
+      const stripeCustomerId = (req as any).user.stripeCustomerId;
 
       if (!amount || !currency) {
         return errorResponse(res, "Amount and currency are required", 400);
@@ -23,10 +24,10 @@ export class PaymentController {
 
       const paymentIntent = await this.paymentService.createPaymentIntent(
         { amount, currency, description, metadata },
-        customerId,
+        stripeCustomerId,
       );
 
-       this.logger.info(`Payment intent created: ${paymentIntent.id}`);
+      this.logger.info(`Payment intent created: ${paymentIntent.id}`);
       return successResponse(
         res,
         {
@@ -52,7 +53,7 @@ export class PaymentController {
 
       return successResponse(res, paymentIntent);
     } catch (error) {
-       this.logger.error("Error fetching payment:", error);
+      this.logger.error("Error fetching payment:", error);
       return errorResponse(res, (error as Error).message, 500);
     }
   };
@@ -77,7 +78,7 @@ export class PaymentController {
         "Payment confirmed successfully",
       );
     } catch (error) {
-       this.logger.error("Error confirming payment:", error);
+      this.logger.error("Error confirming payment:", error);
       return errorResponse(res, (error as Error).message, 500);
     }
   };
@@ -120,10 +121,11 @@ export class PaymentController {
   };
   listPayments = async (req: AuthenticatedRequest, res: Response) => {
     try {
-      const { customerId, limit } = req.query;
+      const { limit } = req.query;
+      const stripeCustomerId = (req as any).user.stripeCustomerId;
 
       const paymentIntents = await this.paymentService.listPaymentIntents(
-        customerId as string,
+        stripeCustomerId as string,
         limit ? parseInt(limit as string) : 10,
       );
 

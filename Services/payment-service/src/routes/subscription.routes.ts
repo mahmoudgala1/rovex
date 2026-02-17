@@ -22,12 +22,8 @@ const subscriptionController = new SubscriptionController();
  *           schema:
  *             type: object
  *             required:
- *               - customerId
  *               - priceId
  *             properties:
- *               customerId:
- *                 type: string
- *                 example: cus_xxxxx
  *               priceId:
  *                 type: string
  *                 example: price_xxxxx
@@ -78,12 +74,8 @@ router.post("/checkout", authMiddleware, subscriptionController.createCheckout);
  *           schema:
  *             type: object
  *             required:
- *               - customerId
  *               - priceId
  *             properties:
- *               customerId:
- *                 type: string
- *                 example: cus_xxxxx
  *               priceId:
  *                 type: string
  *                 example: price_xxxxx
@@ -241,11 +233,6 @@ router.post(
  *       - bearerAuth: []
  *     parameters:
  *       - in: query
- *         name: customerId
- *         schema:
- *           type: string
- *         example: cus_xxxxx
- *       - in: query
  *         name: limit
  *         schema:
  *           type: integer
@@ -272,12 +259,7 @@ router.get("/", authMiddleware, subscriptionController.listSubscriptions);
  *         application/json:
  *           schema:
  *             type: object
- *             required:
- *               - customerId
  *             properties:
- *               customerId:
- *                 type: string
- *                 example: cus_xxxxx
  *               returnUrl:
  *                 type: string
  *                 example: https://myapp.com/account
@@ -306,7 +288,7 @@ router.post(
 
 /**
  * @openapi
- * /subscriptions/customer/{customerId}/upcoming-invoice:
+ * /subscriptions/customer/upcoming-invoice:
  *   get:
  *     tags:
  *       - Subscriptions
@@ -314,13 +296,6 @@ router.post(
  *     description: Retrieves the upcoming invoice for a customer
  *     security:
  *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: customerId
- *         required: true
- *         schema:
- *           type: string
- *         example: cus_xxxxx
  *     responses:
  *       200:
  *         description: Upcoming invoice
@@ -328,13 +303,13 @@ router.post(
  *         description: No upcoming invoice found
  */
 router.get(
-  "/customer/:customerId/upcoming-invoice",
+  "/customer/upcoming-invoice",
   authMiddleware,
   subscriptionController.getUpcomingInvoice,
 );
 
 router.get(
-  "/customer/:customerId/invoices",
+  "/customer/invoices",
   authMiddleware,
   subscriptionController.listInvoices,
 );

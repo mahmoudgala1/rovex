@@ -1,14 +1,22 @@
 import { stripe } from "../config/stripe.config";
 import { CreateCustomerDTO } from "../types/stripe.types";
 import { authGrpcClient } from "../grpc/clients/auth.client";
+import { CustomerModel } from "../models/customer.model";
 
 export class CustomerService {
   async createCustomer(data: CreateCustomerDTO) {
     const customer = await stripe.customers.create({
-      email: data.email,
       name: data.name,
+      email: data.email,
       phone: data.phone,
-      metadata: data.metadata,
+    });
+
+    await CustomerModel.create({
+      customerId: data.customerId,
+      stripeCustomerId: customer.id,
+      name: data.name,
+      email: data.email,
+      phone: data.phone,
     });
 
     return customer;

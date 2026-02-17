@@ -6,6 +6,7 @@ import { swaggerSpec } from "./config/swagger";
 import swaggerUi from "swagger-ui-express";
 import routes from "./routes";
 import { errorMiddleware } from "./middleware/error.middleware";
+import { connectDatabase } from "./config/database";
 
 const swaggerOptions = {
   customCss: `
@@ -118,6 +119,8 @@ class Server {
 
   public async start(): Promise<void> {
     try {
+      await connectDatabase();
+
       const PORT = env.PORT || 8003;
       this.app.listen(PORT, () => {
         console.info(`Payment service running on port ${PORT}`);

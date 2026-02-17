@@ -15,15 +15,15 @@ export class SubscriptionController {
 
   createCheckout = async (req: AuthenticatedRequest, res: Response) => {
     try {
-      const { customerId, priceId, trialDays, successUrl, cancelUrl } =
-        req.body;
+      const { priceId, trialDays, successUrl, cancelUrl } = req.body;
+      const stripeCustomerId = (req as any).user.stripeCustomerId;
 
-      if (!customerId || !priceId) {
+      if (!stripeCustomerId || !priceId) {
         return errorResponse(res, "Customer ID and Price ID are required", 400);
       }
 
       const session = await this.subscriptionService.createCheckoutSession(
-        customerId,
+        stripeCustomerId,
         priceId,
         trialDays,
         successUrl,
@@ -48,14 +48,15 @@ export class SubscriptionController {
 
   createSubscription = async (req: AuthenticatedRequest, res: Response) => {
     try {
-      const { customerId, priceId, trialDays, metadata } = req.body;
+      const { priceId, trialDays, metadata } = req.body;
+      const stripeCustomerId = (req as any).user.stripeCustomerId;
 
-      if (!customerId || !priceId) {
+      if (!stripeCustomerId || !priceId) {
         return errorResponse(res, "Customer ID and Price ID are required", 400);
       }
 
       const subscription = await this.subscriptionService.createSubscription(
-        customerId,
+        stripeCustomerId,
         { priceId, trialDays, metadata },
       );
 
@@ -170,10 +171,11 @@ export class SubscriptionController {
 
   listSubscriptions = async (req: AuthenticatedRequest, res: Response) => {
     try {
-      const { customerId, limit } = req.query;
+      const { limit } = req.query;
+      const stripeCustomerId = (req as any).user.stripeCustomerId;
 
       const subscriptions = await this.subscriptionService.listSubscriptions(
-        customerId as string,
+        stripeCustomerId as string,
         limit ? parseInt(limit as string) : 10,
       );
 
@@ -186,18 +188,21 @@ export class SubscriptionController {
 
   createPortalSession = async (req: AuthenticatedRequest, res: Response) => {
     try {
-      const { customerId, returnUrl } = req.body;
+      const { returnUrl } = req.body;
+      const stripeCustomerId = (req as any).user.stripeCustomerId;
 
-      if (!customerId) {
+      if (!stripeCustomerId) {
         return errorResponse(res, "Customer ID is required", 400);
       }
 
       const session = await this.subscriptionService.createBillingPortalSession(
-        customerId,
+        stripeCustomerId,
         returnUrl,
       );
 
-      this.logger.info(`Billing portal session created for: ${customerId}`);
+      this.logger.info(
+        `Billing portal session created for: ${stripeCustomerId}`,
+      );
       return successResponse(
         res,
         { url: session.url },
@@ -212,10 +217,10 @@ export class SubscriptionController {
 
   getUpcomingInvoice = async (req: AuthenticatedRequest, res: Response) => {
     try {
-      const customerId = String(req.params.customerId);
+      const stripeCustomerId = (req as any).user.stripeCustomerId;
 
       const invoice =
-        await this.subscriptionService.getUpcomingInvoice(customerId);
+        await this.subscriptionService.getUpcomingInvoice(stripeCustomerId);
 
       return successResponse(res, invoice);
     } catch (error) {
@@ -233,11 +238,11 @@ export class SubscriptionController {
     res: Response,
   ): Promise<void> => {
     try {
-      const customerId = String(req.params.customerId);
+      const stripeCustomerId = (req as any).user.stripeCustomerId;
       const { limit } = req.query;
 
       const invoices = await this.subscriptionService.listInvoices(
-        customerId,
+        stripeCustomerId,
         limit ? parseInt(limit as string) : 10,
       );
 

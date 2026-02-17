@@ -21,12 +21,7 @@ const paymentMethodController = new PaymentMethodController();
  *         application/json:
  *           schema:
  *             type: object
- *             required:
- *               - customerId
  *             properties:
- *               customerId:
- *                 type: string
- *                 example: cus_xxxxx
  *               paymentMethodTypes:
  *                 type: array
  *                 items:
@@ -89,7 +84,7 @@ router.get(
 
 /**
  * @openapi
- * /payment-methods/customer/{customerId}:
+ * /payment-methods/customer:
  *   get:
  *     tags:
  *       - Payment Methods
@@ -98,12 +93,6 @@ router.get(
  *     security:
  *       - bearerAuth: []
  *     parameters:
- *       - in: path
- *         name: customerId
- *         required: true
- *         schema:
- *           type: string
- *         example: cus_xxxxx
  *       - in: query
  *         name: type
  *         schema:
@@ -120,7 +109,7 @@ router.get(
  *         description: List of payment methods
  */
 router.get(
-  "/customer/:customerId",
+  "/customer",
   authMiddleware,
   paymentMethodController.listPaymentMethods,
 );
@@ -196,12 +185,8 @@ router.post(
  *           schema:
  *             type: object
  *             required:
- *               - customerId
  *               - paymentMethodId
  *             properties:
- *               customerId:
- *                 type: string
- *                 example: cus_xxxxx
  *               paymentMethodId:
  *                 type: string
  *                 example: pm_xxxxx
@@ -217,7 +202,7 @@ router.post(
 
 /**
  * @openapi
- * /payment-methods/customer/{customerId}/default:
+ * /payment-methods/customer/default:
  *   get:
  *     tags:
  *       - Payment Methods
@@ -225,19 +210,12 @@ router.post(
  *     description: Retrieves the default payment method for a customer
  *     security:
  *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: customerId
- *         required: true
- *         schema:
- *           type: string
- *         example: cus_xxxxx
  *     responses:
  *       200:
  *         description: Default payment method retrieved
  */
 router.get(
-  "/customer/:customerId/default",
+  "/customer/default",
   authMiddleware,
   paymentMethodController.getDefaultPaymentMethod,
 );

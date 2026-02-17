@@ -9,12 +9,10 @@ export interface AuthenticatedRequest extends Request {
 }
 
 export interface User {
-  id: string;
+  customer_id: string;
   email: string;
   name: string;
-  role: string;
-  permissions: string[];
-  metadata: Record<string, string>;
+  phone: string;
 }
 
 export interface CreatePaymentDTO {
@@ -31,10 +29,10 @@ export interface CreateSubscriptionDTO {
 }
 
 export interface CreateCustomerDTO {
-  email: string;
+  customerId: string;
   name: string;
+  email: string;
   phone?: string;
-  metadata?: Record<string, string>;
 }
 
 export interface CreateProductDTO {

@@ -1,8 +1,14 @@
 import { stripe } from "../config/stripe.config";
 import { CreatePaymentDTO } from "../types/stripe.types";
+import { CustomerService } from "./customer.service";
 
 export class PaymentService {
-  async createPaymentIntent(data: CreatePaymentDTO, customerId?: string) {
+  private customerService: CustomerService;
+  constructor() {
+    this.customerService = new CustomerService();
+  }
+
+  async createPaymentIntent(data: CreatePaymentDTO, customerId: string) {
     const paymentIntent = await stripe.paymentIntents.create({
       amount: data.amount,
       currency: data.currency,
