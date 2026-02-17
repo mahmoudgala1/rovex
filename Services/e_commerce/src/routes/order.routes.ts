@@ -1,6 +1,6 @@
 import { Router } from 'express';
 
-import * as orderController from '../controllers/order.cotroller';
+import * as orderController from '../controllers/order.controller';
 import { extractUserFromHeaders, restrictTo } from '../middlewares/auth.middleware';
 const router = Router();
 router.use(extractUserFromHeaders);

@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+package payment;
+
+service PaymentService {
+    rpc CreatePayment(CreatePaymentRequest) returns (CreatePaymentResponse);
+}
+
+message CreatePaymentRequest {
+    string customer_id = 1;
+    uint64 amount = 2;
+    string currency = 3;
+    string description = 4;
+    MetaData metadata = 5;
+}
+
+message CreatePaymentResponse {
+  bool success = 1;
+  Payment payment = 2;
+  string error = 3;
+}
+
+message Payment {
+    string paymentIntentId = 1;
+    string clientSecret = 2;
+    string status = 3;
+}
+
+message MetaData {
+    string orderId = 1;
+    string items = 3;
+}

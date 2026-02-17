@@ -25,7 +25,7 @@ export interface IOrder extends BaseDocument {
   coupon: String ;
   payment_method: 'Cash' | 'Card'; 
   payment_status: 'Pending' | 'Paid' | 'Failed' | 'Refund_Pending' | 'Refunded'; 
-  order_status: 'Pending_Payment' | 'Processing' | 'Shipped' | 'Delivered' | 'Cancelled' |"RETURNED"; 
+  order_status: 'PendingPayment' | 'Processing' | 'Shipped' | 'Delivered' | 'Cancelled' |"RETURNED"; 
   payment_id?: string; 
   expires_at?: Date;   
 }
