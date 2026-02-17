@@ -7,6 +7,7 @@ import swaggerUi from "swagger-ui-express";
 import routes from "./routes";
 import { errorMiddleware } from "./middleware/error.middleware";
 import { connectDatabase } from "./config/database";
+import { startGrpcServer } from "./grpc/server";
 
 const swaggerOptions = {
   customCss: `
@@ -120,6 +121,7 @@ class Server {
   public async start(): Promise<void> {
     try {
       await connectDatabase();
+      startGrpcServer();
 
       const PORT = env.PORT || 8003;
       this.app.listen(PORT, () => {
