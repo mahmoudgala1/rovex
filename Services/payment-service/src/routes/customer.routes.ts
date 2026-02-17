@@ -5,77 +5,77 @@ import { authMiddleware } from "../middleware/auth.middleware";
 const router = Router();
 const customerController = new CustomerController();
 
-/**
- * @openapi
- * /customers:
- *   post:
- *     tags:
- *       - Customers
- *     summary: Create a new customer
- *     description: Creates a new customer in Stripe
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - email
- *               - name
- *             properties:
- *               email:
- *                 type: string
- *                 format: email
- *                 example: user@example.com
- *               name:
- *                 type: string
- *                 example: Ahmed Mohamed
- *               phone:
- *                 type: string
- *                 example: +201234567890
- *               metadata:
- *                 type: object
- *                 example:
- *                   userId: user_123
- *                   plan: free
- *     responses:
- *       201:
- *         description: Customer created successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                   example: true
- *                 message:
- *                   type: string
- *                   example: Customer created successfully
- *                 data:
- *                   type: object
- *                   properties:
- *                     id:
- *                       type: string
- *                       example: cus_xxxxx
- *                     email:
- *                       type: string
- *                     name:
- *                       type: string
- *       400:
- *         description: Bad request
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Error'
- *       401:
- *         description: Unauthorized
- *       500:
- *         description: Internal server error
- */
-router.post("/", authMiddleware, customerController.createCustomer);
+// /**
+//  * @openapi
+//  * /customers:
+//  *   post:
+//  *     tags:
+//  *       - Customers
+//  *     summary: Create a new customer
+//  *     description: Creates a new customer in Stripe
+//  *     security:
+//  *       - bearerAuth: []
+//  *     requestBody:
+//  *       required: true
+//  *       content:
+//  *         application/json:
+//  *           schema:
+//  *             type: object
+//  *             required:
+//  *               - email
+//  *               - name
+//  *             properties:
+//  *               email:
+//  *                 type: string
+//  *                 format: email
+//  *                 example: user@example.com
+//  *               name:
+//  *                 type: string
+//  *                 example: Ahmed Mohamed
+//  *               phone:
+//  *                 type: string
+//  *                 example: +201234567890
+//  *               metadata:
+//  *                 type: object
+//  *                 example:
+//  *                   userId: user_123
+//  *                   plan: free
+//  *     responses:
+//  *       201:
+//  *         description: Customer created successfully
+//  *         content:
+//  *           application/json:
+//  *             schema:
+//  *               type: object
+//  *               properties:
+//  *                 success:
+//  *                   type: boolean
+//  *                   example: true
+//  *                 message:
+//  *                   type: string
+//  *                   example: Customer created successfully
+//  *                 data:
+//  *                   type: object
+//  *                   properties:
+//  *                     id:
+//  *                       type: string
+//  *                       example: cus_xxxxx
+//  *                     email:
+//  *                       type: string
+//  *                     name:
+//  *                       type: string
+//  *       400:
+//  *         description: Bad request
+//  *         content:
+//  *           application/json:
+//  *             schema:
+//  *               $ref: '#/components/schemas/Error'
+//  *       401:
+//  *         description: Unauthorized
+//  *       500:
+//  *         description: Internal server error
+//  */
+// router.post("/", authMiddleware, customerController.createCustomer);
 
 /**
  * @openapi

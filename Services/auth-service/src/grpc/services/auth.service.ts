@@ -1,4 +1,5 @@
 import * as grpc from "@grpc/grpc-js";
+import Customer from "../../models/Customer";
 import { logger } from "../../utils/logger";
 
 export class AuthGrpcService {
@@ -60,26 +61,20 @@ export class AuthGrpcService {
   //     }
   //   }
 
-
   // Get user by ID
-  
-  getUser(
+
+  async getUser(
     call: grpc.ServerUnaryCall<any, any>,
     callback: grpc.sendUnaryData<any>,
-  ): void {
+  ): Promise<void> {
     try {
       const { user_id } = call.request;
 
-      const user = {
-        id: "admin_456",
-        email: "admin@example.com",
-        name: "Admin User",
-        role: "admin",
-        permissions: ["*"],
-        metadata: {},
-      };
+      const customer = await Customer.findOne({
+        customer_id: user_id,
+      }).select("-__v -_id -auth_provider -token_version");
 
-      if (!user) {
+      if (!customer) {
         callback(null, {
           success: false,
           error: "User not found",
@@ -90,12 +85,10 @@ export class AuthGrpcService {
       callback(null, {
         success: true,
         user: {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          role: user.role,
-          permissions: user.permissions,
-          metadata: user.metadata,
+          customer_id: customer.customer_id,
+          name: customer.name,
+          email: customer.email,
+          phone: customer.phone,
         },
       });
     } catch (error) {
