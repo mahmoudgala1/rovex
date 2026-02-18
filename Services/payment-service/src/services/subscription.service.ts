@@ -1,3 +1,4 @@
+import { SubscriptionDTO } from "../mappers/stripe.mapper";
 import { stripe } from "../config/stripe.config";
 import { CreateSubscriptionDTO } from "../types/stripe.types";
 import Stripe from "stripe";
@@ -139,5 +140,57 @@ export class SubscriptionService {
   async getInvoice(invoiceId: string): Promise<Stripe.Invoice> {
     const invoice = await stripe.invoices.retrieve(invoiceId);
     return invoice;
+  }
+
+  mapSubscriptionToDTO(
+    sub: Stripe.Subscription,
+    options?: { localId?: string; planCode?: string },
+  ): SubscriptionDTO {
+    const item = sub.items.data[0];
+    const price = item.price as Stripe.Price;
+
+    return {
+      id: options?.localId,
+      stripeSubscriptionId: sub.id,
+      status: sub.status,
+      plan: {
+        productId: price.product as string,
+        priceId: price.id,
+        code: options?.planCode,
+        name: price.nickname || "Subscription",
+        amount: price.unit_amount,
+        currency: price.currency,
+        interval: price.recurring?.interval,
+        intervalCount: price.recurring?.interval_count ?? null,
+      },
+      currentPeriod: {
+        start: new Date(item.current_period_start * 1000).toISOString(),
+        end: new Date(item.current_period_end * 1000).toISOString(),
+      },
+      trial: {
+        isInTrial: sub.status === "trialing",
+        trialEnd: sub.trial_end
+          ? new Date(sub.trial_end * 1000).toISOString()
+          : null,
+      },
+      cancelAtPeriodEnd: sub.cancel_at_period_end,
+    };
+  }
+
+  mapInvoiceToDTO(inv: Stripe.Invoice) {
+    return {
+      id: inv.id,
+      number: inv.number,
+      status: inv.status,
+      amountDue: inv.amount_due,
+      amountPaid: inv.amount_paid,
+      currency: inv.currency,
+      hostedInvoiceUrl: inv.hosted_invoice_url,
+      invoicePdf: inv.invoice_pdf,
+      createdAt: new Date(inv.created * 1000).toISOString(),
+      dueDate: inv.due_date
+        ? new Date(inv.due_date * 1000).toISOString()
+        : null,
+    };
   }
 }

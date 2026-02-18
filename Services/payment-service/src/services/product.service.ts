@@ -1,3 +1,4 @@
+import { PriceDTO, ProductDTO } from "../mappers/stripe.mapper";
 import { stripe } from "../config/stripe.config";
 import {
   CreateProductDTO,
@@ -196,5 +197,54 @@ export class ProductService {
     });
 
     return { product, price };
+  }
+
+  mapProductToDTO(
+    product: Stripe.Product,
+    options?: { code?: string },
+  ): ProductDTO {
+    return {
+      id: product.id,
+      code: options?.code ?? (product.metadata?.code || undefined),
+      name: product.name,
+      description: product.description,
+      image: product.images?.[0],
+      active: product.active,
+      metadata: product.metadata as Record<string, string>,
+    };
+  }
+
+  mapPriceToDTO(
+    price: Stripe.Price,
+    options?: { isDefault?: boolean },
+  ): PriceDTO {
+    return {
+      id: price.id,
+      productId: price.product as string,
+      nickname: price.nickname,
+      amount: price.unit_amount,
+      currency: price.currency,
+      interval: price.recurring?.interval,
+      intervalCount: price.recurring?.interval_count ?? null,
+      active: price.active,
+      isDefault: options?.isDefault ?? false,
+    };
+  }
+
+  mapProductWithPricesToDTO(
+    product: Stripe.Product,
+    prices: Stripe.Price[],
+    options?: { code?: string; defaultPriceId?: string },
+  ) {
+    return {
+      ...this.mapProductToDTO(product, options),
+      prices: prices.map((price) =>
+        this.mapPriceToDTO(price, {
+          isDefault: options?.defaultPriceId
+            ? options.defaultPriceId === price.id
+            : price.id === product.default_price,
+        }),
+      ),
+    };
   }
 }

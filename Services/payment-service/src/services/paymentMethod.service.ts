@@ -1,8 +1,8 @@
+import { PaymentMethodDTO } from "../mappers/stripe.mapper";
 import { stripe } from "../config/stripe.config";
 import Stripe from "stripe";
 
 export class PaymentMethodService {
-
   async createPaymentMethod(data: {
     type: string;
     card?: Stripe.PaymentMethodCreateParams.Card;
@@ -156,7 +156,6 @@ export class PaymentMethodService {
     paymentMethod: Stripe.PaymentMethod;
     customer?: Stripe.Customer;
   }> {
-
     const paymentMethod = await this.createPaymentMethod({
       type: data.type,
       card: data.card,
@@ -211,5 +210,35 @@ export class PaymentMethodService {
       valid: errors.length === 0,
       errors,
     };
+  }
+
+  mapPaymentMethodToDTO(
+    pm: Stripe.PaymentMethod,
+    options?: { isDefault?: boolean; status?: "active" | "archived" },
+  ): PaymentMethodDTO {
+    const card = pm.card!;
+    return {
+      id: pm.id,
+      brand: card.brand,
+      last4: card.last4,
+      expMonth: card.exp_month,
+      expYear: card.exp_year,
+      isDefault: options?.isDefault ?? false,
+      status:
+        options?.status ??
+        (pm.metadata?.deleted === "true" ? "archived" : "active"),
+    };
+  }
+
+  mapPaymentMethodListToDTO(
+    pms: Stripe.PaymentMethod[],
+    options?: { defaultPaymentMethodId?: string },
+  ): PaymentMethodDTO[] {
+    return pms.map((pm) =>
+      this.mapPaymentMethodToDTO(pm, {
+        isDefault: options?.defaultPaymentMethodId === pm.id,
+        status: pm.metadata?.deleted === "true" ? "archived" : "active",
+      }),
+    );
   }
 }

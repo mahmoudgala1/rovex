@@ -1,3 +1,4 @@
+import { PriceDTO } from "../mappers/stripe.mapper";
 import { stripe } from "../config/stripe.config";
 import { UpdatePriceDTO } from "../types/stripe.types";
 import Stripe from "stripe";
@@ -82,5 +83,35 @@ export class PriceService {
       expand: ["data.product"],
     });
     return prices;
+  }
+
+  mapPriceToDTO(
+    price: Stripe.Price,
+    options?: { isDefault?: boolean },
+  ): PriceDTO {
+    return {
+      id: price.id,
+      productId: price.product as string,
+      nickname: price.nickname,
+      amount: price.unit_amount,
+      currency: price.currency,
+      interval: price.recurring?.interval,
+      intervalCount: price.recurring?.interval_count ?? null,
+      active: price.active,
+      isDefault: options?.isDefault ?? false,
+    };
+  }
+
+  mapPriceListToDTO(
+    prices: Stripe.Price[],
+    options?: { defaultPriceId?: string },
+  ): PriceDTO[] {
+    return prices.map((p) =>
+      this.mapPriceToDTO(p, {
+        isDefault: options?.defaultPriceId
+          ? options.defaultPriceId === p.id
+          : false,
+      }),
+    );
   }
 }

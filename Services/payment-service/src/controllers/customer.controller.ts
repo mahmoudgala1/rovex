@@ -27,14 +27,10 @@ export class CustomerController {
         email,
         phone,
       });
+      const dto = this.customerService.mapCustomerToDTO(customer);
 
       this.logger.info(`Customer created: ${customer.id}`);
-      return successResponse(
-        res,
-        customer,
-        "Customer created successfully",
-        201,
-      );
+      return successResponse(res, dto, "Customer created successfully", 201);
     } catch (error) {
       this.logger.error("Error creating customer:", error);
       return errorResponse(res, (error as Error).message, 500);
@@ -46,7 +42,9 @@ export class CustomerController {
       const customerId = String(req.params.customerId);
 
       const customer = await this.customerService.getCustomer(customerId);
-      return successResponse(res, customer);
+      const dto = this.customerService.mapCustomerToDTO(customer);
+
+      return successResponse(res, dto);
     } catch (error) {
       this.logger.error("Error fetching customer:", error);
       return errorResponse(res, (error as Error).message, 500);
@@ -62,9 +60,10 @@ export class CustomerController {
         customerId,
         updates,
       );
+      const dto = this.customerService.mapCustomerToDTO(customer);
 
       this.logger.info(`Customer updated: ${customerId}`);
-      return successResponse(res, customer, "Customer updated successfully");
+      return successResponse(res, dto, "Customer updated successfully");
     } catch (error) {
       this.logger.error("Error updating customer:", error);
       return errorResponse(res, (error as Error).message, 500);
@@ -76,11 +75,22 @@ export class CustomerController {
       const customerId = String(req.params.customerId);
 
       const deleted = await this.customerService.deleteCustomer(customerId);
-      this.logger.info(`Customer deleted: ${customerId}`);
-      return successResponse(res, deleted, "Customer deleted successfully");
+      if (deleted.deleted) {
+        this.logger.info(`Customer deleted: ${deleted.id}`);
+        successResponse(
+          res,
+          {
+            id: deleted.id,
+            deleted: true,
+          },
+          "Customer deleted successfully",
+        );
+      } else {
+        errorResponse(res, "Failed to delete customer", 500);
+      }
     } catch (error) {
       this.logger.error("Error deleting customer:", error);
-      return errorResponse(res, (error as Error).message, 500);
+      errorResponse(res, (error as Error).message, 500);
     }
   };
 
@@ -92,8 +102,9 @@ export class CustomerController {
         limit ? parseInt(limit as string) : 10,
         starting_after as string,
       );
+      const dto = this.customerService.mapCustomerListToDTO(customers);
 
-      return successResponse(res, customers);
+      return successResponse(res, dto);
     } catch (error) {
       this.logger.error("Error listing customers:", error);
       return errorResponse(res, (error as Error).message, 500);
@@ -111,8 +122,12 @@ export class CustomerController {
       const customers = await this.customerService.searchCustomers(
         query as string,
       );
+      const dto = this.customerService.mapSearchResultToDTO(
+        customers,
+        (customer) => this.customerService.mapCustomerToDTO(customer),
+      );
 
-      return successResponse(res, customers);
+      return successResponse(res, dto);
     } catch (error) {
       this.logger.error("Error searching customers:", error);
       return errorResponse(res, (error as Error).message, 500);

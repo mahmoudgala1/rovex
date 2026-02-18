@@ -1,7 +1,8 @@
 import { stripe } from "../config/stripe.config";
 import { CreateCustomerDTO } from "../types/stripe.types";
-import { authGrpcClient } from "../grpc/clients/auth.client";
 import { CustomerModel } from "../models/customer.model";
+import { CustomerDTO, SearchResultDTO } from "../mappers/stripe.mapper";
+import Stripe from "stripe";
 
 export class CustomerService {
   async createCustomer(data: CreateCustomerDTO) {
@@ -24,7 +25,7 @@ export class CustomerService {
 
   async getCustomer(customerId: string) {
     const customer = await stripe.customers.retrieve(customerId);
-    return customer;
+    return customer as Stripe.Customer;
   }
 
   async updateCustomer(customerId: string, data: Partial<CreateCustomerDTO>) {
@@ -50,5 +51,47 @@ export class CustomerService {
       query,
     });
     return customers;
+  }
+
+  mapCustomerToDTO(
+    customer: Stripe.Customer,
+    options?: { localUserId?: string },
+  ): CustomerDTO {
+    const defaultPm = customer.invoice_settings?.default_payment_method;
+
+    return {
+      id: options?.localUserId,
+      stripeCustomerId: customer.id,
+      name: customer.name,
+      email: customer.email,
+      phone: customer.phone,
+      billing: {
+        country: customer.address?.country,
+        city: customer.address?.city,
+      },
+      defaultPaymentMethod:
+        typeof defaultPm === "string" ? defaultPm : (defaultPm?.id ?? null),
+      createdAt: new Date(customer.created * 1000).toISOString(),
+    };
+  }
+
+  mapCustomerListToDTO(
+    apiListOrArray: Stripe.ApiList<Stripe.Customer> | Stripe.Customer[],
+  ): CustomerDTO[] {
+    const customers = Array.isArray(apiListOrArray)
+      ? apiListOrArray
+      : apiListOrArray.data;
+
+    return customers.map((c) => this.mapCustomerToDTO(c));
+  }
+
+  mapSearchResultToDTO<T, U>(
+    searchResult: Stripe.ApiSearchResult<T>,
+    mapper: (item: T) => U,
+  ): SearchResultDTO<U> {
+    return {
+      data: searchResult.data.map(mapper),
+      hasMore: searchResult.has_more,
+    };
   }
 }

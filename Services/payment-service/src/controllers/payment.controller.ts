@@ -27,14 +27,15 @@ export class PaymentController {
         stripeCustomerId,
       );
 
+      const dto = this.paymentService.mapPaymentIntentToDTO(paymentIntent, {
+        orderId: metadata.orderId,
+        includeClientSecret: true,
+      });
+
       this.logger.info(`Payment intent created: ${paymentIntent.id}`);
       return successResponse(
         res,
-        {
-          paymentIntentId: paymentIntent.id,
-          clientSecret: paymentIntent.client_secret,
-          status: paymentIntent.status,
-        },
+        dto,
         "Payment intent created successfully",
         201,
       );
@@ -51,12 +52,18 @@ export class PaymentController {
       const paymentIntent =
         await this.paymentService.getPaymentIntent(paymentIntentId);
 
-      return successResponse(res, paymentIntent);
+      const dto = this.paymentService.mapPaymentIntentToDTO(paymentIntent, {
+        orderId: paymentIntent.metadata.orderId,
+        includeClientSecret: false,
+      });
+
+      return successResponse(res, dto);
     } catch (error) {
       this.logger.error("Error fetching payment:", error);
       return errorResponse(res, (error as Error).message, 500);
     }
   };
+
   confirmPayment = async (req: AuthenticatedRequest, res: Response) => {
     try {
       const paymentIntentId = String(req.params.paymentIntentId);
@@ -71,12 +78,13 @@ export class PaymentController {
         paymentMethodId,
       );
 
+      const dto = this.paymentService.mapPaymentIntentToDTO(paymentIntent, {
+        orderId: paymentIntent.metadata.orderId,
+        includeClientSecret: false,
+      });
+
       this.logger.info(`Payment confirmed: ${paymentIntentId}`);
-      return successResponse(
-        res,
-        paymentIntent,
-        "Payment confirmed successfully",
-      );
+      return successResponse(res, dto, "Payment confirmed successfully");
     } catch (error) {
       this.logger.error("Error confirming payment:", error);
       return errorResponse(res, (error as Error).message, 500);
@@ -90,12 +98,13 @@ export class PaymentController {
       const paymentIntent =
         await this.paymentService.cancelPaymentIntent(paymentIntentId);
 
+      const dto = this.paymentService.mapPaymentIntentToDTO(paymentIntent, {
+        orderId: paymentIntent.metadata.orderId,
+        includeClientSecret: false,
+      });
+
       this.logger.info(`Payment cancelled: ${paymentIntentId}`);
-      return successResponse(
-        res,
-        paymentIntent,
-        "Payment cancelled successfully",
-      );
+      return successResponse(res, dto, "Payment cancelled successfully");
     } catch (error) {
       this.logger.error("Error cancelling payment:", error);
       return errorResponse(res, (error as Error).message, 500);
@@ -112,13 +121,16 @@ export class PaymentController {
         amount,
       );
 
+      const dto = this.paymentService.mapRefundToDTO(refund);
+
       this.logger.info(`Refund created for payment: ${paymentIntentId}`);
-      return successResponse(res, refund, "Refund created successfully", 201);
+      return successResponse(res, dto, "Refund created successfully", 201);
     } catch (error) {
       this.logger.error("Error creating refund:", error);
       return errorResponse(res, (error as Error).message, 500);
     }
   };
+
   listPayments = async (req: AuthenticatedRequest, res: Response) => {
     try {
       const { limit } = req.query;
@@ -129,7 +141,9 @@ export class PaymentController {
         limit ? parseInt(limit as string) : 10,
       );
 
-      return successResponse(res, paymentIntents);
+      const dto = this.paymentService.mapPaymentApiListToDTO(paymentIntents);
+
+      return successResponse(res, dto);
     } catch (error) {
       this.logger.error("Error listing payments:", error);
       return errorResponse(res, (error as Error).message, 500);

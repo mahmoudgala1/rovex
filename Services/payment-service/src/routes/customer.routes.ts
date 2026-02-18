@@ -79,6 +79,32 @@ const customerController = new CustomerController();
 
 /**
  * @openapi
+ * /customers/search:
+ *   get:
+ *     tags:
+ *       - Customers
+ *     summary: Search customers
+ *     description: Search for customers using Stripe's search API
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: query
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Search query (e.g., name:"Ahmed" or email:"user@example.com")
+ *         example: name:"Ahmed"
+ *     responses:
+ *       200:
+ *         description: Search results
+ *       400:
+ *         description: Missing search query
+ */
+router.get("/search", authMiddleware, customerController.searchCustomers);
+
+/**
+ * @openapi
  * /customers/{customerId}:
  *   get:
  *     tags:
@@ -204,30 +230,6 @@ router.delete(
  */
 router.get("/", authMiddleware, customerController.listCustomers);
 
-/**
- * @openapi
- * /customers/search:
- *   get:
- *     tags:
- *       - Customers
- *     summary: Search customers
- *     description: Search for customers using Stripe's search API
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: query
- *         name: query
- *         required: true
- *         schema:
- *           type: string
- *         description: Search query (e.g., name:"Ahmed" or email:"user@example.com")
- *         example: name:"Ahmed"
- *     responses:
- *       200:
- *         description: Search results
- *       400:
- *         description: Missing search query
- */
-router.get("/search", authMiddleware, customerController.searchCustomers);
+
 
 export default router;

@@ -2,6 +2,8 @@ import { Request, Response } from "express";
 import { stripe, config } from "../config/stripe.config";
 import { Logger } from "../utils/logger";
 import { successResponse, errorResponse } from "../utils/response";
+import Stripe from "stripe";
+import { WebhookEventDTO } from "../mappers/stripe.mapper";
 
 export class WebhookController {
   private logger: Logger;
@@ -152,5 +154,14 @@ export class WebhookController {
   private async handleCustomerDeleted(customer: any) {
     this.logger.info(`Customer deleted: ${customer.id}`);
     // TODO: Clean up database
+  }
+
+  private mapStripeEventToDTO(event: Stripe.Event): WebhookEventDTO {
+    return {
+      id: event.id,
+      type: event.type,
+      createdAt: new Date(event.created * 1000).toISOString(),
+      data: event.data.object,
+    };
   }
 }

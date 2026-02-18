@@ -1,5 +1,7 @@
+import Stripe from "stripe";
 import { stripe } from "../config/stripe.config";
 import { CreatePaymentDTO } from "../types/stripe.types";
+import { PaymentDTO } from "../mappers/stripe.mapper";
 
 export class PaymentService {
   async createPaymentIntent(data: CreatePaymentDTO, customerId: string) {
@@ -50,5 +52,58 @@ export class PaymentService {
       limit,
     });
     return paymentIntents;
+  }
+
+  mapPaymentIntentToDTO(
+    pi: Stripe.PaymentIntent,
+    options?: {
+      localId?: string;
+      orderId?: string;
+      includeClientSecret?: boolean;
+    },
+  ): PaymentDTO {
+    return {
+      id: options?.localId,
+      stripePaymentIntentId: pi.id,
+      customer: pi.customer as string,
+      clientSecret: options?.includeClientSecret ? pi.client_secret : undefined,
+      amount: pi.amount,
+      amountReceived: pi.amount_received,
+      currency: pi.currency,
+      description: pi.description,
+      paymentMethod: pi.payment_method as string,
+      status: pi.status,
+      canRetry: pi.status === "requires_payment_method",
+      orderId: options?.orderId,
+      createdAt: new Date(pi.created * 1000).toISOString(),
+    };
+  }
+
+  mapRefundToDTO(refund: Stripe.Refund) {
+    return {
+      id: refund.id,
+      amount: refund.amount,
+      currency: refund.currency,
+      status: refund.status,
+      reason: refund.reason,
+      chargeId: refund.charge as string,
+      paymentIntentId: refund.payment_intent as string,
+      createdAt: new Date(refund.created * 1000).toISOString(),
+    };
+  }
+
+  mapPaymentApiListToDTO(apiList: Stripe.ApiList<Stripe.PaymentIntent>): {
+    items: PaymentDTO[];
+    hasMore: boolean;
+  } {
+    return {
+      items: apiList.data.map((p) =>
+        this.mapPaymentIntentToDTO(p, {
+          orderId: p.metadata.orderId,
+          includeClientSecret: false,
+        }),
+      ),
+      hasMore: apiList.has_more,
+    };
   }
 }
