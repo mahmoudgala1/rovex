@@ -1,4 +1,7 @@
-import { PaymentMethodDTO } from "../mappers/stripe.mapper";
+import {
+  PaymentMethodDTO,
+  PaymentMethodListDTO,
+} from "../mappers/stripe.mapper";
 import { stripe } from "../config/stripe.config";
 import Stripe from "stripe";
 
@@ -219,26 +222,20 @@ export class PaymentMethodService {
     const card = pm.card!;
     return {
       id: pm.id,
+      customer: pm.customer as string,
       brand: card.brand,
       last4: card.last4,
       expMonth: card.exp_month,
       expYear: card.exp_year,
-      isDefault: options?.isDefault ?? false,
-      status:
-        options?.status ??
-        (pm.metadata?.deleted === "true" ? "archived" : "active"),
     };
   }
 
   mapPaymentMethodListToDTO(
-    pms: Stripe.PaymentMethod[],
-    options?: { defaultPaymentMethodId?: string },
-  ): PaymentMethodDTO[] {
-    return pms.map((pm) =>
-      this.mapPaymentMethodToDTO(pm, {
-        isDefault: options?.defaultPaymentMethodId === pm.id,
-        status: pm.metadata?.deleted === "true" ? "archived" : "active",
-      }),
-    );
+    apiList: Stripe.ApiList<Stripe.PaymentMethod>,
+  ): PaymentMethodListDTO {
+    return {
+      data: apiList.data.map((pm) => this.mapPaymentMethodToDTO(pm)),
+      hasMore: apiList.has_more,
+    };
   }
 }

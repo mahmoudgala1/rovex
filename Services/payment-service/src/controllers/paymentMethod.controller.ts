@@ -34,13 +34,12 @@ export class PaymentMethodController {
         },
       );
 
-      this.logger.info(`Payment method created: ${paymentMethod.id}`);
-      successResponse(
-        res,
-        paymentMethod,
-        "Payment method created successfully",
-        201,
+      const dto = this.paymentMethodService.mapPaymentMethodToDTO(
+        paymentMethod!,
       );
+
+      this.logger.info(`Payment method created: ${paymentMethod.id}`);
+      successResponse(res, dto, "Payment method created successfully", 201);
     } catch (error) {
       this.logger.error("Error creating payment method:", error);
       errorResponse(res, (error as Error).message, 500);
@@ -69,14 +68,14 @@ export class PaymentMethodController {
         stripeCustomerId,
       );
 
+      const dto = this.paymentMethodService.mapPaymentMethodToDTO(
+        paymentMethod!,
+      );
+
       this.logger.info(
         `Payment method attached: ${paymentMethodId} to ${stripeCustomerId}`,
       );
-      successResponse(
-        res,
-        paymentMethod,
-        "Payment method attached successfully",
-      );
+      successResponse(res, dto, "Payment method attached successfully");
     } catch (error) {
       this.logger.error("Error attaching payment method:", error);
       errorResponse(res, (error as Error).message, 500);
@@ -93,12 +92,12 @@ export class PaymentMethodController {
       const paymentMethod =
         await this.paymentMethodService.detachPaymentMethod(paymentMethodId);
 
-      this.logger.info(`Payment method detached: ${paymentMethodId}`);
-      successResponse(
-        res,
-        paymentMethod,
-        "Payment method detached successfully",
+      const dto = this.paymentMethodService.mapPaymentMethodToDTO(
+        paymentMethod!,
       );
+
+      this.logger.info(`Payment method detached: ${paymentMethodId}`);
+      successResponse(res, dto, "Payment method detached successfully");
     } catch (error) {
       this.logger.error("Error detaching payment method:", error);
       errorResponse(res, (error as Error).message, 500);
@@ -115,7 +114,10 @@ export class PaymentMethodController {
       const paymentMethod =
         await this.paymentMethodService.getPaymentMethod(paymentMethodId);
 
-      successResponse(res, paymentMethod);
+      const dto =
+        this.paymentMethodService.mapPaymentMethodToDTO(paymentMethod);
+
+      successResponse(res, dto);
     } catch (error) {
       this.logger.error("Error fetching payment method:", error);
       errorResponse(res, (error as Error).message, 500);
@@ -136,7 +138,10 @@ export class PaymentMethodController {
         limit ? parseInt(limit as string) : 10,
       );
 
-      successResponse(res, paymentMethods);
+      const dto =
+        this.paymentMethodService.mapPaymentMethodListToDTO(paymentMethods);
+
+      successResponse(res, dto);
     } catch (error) {
       this.logger.error("Error listing payment methods:", error);
       errorResponse(res, (error as Error).message, 500);
@@ -156,12 +161,12 @@ export class PaymentMethodController {
         { billingDetails, card, metadata },
       );
 
-      this.logger.info(`Payment method updated: ${paymentMethodId}`);
-      successResponse(
-        res,
-        paymentMethod,
-        "Payment method updated successfully",
+      const dto = this.paymentMethodService.mapPaymentMethodToDTO(
+        paymentMethod!,
       );
+
+      this.logger.info(`Payment method updated: ${paymentMethodId}`);
+      successResponse(res, dto, "Payment method updated successfully");
     } catch (error) {
       this.logger.error("Error updating payment method:", error);
       errorResponse(res, (error as Error).message, 500);
@@ -173,7 +178,7 @@ export class PaymentMethodController {
     res: Response,
   ): Promise<void> => {
     try {
-      const {  paymentMethodId } = req.body;
+      const { paymentMethodId } = req.body;
       const stripeCustomerId = (req as any).user.stripeCustomerId;
 
       if (!stripeCustomerId || !paymentMethodId) {
@@ -208,14 +213,19 @@ export class PaymentMethodController {
       const stripeCustomerId = (req as any).user.stripeCustomerId;
 
       const paymentMethod =
-        await this.paymentMethodService.getDefaultPaymentMethod(stripeCustomerId);
+        await this.paymentMethodService.getDefaultPaymentMethod(
+          stripeCustomerId,
+        );
+      const dto = this.paymentMethodService.mapPaymentMethodToDTO(
+        paymentMethod!,
+      );
 
       if (!paymentMethod) {
         successResponse(res, null, "No default payment method found");
         return;
       }
 
-      successResponse(res, paymentMethod);
+      successResponse(res, dto);
     } catch (error) {
       this.logger.error("Error fetching default payment method:", error);
       errorResponse(res, (error as Error).message, 500);

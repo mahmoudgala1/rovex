@@ -111,12 +111,16 @@ export interface SearchResultDTO<T> {
 
 export interface PaymentMethodDTO {
   id: string;
+  customer: string;
   brand: string;
   last4: string;
   expMonth: number;
   expYear: number;
-  isDefault: boolean;
-  status: "active" | "archived";
+}
+
+export interface PaymentMethodListDTO {
+  data: PaymentMethodDTO[];
+  hasMore: boolean;
 }
 
 export interface WebhookEventDTO {
