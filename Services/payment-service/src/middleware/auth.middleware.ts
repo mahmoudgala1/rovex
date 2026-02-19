@@ -17,18 +17,18 @@ export async function authMiddleware(
     let company_id = req.headers["x-company-id"] || null;
     let stripeCustomerId = null;
 
-    // if (!user_id || !user_role) {
-    //   errorResponse(res, "Unauthorized", 401);
-    //   return;
-    // }
+    if (!user_id || !user_role) {
+      errorResponse(res, "Unauthorized", 401);
+      return;
+    }
 
     if (user_role == "customer") {
       company_id = "COMP_MJ6C7OD5JRCX9";
     }
 
     const customer = await CustomerModel.findOne({
-      customerId: "CUST_MJDO8PAK4MC5K",
-      // customerId: user_id,
+      // customerId: "CUST_MJDO8PAK4MC5K",
+      customerId: user_id,
     });
 
     if (!customer) {

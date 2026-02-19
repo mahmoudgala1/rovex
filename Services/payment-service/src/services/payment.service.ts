@@ -67,8 +67,8 @@ export class PaymentService {
       stripePaymentIntentId: pi.id,
       customer: pi.customer as string,
       clientSecret: options?.includeClientSecret ? pi.client_secret : undefined,
-      amount: pi.amount,
-      amountReceived: pi.amount_received,
+      amount: pi.amount / 100,
+      amountReceived: pi.amount_received / 100,
       currency: pi.currency,
       description: pi.description,
       paymentMethod: pi.payment_method as string,
@@ -82,7 +82,7 @@ export class PaymentService {
   mapRefundToDTO(refund: Stripe.Refund) {
     return {
       id: refund.id,
-      amount: refund.amount,
+      amount: refund.amount / 100,
       currency: refund.currency,
       status: refund.status,
       reason: refund.reason,
