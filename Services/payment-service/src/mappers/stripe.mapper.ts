@@ -76,6 +76,13 @@ export interface ProductDTO {
   image?: string;
   active: boolean;
   metadata: Record<string, string>;
+  createdAt: string;
+  updateAt: string;
+}
+
+export interface ProductListDTO {
+  data: ProductDTO[];
+  hasMore: boolean;
 }
 
 export interface PriceDTO {
@@ -88,6 +95,11 @@ export interface PriceDTO {
   intervalCount?: number | null;
   active: boolean;
   isDefault?: boolean;
+}
+
+export interface PriceListDTO {
+  data: PriceDTO[];
+  hasMore: boolean;
 }
 
 export interface CustomerDTO {

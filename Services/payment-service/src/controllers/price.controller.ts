@@ -46,9 +46,10 @@ export class PriceController {
         nickname,
         metadata,
       });
+      const dto = this.priceService.mapPriceToDTO(price);
 
       this.logger.info(`Price created: ${price.id}`);
-      successResponse(res, price, "Price created successfully", 201);
+      successResponse(res, dto, "Price created successfully", 201);
     } catch (error) {
       this.logger.error("Error creating price:", error);
       errorResponse(res, (error as Error).message, 500);
@@ -103,8 +104,9 @@ export class PriceController {
         activeFilter,
         limit ? parseInt(limit as string) : 10,
       );
+      const dto = this.priceService.mapPriceListToDTO(prices);
 
-      successResponse(res, prices);
+      successResponse(res, dto);
     } catch (error) {
       this.logger.error("Error listing prices:", error);
       errorResponse(res, (error as Error).message, 500);
