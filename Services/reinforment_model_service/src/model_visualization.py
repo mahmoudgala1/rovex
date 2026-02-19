@@ -3,173 +3,280 @@ import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
 import random
+import time
+from stable_baselines3 import DQN
 from rover_env import MaadiRoverEnv
+from pathlib import Path
+
+# ================= LOAD MODEL =================
+BASE_DIR = Path(__file__).resolve().parent
+MODEL_PATH = BASE_DIR / "dispatcher_model.zip"
+
+try:
+    print(f"🧠 Loading model from: {MODEL_PATH}")
+    model = DQN.load(str(MODEL_PATH))
+    print("✅ AI Brain Loaded Successfully.")
+except Exception as e:
+    print(f"❌ Error loading model: {e}")
+    model = None
 
 env = MaadiRoverEnv()
 
-# Global States
+# ================= GLOBAL STATE =================
 order_queue = []
-active_orders = []      
-active_tasks = {0: None, 1: None} 
+active_orders = []
 completed_orders = 0
+batch_active = False
+
 batt = [100.0, 100.0]
 rover_nodes = [env.restaurant_node, env.restaurant_node]
-new_batch_triggered = False 
 
+active_tasks = {0: None, 1: None}
+rover_status = ["IDLE", "IDLE"]
+
+# ================= AI DECISION =================
+def get_ai_choice(order_node):
+    if model is None:
+        return 0
+
+    obs = []
+    dist_rest_to_order = env._get_path_dist(env.restaurant_node, order_node)
+
+    for i in range(2):
+        dist_to_rest = env._get_path_dist(rover_nodes[i], env.restaurant_node)
+        total_trip = dist_to_rest + dist_rest_to_order
+
+        status = 0
+        if batt[i] <= 0:
+            status = 2
+        elif batt[i] < 30:
+            status = 3
+
+        obs.extend([total_trip, batt[i], status, dist_to_rest])
+
+    action, _ = model.predict(np.array(obs, dtype=np.float32), deterministic=True)
+    return int(action)
+
+# ================= HELPERS =================
 def spawn_orders():
-    global new_batch_triggered
-    num_new = random.randint(1, 3) 
-    new_nodes = random.sample(env.nodes, num_new)
-    order_queue.extend(new_nodes)
-    active_orders.extend(new_nodes)
-    new_batch_triggered = False 
+    global batch_active
+    num = random.randint(1, 3)
+    nodes = random.sample(env.nodes, num)
+    order_queue.extend(nodes)
+    active_orders.extend(nodes)
+    batch_active = True
+    print(f"📦 New Batch Spawned: {num} orders")
 
 def get_path(start, goal):
-    if start == goal: return [start]
+    if start == goal:
+        return [start]
     try:
-        return nx.shortest_path(env.G, start, goal, weight='length')
+        return nx.shortest_path(env.G, start, goal, weight="length")
     except:
         return None
 
-def run_dynamic_sim():
-    global completed_orders, new_batch_triggered
-    plt.ion()
+def assign_delivery(rover_id, target):
+    p1 = get_path(rover_nodes[rover_id], env.restaurant_node)
+    p2 = get_path(env.restaurant_node, target)
 
-    fig = plt.figure(figsize=(18, 12), facecolor='black')
+    if p1 and p2:
+        full = p1 + p2[1:]
+        active_tasks[rover_id] = {
+            "path": full,
+            "step": 0,
+            "progress": 0.0,
+            "target": target,
+            "type": "DELIVERY"
+        }
+        rover_status[rover_id] = "DELIVERING"
+        return full
+    return None
+
+def assign_return(rover_id):
+    path = get_path(rover_nodes[rover_id], env.restaurant_node)
+    if path:
+        active_tasks[rover_id] = {
+            "path": path,
+            "step": 0,
+            "progress": 0.0,
+            "type": "RETURN"
+        }
+        rover_status[rover_id] = "IDLE"   # unchanged as requested
+        return path
+    return None
+
+# ================= MAIN SIM =================
+def run_dynamic_sim():
+    global completed_orders, batch_active
+
+    plt.ion()
+    fig = plt.figure(figsize=(18, 12), facecolor="black")
     gs = fig.add_gridspec(1, 2, width_ratios=[4, 1])
+
     ax_map = fig.add_subplot(gs[0])
     ax_panel = fig.add_subplot(gs[1])
 
-    ax_map.set_facecolor('black')
-    ax_panel.set_facecolor('#111111')
+    ax_map.set_facecolor("black")
+    ax_panel.set_facecolor("#111111")
 
-    ox.plot_graph(env.G, ax=ax_map, show=False, close=False, edge_color="#333333", 
-                  node_size=0, bgcolor='black', edge_linewidth=0.7)
-    
+    ox.plot_graph(env.G, ax=ax_map, show=False, close=False,
+                  edge_color="#333333", node_size=0,
+                  bgcolor="black", edge_linewidth=0.7)
+
     ax_map.set_axis_off()
-    rx, ry = env.G.nodes[env.restaurant_node]['x'], env.G.nodes[env.restaurant_node]['y']
-    ax_map.scatter(rx, ry, c='#ffa500', s=350, marker='*', zorder=6)
 
-    order_scat = ax_map.scatter([], [], c='#ff3333', s=130, marker='o', edgecolors='white', zorder=7)
-    rover_arrows = [None, None]
-    rover_paths = [None, None] 
-    colors = ['#00FFFF', '#FF00FF'] 
+    rx = env.G.nodes[env.restaurant_node]["x"]
+    ry = env.G.nodes[env.restaurant_node]["y"]
+    ax_map.scatter(rx, ry, c="#ffa500", s=350, marker="*", zorder=6)
+
+    order_scat = ax_map.scatter([], [], c="#ff3333",
+                                s=130, marker="o",
+                                edgecolors="white", zorder=7)
+
+    rover_draw = [None, None]
+    rover_paths = [None, None]
+    colors = ["#00FFFF", "#FF00FF"]
 
     spawn_orders()
 
     while True:
-        if not active_orders and not new_batch_triggered:
-            new_batch_triggered = True 
+
+        # ================= SPAWN IMMEDIATELY AFTER LAST DELIVERY =================
+        if batch_active and not active_orders and not order_queue:
+            batch_active = False
             spawn_orders()
 
+        # ================= DISPATCH =================
+        available_rovers = []
+
         for i in range(2):
-            # 1. Charging Logic
-            if rover_nodes[i] == env.restaurant_node and active_tasks[i] is None:
-                batt[i] = min(100, batt[i] + 0.8)
-
-            # 2. Dispatch / Return Logic
             if active_tasks[i] is None:
-                # If battery sufficient and orders exist, pick next delivery
-                if batt[i] > 10 and order_queue:
-                    target = order_queue.pop(0)
-                    # Force pickup at restaurant if not already there
-                    p_to_rest = [rover_nodes[i]] if rover_nodes[i] == env.restaurant_node else get_path(rover_nodes[i], env.restaurant_node)
-                    p_to_target = get_path(env.restaurant_node, target)
-                    
-                    if p_to_rest and p_to_target:
-                        full_path = p_to_rest + p_to_target[1:]
-                        active_tasks[i] = {"path": full_path, "step": 0, "progress": 0.0, 
-                                           "target": target, "type": "delivery"}
-                        px, py = zip(*[(env.G.nodes[n]['x'], env.G.nodes[n]['y']) for n in full_path])
-                        if rover_paths[i]: rover_paths[i][0].remove()
-                        # Visualizing Delivery Path (Solid)
-                        rover_paths[i] = ax_map.plot(px, py, color=colors[i], alpha=0.5, linewidth=2, zorder=4)
-                    else:
-                        order_queue.insert(0, target)
-                
-                # AUTO-RETURN: If idle and not at restaurant, start return trip
-                elif rover_nodes[i] != env.restaurant_node:
-                    ret_path = get_path(rover_nodes[i], env.restaurant_node)
-                    if ret_path and len(ret_path) > 1:
-                        active_tasks[i] = {"path": ret_path, "step": 0, "progress": 0.0, 
-                                           "target": env.restaurant_node, "type": "returning"}
-                        px, py = zip(*[(env.G.nodes[n]['x'], env.G.nodes[n]['y']) for n in ret_path])
-                        if rover_paths[i]: rover_paths[i][0].remove()
-                        # Visualizing Return Path (Dotted line with 'o' markers)
-                        rover_paths[i] = ax_map.plot(px, py, color=colors[i], alpha=0.4, 
-                                                     linewidth=1.5, linestyle=':', marker='o', 
-                                                     markersize=2, zorder=4)
+                available_rovers.append(i)
 
-            # 3. Movement Logic
-            if active_tasks[i]:
-                task = active_tasks[i]
-                path = task["path"]
-                idx = task["step"]
+            elif active_tasks[i]["type"] == "RETURN":
+                # Allow assigning while returning
+                available_rovers.append(i)
 
-                if idx >= len(path) - 1:
-                    rover_nodes[i] = path[-1]
-                    if task["type"] == "delivery":
-                        if task["target"] in active_orders:
-                            active_orders.remove(task["target"])
-                        completed_orders += 1
-                    
-                    # Task finished, set to None so "AUTO-RETURN" can trigger in next frame
+        if order_queue and available_rovers:
+            target = order_queue.pop(0)
+            chosen = get_ai_choice(target)
+
+            if chosen not in available_rovers:
+                chosen = available_rovers[0]
+
+            full_path = assign_delivery(chosen, target)
+
+            if full_path:
+                px, py = zip(*[
+                    (env.G.nodes[n]['x'], env.G.nodes[n]['y'])
+                    for n in full_path
+                ])
+
+                if rover_paths[chosen]:
+                    rover_paths[chosen][0].remove()
+
+                rover_paths[chosen] = ax_map.plot(
+                    px, py,
+                    color=colors[chosen],
+                    linewidth=2,
+                    alpha=0.6,
+                    zorder=4
+                )
+
+        # ================= MOVEMENT =================
+        for i in range(2):
+
+            if active_tasks[i] is None:
+                continue
+
+            task = active_tasks[i]
+            path = task["path"]
+            idx = task["step"]
+
+            if idx >= len(path) - 1:
+                rover_nodes[i] = path[-1]
+
+                if task["type"] == "DELIVERY":
+                    if task["target"] in active_orders:
+                        active_orders.remove(task["target"])
+                    completed_orders += 1
+                    assign_return(i)
+
+                elif task["type"] == "RETURN":
                     active_tasks[i] = None
-                    if rover_arrows[i]: rover_arrows[i].remove(); rover_arrows[i] = None
-                    if rover_paths[i]: rover_paths[i][0].remove(); rover_paths[i] = None
-                    continue
+                    if rover_paths[i]:
+                        rover_paths[i][0].remove()
+                        rover_paths[i] = None
 
-                n1, n2 = path[idx], path[idx+1]
-                x1, y1 = env.G.nodes[n1]['x'], env.G.nodes[n1]['y']
-                x2, y2 = env.G.nodes[n2]['x'], env.G.nodes[n2]['y']
+                continue
 
-                task["progress"] += 0.7
-                if task["progress"] >= 1.0:
-                    task["step"] += 1
-                    task["progress"] = 0.0
-                    curr_x, curr_y = x2, y2
-                else:
-                    curr_x, curr_y = x1 + (x2 - x1) * task["progress"], y1 + (y2 - y1) * task["progress"]
+            n1 = path[idx]
+            x1 = env.G.nodes[n1]["x"]
+            y1 = env.G.nodes[n1]["y"]
 
-                batt[i] -= 0.04
+            task["progress"] += 0.6
+            if task["progress"] >= 1.0:
+                task["step"] += 1
+                task["progress"] = 0.0
 
-                # Update Arrow
-                if rover_arrows[i]: rover_arrows[i].remove()
-                dx, dy = (x2 - x1), (y2 - y1)
-                mag = np.sqrt(dx**2 + dy**2)
-                if mag > 1e-5:
-                    ux, uy = (dx/mag) * 40, (dy/mag) * 40
-                    rover_arrows[i] = ax_map.arrow(curr_x, curr_y, ux, uy, 
-                                                   head_width=90, head_length=100, 
-                                                   fc=colors[i], ec=colors[i], zorder=10, 
-                                                   length_includes_head=True)
-            else:
-                curr_x, curr_y = env.G.nodes[rover_nodes[i]]['x'], env.G.nodes[rover_nodes[i]]['y']
-                if rover_arrows[i]: rover_arrows[i].remove()
-                rover_arrows[i] = ax_map.scatter(curr_x, curr_y, s=120, c=colors[i], edgecolors='white', zorder=10)
+            batt[i] -= 0.03
 
-        # 4. Update Graphics
+            if rover_draw[i]:
+                rover_draw[i].remove()
+
+            rover_draw[i] = ax_map.scatter(
+                x1, y1,
+                s=150,
+                c=colors[i],
+                edgecolors="white",
+                zorder=10
+            )
+
+        # ================= ORDER DISPLAY =================
         if active_orders:
-            order_scat.set_offsets([[env.G.nodes[n]['x'], env.G.nodes[n]['y']] for n in active_orders])
+            order_scat.set_offsets(
+                [[env.G.nodes[n]["x"], env.G.nodes[n]["y"]]
+                 for n in active_orders]
+            )
         else:
             order_scat.set_offsets(np.empty((0, 2)))
 
+        # ================= SIDEBAR =================
         ax_panel.clear()
         ax_panel.set_facecolor("#111111")
-        ax_panel.text(0.1, 0.9, "MISSION CONTROL", color="white", fontsize=18, fontweight="bold")
-        for i in range(2):
-            c, y_off = colors[i], 0.65 - (i * 0.22)
-            status = "CHARGING" if active_tasks[i] is None and rover_nodes[i] == env.restaurant_node else ("RETURNING" if active_tasks[i] and active_tasks[i]["type"] == "returning" else "DELIVERING")
-            ax_panel.text(0.1, y_off, f"ROVER {i} [{status}]", color=c, fontsize=11, fontweight="bold")
-            ax_panel.text(0.1, y_off - 0.04, f"Battery: {max(0, batt[i]):.1f}%", color="white", fontsize=10)
-            ax_panel.barh(y_off - 0.07, (max(0, batt[i])/100)*0.8, left=0.1, height=0.02, color=c)
-        ax_panel.text(0.1, 0.1, f"Total Success: {completed_orders}", color="#00ff00", fontsize=14)
-        ax_panel.axis('off')
+        ax_panel.text(0.1, 0.92, "AI MISSION CONTROL",
+                      color="white", fontsize=16, fontweight="bold")
 
-        try:
-            plt.pause(0.01)
-        except:
-            break
+        for i in range(2):
+            y = 0.7 - i * 0.25
+            ax_panel.text(0.1, y,
+                          f"ROVER {i} [{rover_status[i]}]",
+                          color=colors[i],
+                          fontsize=12,
+                          fontweight="bold")
+            ax_panel.text(0.1, y - 0.05,
+                          f"Battery: {max(0, batt[i]):.1f}%",
+                          color="white",
+                          fontsize=10)
+            ax_panel.barh(
+                y - 0.09,
+                (max(0, batt[i]) / 100) * 0.8,
+                left=0.1,
+                height=0.03,
+                color=colors[i]
+            )
+
+        ax_panel.text(0.1, 0.1,
+                      f"Completed Orders: {completed_orders}",
+                      color="#00ff00",
+                      fontsize=14)
+
+        ax_panel.axis("off")
+
+        fig.canvas.draw_idle()
+        fig.canvas.flush_events()
+        time.sleep(0.01)
+
 
 if __name__ == "__main__":
     run_dynamic_sim()
