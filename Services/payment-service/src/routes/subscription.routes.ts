@@ -288,12 +288,12 @@ router.post(
 
 /**
  * @openapi
- * /subscriptions/customer/upcoming-invoice:
+ * /subscriptions/customer/invoices:
  *   get:
  *     tags:
  *       - Subscriptions
- *     summary: Get upcoming invoice
- *     description: Retrieves the upcoming invoice for a customer
+ *     summary: Get customer invoices
+ *     description: Retrieves invoices for a customer
  *     security:
  *       - bearerAuth: []
  *     responses:
@@ -303,16 +303,34 @@ router.post(
  *         description: No upcoming invoice found
  */
 router.get(
-  "/customer/upcoming-invoice",
-  authMiddleware,
-  subscriptionController.getUpcomingInvoice,
-);
-
-router.get(
   "/customer/invoices",
   authMiddleware,
   subscriptionController.listInvoices,
 );
+
+/**
+ * @openapi
+ * /subscriptions/invoices/{invoiceId}:
+ *   get:
+ *     tags:
+ *       - Subscriptions
+ *     summary: Get customer invoices
+ *     description: Retrieves invoices for a customer
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: invoiceId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         example: in_xxxxx
+ *     responses:
+ *       200:
+ *         description: Upcoming invoice
+ *       404:
+ *         description: No upcoming invoice found
+ */
 router.get(
   "/invoices/:invoiceId",
   authMiddleware,

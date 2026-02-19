@@ -1,4 +1,9 @@
-import { SubscriptionDTO } from "../mappers/stripe.mapper";
+import {
+  InvoiceDTO,
+  InvoiceListDTO,
+  SubscriptionDTO,
+  SubscriptionListDTO,
+} from "../mappers/stripe.mapper";
 import { stripe } from "../config/stripe.config";
 import { CreateSubscriptionDTO } from "../types/stripe.types";
 import Stripe from "stripe";
@@ -152,13 +157,14 @@ export class SubscriptionService {
     return {
       id: options?.localId,
       stripeSubscriptionId: sub.id,
+      customer: sub.customer as string,
       status: sub.status,
       plan: {
         productId: price.product as string,
         priceId: price.id,
         code: options?.planCode,
         name: price.nickname || "Subscription",
-        amount: price.unit_amount,
+        amount: price.unit_amount! / 100,
         currency: price.currency,
         interval: price.recurring?.interval,
         intervalCount: price.recurring?.interval_count ?? null,
@@ -174,23 +180,47 @@ export class SubscriptionService {
           : null,
       },
       cancelAtPeriodEnd: sub.cancel_at_period_end,
+      createdAt: new Date(sub.created * 1000).toISOString(),
     };
   }
 
-  mapInvoiceToDTO(inv: Stripe.Invoice) {
+  mapSubscriptionListToDTO(
+    apiList: Stripe.ApiList<Stripe.Subscription>,
+  ): SubscriptionListDTO {
+    return {
+      data: apiList.data.map((sub) => {
+        const item = sub.items.data[0];
+        const price = item.price as Stripe.Price;
+
+        return this.mapSubscriptionToDTO(sub);
+      }),
+      hasMore: apiList.has_more,
+    };
+  }
+
+  mapInvoiceToDTO(inv: Stripe.Invoice): InvoiceDTO {
     return {
       id: inv.id,
-      number: inv.number,
-      status: inv.status,
-      amountDue: inv.amount_due,
-      amountPaid: inv.amount_paid,
+      customer: inv.customer as string,
+      number: inv.number ?? "",
+      status: inv.status!,
+      billingReason: inv.billing_reason,
+      amountDue: inv.amount_due / 100,
+      amountPaid: inv.amount_paid / 100,
       currency: inv.currency,
-      hostedInvoiceUrl: inv.hosted_invoice_url,
-      invoicePdf: inv.invoice_pdf,
+      hostedInvoiceUrl: inv.hosted_invoice_url!,
+      invoicePdf: inv.invoice_pdf!,
       createdAt: new Date(inv.created * 1000).toISOString(),
       dueDate: inv.due_date
         ? new Date(inv.due_date * 1000).toISOString()
         : null,
+    };
+  }
+
+  mapInvoiceListToDTO(apiList: Stripe.ApiList<Stripe.Invoice>): InvoiceListDTO {
+    return {
+      data: apiList.data.map((inv) => this.mapInvoiceToDTO(inv)),
+      hasMore: apiList.has_more,
     };
   }
 }

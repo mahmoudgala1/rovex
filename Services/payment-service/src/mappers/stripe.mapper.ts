@@ -19,6 +19,7 @@ export interface PaymentDTO {
 export interface SubscriptionDTO {
   id?: string; // local subscription id
   stripeSubscriptionId: string;
+  customer: string;
   status: Stripe.Subscription.Status;
   plan: {
     productId: string;
@@ -39,6 +40,32 @@ export interface SubscriptionDTO {
     trialEnd: string | null;
   };
   cancelAtPeriodEnd: boolean;
+  createdAt: string;
+}
+
+export interface SubscriptionListDTO {
+  data: SubscriptionDTO[];
+  hasMore: boolean;
+}
+
+export interface InvoiceDTO {
+  id: string;
+  customer: string;
+  number: string;
+  status: Stripe.Invoice.Status;
+  billingReason: Stripe.Invoice.BillingReason | null;
+  amountDue: number;
+  amountPaid: number;
+  currency: string;
+  hostedInvoiceUrl: string | null;
+  invoicePdf: string | null;
+  createdAt: string;
+  dueDate: string | null;
+}
+
+export interface InvoiceListDTO {
+  data: InvoiceDTO[];
+  hasMore: boolean;
 }
 
 export interface ProductDTO {

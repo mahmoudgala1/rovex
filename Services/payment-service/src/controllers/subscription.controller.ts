@@ -60,25 +60,12 @@ export class SubscriptionController {
         { priceId, trialDays, metadata },
       );
 
-      const response: any = {
-        subscriptionId: subscription.id,
-        status: subscription.status,
-      };
-
-      if (subscription.status === "incomplete") {
-        const latestInvoice = subscription.latest_invoice as any;
-        const paymentIntent = latestInvoice?.payment_intent;
-
-        if (paymentIntent?.client_secret) {
-          response.clientSecret = paymentIntent.client_secret;
-          response.requiresAction = true;
-        }
-      }
+      const dto = this.subscriptionService.mapSubscriptionToDTO(subscription);
 
       this.logger.info(`Subscription created: ${subscription.id}`);
       return successResponse(
         res,
-        response,
+        dto,
         "Subscription created successfully",
         201,
       );
@@ -95,7 +82,9 @@ export class SubscriptionController {
       const subscription =
         await this.subscriptionService.getSubscription(subscriptionId);
 
-      return successResponse(res, subscription);
+      const dto = this.subscriptionService.mapSubscriptionToDTO(subscription);
+
+      return successResponse(res, dto);
     } catch (error) {
       this.logger.error("Error fetching subscription:", error);
       return errorResponse(res, (error as Error).message, 500);
@@ -115,13 +104,10 @@ export class SubscriptionController {
         subscriptionId,
         priceId,
       );
+      const dto = this.subscriptionService.mapSubscriptionToDTO(subscription);
 
       this.logger.info(`Subscription updated: ${subscriptionId}`);
-      return successResponse(
-        res,
-        subscription,
-        "Subscription updated successfully",
-      );
+      return successResponse(res, dto, "Subscription updated successfully");
     } catch (error) {
       this.logger.error("Error updating subscription:", error);
       return errorResponse(res, (error as Error).message, 500);
@@ -137,13 +123,10 @@ export class SubscriptionController {
         subscriptionId,
         immediately,
       );
+      const dto = this.subscriptionService.mapSubscriptionToDTO(subscription);
 
       this.logger.info(`Subscription cancelled: ${subscriptionId}`);
-      return successResponse(
-        res,
-        subscription,
-        "Subscription cancelled successfully",
-      );
+      return successResponse(res, dto, "Subscription cancelled successfully");
     } catch (error) {
       this.logger.error("Error cancelling subscription:", error);
       return errorResponse(res, (error as Error).message, 500);
@@ -157,12 +140,10 @@ export class SubscriptionController {
       const subscription =
         await this.subscriptionService.resumeSubscription(subscriptionId);
 
+      const dto = this.subscriptionService.mapSubscriptionToDTO(subscription);
+
       this.logger.info(`Subscription resumed: ${subscriptionId}`);
-      return successResponse(
-        res,
-        subscription,
-        "Subscription resumed successfully",
-      );
+      return successResponse(res, dto, "Subscription resumed successfully");
     } catch (error) {
       this.logger.error("Error resuming subscription:", error);
       return errorResponse(res, (error as Error).message, 500);
@@ -179,7 +160,10 @@ export class SubscriptionController {
         limit ? parseInt(limit as string) : 10,
       );
 
-      return successResponse(res, subscriptions);
+      const dto =
+        this.subscriptionService.mapSubscriptionListToDTO(subscriptions);
+
+      return successResponse(res, dto);
     } catch (error) {
       this.logger.error("Error listing subscriptions:", error);
       return errorResponse(res, (error as Error).message, 500);
@@ -215,6 +199,44 @@ export class SubscriptionController {
     }
   };
 
+  listInvoices = async (
+    req: AuthenticatedRequest,
+    res: Response,
+  ): Promise<void> => {
+    try {
+      const stripeCustomerId = (req as any).user.stripeCustomerId;
+      const { limit } = req.query;
+
+      const invoices = await this.subscriptionService.listInvoices(
+        stripeCustomerId,
+        limit ? parseInt(limit as string) : 10,
+      );
+      const dto = this.subscriptionService.mapInvoiceListToDTO(invoices);
+
+      successResponse(res, dto);
+    } catch (error) {
+      this.logger.error("Error listing invoices:", error);
+      errorResponse(res, (error as Error).message, 500);
+    }
+  };
+
+  getInvoice = async (
+    req: AuthenticatedRequest,
+    res: Response,
+  ): Promise<void> => {
+    try {
+      const invoiceId = String(req.params.invoiceId);
+
+      const invoice = await this.subscriptionService.getInvoice(invoiceId);
+      const dto = this.subscriptionService.mapInvoiceToDTO(invoice);
+
+      successResponse(res, dto);
+    } catch (error) {
+      this.logger.error("Error fetching invoice:", error);
+      errorResponse(res, (error as Error).message, 500);
+    }
+  };
+
   getUpcomingInvoice = async (req: AuthenticatedRequest, res: Response) => {
     try {
       const stripeCustomerId = (req as any).user.stripeCustomerId;
@@ -230,41 +252,6 @@ export class SubscriptionController {
         return;
       }
       return errorResponse(res, (error as Error).message, 500);
-    }
-  };
-
-  listInvoices = async (
-    req: AuthenticatedRequest,
-    res: Response,
-  ): Promise<void> => {
-    try {
-      const stripeCustomerId = (req as any).user.stripeCustomerId;
-      const { limit } = req.query;
-
-      const invoices = await this.subscriptionService.listInvoices(
-        stripeCustomerId,
-        limit ? parseInt(limit as string) : 10,
-      );
-
-      successResponse(res, invoices);
-    } catch (error) {
-      this.logger.error("Error listing invoices:", error);
-      errorResponse(res, (error as Error).message, 500);
-    }
-  };
-
-  getInvoice = async (
-    req: AuthenticatedRequest,
-    res: Response,
-  ): Promise<void> => {
-    try {
-      const invoiceId = String(req.params.invoiceId);
-
-      const invoice = await this.subscriptionService.getInvoice(invoiceId);
-      successResponse(res, invoice);
-    } catch (error) {
-      this.logger.error("Error fetching invoice:", error);
-      errorResponse(res, (error as Error).message, 500);
     }
   };
 }
