@@ -1,10 +1,12 @@
-import { Router } from 'express';
+import { Router } from "express";
 
-import * as orderController from '../controllers/order.controller';
-import { extractUserFromHeaders, restrictTo } from '../middlewares/auth.middleware';
+import * as orderController from "../controllers/order.controller";
+import {
+  extractUserFromHeaders,
+  restrictTo,
+} from "../middlewares/auth.middleware";
 const router = Router();
 router.use(extractUserFromHeaders);
-
 
 /**
  * @swagger
@@ -30,10 +32,60 @@ router.use(extractUserFromHeaders);
  *     responses:
  *       201:
  *         description: Order placed successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Order initialized. Proceed to payment."
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     order_id:
+ *                       type: string
+ *                       example: "ORDER_xxx"
+ *                     payment_data:
+ *                       type: object
+ *                       properties:
+ *                         paymentIntentId:
+ *                           type: string
+ *                           example: "pi_xxx"
+ *                         clientSecret:
+ *                           type: string
+ *                           example: "pi_xxx"
+ *                         status:
+ *                           type: string
+ *                           enum: [requires_payment_method, requires_confirmation, requires_action, processing, requires_capture, canceled, succeeded]
+ *                           example: "requires_payment_method"
+ *                     status:
+ *                       type: string
+ *                       enum: [PendingPayment, Confirmed, Paid, Failed, Cancelled]
+ *                       example: "PendingPayment"
  *       202:
  *         description: Order placed but payment gateway unavailable
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessResponse'
  *       400:
  *         description: Cart empty or stock/coupon error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  */
 
 /**
@@ -75,12 +127,12 @@ router.use(extractUserFromHeaders);
  *                     $ref: '#/components/schemas/Order'
  */
 
+router
+  .route("/")
+  .get(orderController.GetAllOrders)
+  .post(orderController.placeOrder); //tested and okay
 
-router.route('/')
-    .get(orderController.GetAllOrders)
-    .post(orderController.placeOrder); //tested and okay 
-
-    /**
+/**
  * @swagger
  * /orders/{order_id}:
  *   get:
@@ -110,7 +162,7 @@ router.route('/')
  *         description: Order not found
  */
 
-router.get('/:order_id', orderController.GetOrderDetails); //tested and okay
+router.get("/:order_id", orderController.GetOrderDetails); //tested and okay
 
 /**
  * @swagger
@@ -169,7 +221,7 @@ router.get('/:order_id', orderController.GetOrderDetails); //tested and okay
  *         description: Order not found or unauthorized
  */
 
-router.patch('/:order_id', orderController.updateOrder); //tested and okay
+router.patch("/:order_id", orderController.updateOrder); //tested and okay
 
 /**
  * @swagger
@@ -199,6 +251,10 @@ router.post(
   restrictTo("customer"),
   orderController.cancelOrder,
 ); //tested and okay
-router.post('/retry-payment',restrictTo("customer"), orderController.retryPayment); //will handle after payment service
+router.post(
+  "/retry-payment",
+  restrictTo("customer"),
+  orderController.retryPayment,
+); //will handle after payment service
 
 export default router;

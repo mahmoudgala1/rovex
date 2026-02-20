@@ -1,4 +1,4 @@
-import { PriceDTO } from "../mappers/stripe.mapper";
+import { PriceDTO, PriceListDTO } from "../mappers/stripe.mapper";
 import { stripe } from "../config/stripe.config";
 import { UpdatePriceDTO } from "../types/stripe.types";
 import Stripe from "stripe";
@@ -89,11 +89,19 @@ export class PriceService {
     price: Stripe.Price,
     options?: { isDefault?: boolean },
   ): PriceDTO {
+    let productId: string;
+    if (typeof price.product === "string") {
+      productId = price.product;
+    } else if (price.product && "id" in price.product) {
+      productId = price.product.id;
+    } else {
+      productId = "unknown";
+    }
     return {
       id: price.id,
-      productId: price.product as string,
+      productId,
       nickname: price.nickname,
-      amount: price.unit_amount,
+      amount: price.unit_amount! / 100,
       currency: price.currency,
       interval: price.recurring?.interval,
       intervalCount: price.recurring?.interval_count ?? null,
@@ -103,15 +111,18 @@ export class PriceService {
   }
 
   mapPriceListToDTO(
-    prices: Stripe.Price[],
-    options?: { defaultPriceId?: string },
-  ): PriceDTO[] {
-    return prices.map((p) =>
-      this.mapPriceToDTO(p, {
-        isDefault: options?.defaultPriceId
-          ? options.defaultPriceId === p.id
-          : false,
-      }),
-    );
+    apiList: Stripe.ApiList<Stripe.Price>,
+    options?: {
+      defaultPriceId?: string;
+    },
+  ): PriceListDTO {
+    return {
+      data: apiList.data.map((price) =>
+        this.mapPriceToDTO(price, {
+          isDefault: options?.defaultPriceId === price.id,
+        }),
+      ),
+      hasMore: apiList.has_more,
+    };
   }
 }

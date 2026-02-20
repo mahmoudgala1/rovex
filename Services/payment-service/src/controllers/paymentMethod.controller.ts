@@ -216,14 +216,14 @@ export class PaymentMethodController {
         await this.paymentMethodService.getDefaultPaymentMethod(
           stripeCustomerId,
         );
-      const dto = this.paymentMethodService.mapPaymentMethodToDTO(
-        paymentMethod!,
-      );
 
       if (!paymentMethod) {
         successResponse(res, null, "No default payment method found");
         return;
       }
+      const dto = this.paymentMethodService.mapPaymentMethodToDTO(
+        paymentMethod!,
+      );
 
       successResponse(res, dto);
     } catch (error) {

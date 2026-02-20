@@ -51,7 +51,9 @@ export class ProductController {
       const productId = String(req.params.productId);
 
       const product = await this.productService.getProduct(productId);
-      successResponse(res, product);
+      const dto = this.productService.mapProductToDTO(product);
+
+      successResponse(res, dto);
     } catch (error) {
       this.logger.error("Error fetching product:", error);
       errorResponse(res, (error as Error).message, 500);
@@ -111,8 +113,9 @@ export class ProductController {
         limit ? parseInt(limit as string) : 10,
         starting_after as string,
       );
+      const dto = this.productService.mapProductListToDTO(products);
 
-      successResponse(res, products);
+      successResponse(res, dto);
     } catch (error) {
       this.logger.error("Error listing products:", error);
       errorResponse(res, (error as Error).message, 500);
@@ -149,7 +152,12 @@ export class ProductController {
       const productId = String(req.params.productId);
 
       const result = await this.productService.getProductWithPrices(productId);
-      successResponse(res, result);
+      const dto = this.productService.mapProductWithPricesToDTO(
+        result.product,
+        result.prices,
+      );
+
+      successResponse(res, dto);
     } catch (error) {
       this.logger.error("Error fetching product with prices:", error);
       errorResponse(res, (error as Error).message, 500);

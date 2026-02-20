@@ -34,6 +34,54 @@ export const swaggerSpec: Options = {
           description: 'Enter your JWT access token (without "Bearer" prefix)',
         },
       },
+      schemas: {
+        SuccessResponse: {
+          type: "object",
+          properties: {
+            success: {
+              type: "boolean",
+              example: true,
+            },
+            message: {
+              type: "string",
+              example: "Success",
+            },
+            data: {
+              type: "object",
+            },
+          },
+        },
+        ErrorResponse: {
+          type: "object",
+          properties: {
+            success: {
+              type: "boolean",
+              example: false,
+            },
+            error: {
+              type: "string",
+              example: "Error message",
+            },
+          },
+        },
+        Location: {
+          type: "object",
+          properties: {
+            lat: {
+              type: "number",
+              example: 30.0444,
+            },
+            lng: {
+              type: "number",
+              example: 31.2357,
+            },
+            address: {
+              type: "string",
+              example: "123 Street, Cairo",
+            },
+          },
+        },
+      },
     },
   },
   apis: isDevelopment
