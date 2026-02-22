@@ -8,6 +8,8 @@ import routes from "./routes";
 import { errorMiddleware } from "./middleware/error.middleware";
 import { connectDatabase } from "./config/database";
 import { startGrpcServer } from "./grpc/server";
+import { rawBodyMiddleware } from "./middleware/raw-body.middleware";
+import rabbitmq from "./config/rabbitmq";
 
 const swaggerOptions = {
   customCss: `
@@ -77,7 +79,7 @@ class Server {
 
   private configureMiddleware(): void {
     this.app.use(cors());
-    this.app.use(express.json({ limit: "10mb" }));
+    this.app.use(rawBodyMiddleware);
     this.app.use(express.urlencoded({ extended: true, limit: "10mb" }));
     this.app.use(express.static(path.join(__dirname, "public")));
   }
@@ -121,6 +123,7 @@ class Server {
   public async start(): Promise<void> {
     try {
       await connectDatabase();
+      await rabbitmq.connect();
       startGrpcServer();
 
       const PORT = env.PORT || 8003;

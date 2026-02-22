@@ -41,11 +41,6 @@ const webhookController = new WebhookController();
  *       400:
  *         description: Invalid webhook signature or payload
  */
-router.post(
-  "/stripe",
-  express.raw({ type: "application/json" }),
-  webhookController.handleWebhook,
-);
+router.post("/stripe", webhookController.handleWebhook);
 
 export default router;
-
