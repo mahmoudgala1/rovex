@@ -396,6 +396,7 @@ class AuthController {
       }
 
       user.password_hash = new_password;
+      user.password_must_change = false;
       await user.save();
 
       await AuditLog.create({
@@ -525,6 +526,7 @@ class AuthController {
       }
 
       user.password_hash = new_password;
+      user.password_must_change = false;
       await user.save();
 
       await resetRecord.deleteOne();
