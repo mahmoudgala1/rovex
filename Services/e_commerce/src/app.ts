@@ -69,8 +69,8 @@ const swaggerOptions = {
 };
 
 const app: Application = express();
-app.use(express.json());
 app.use(cors());
+app.use(express.json());
 app.use(LoggerMiddleware);
 app.use(express.static(path.join(__dirname, "public")));
 

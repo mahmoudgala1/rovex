@@ -8,6 +8,7 @@ import { logger } from "../utils/logger";
 import { env } from "../config/environment";
 import { getRolePermissions } from "../config/permissions";
 import RabbitMQPublisher from "../services/rabbitmq.service";
+import { paginationMeta } from "../utils/helpers";
 
 export async function getCompanyUsers(
   req: Request,
@@ -51,12 +52,7 @@ export async function getCompanyUsers(
       res,
       {
         users,
-        pagination: {
-          total,
-          page: Number(page),
-          limit: Number(limit),
-          pages: Math.ceil(total / Number(limit)),
-        },
+        pagination: paginationMeta(total, Number(page), Number(limit)),
       },
       "Users retrieved successfully"
     );

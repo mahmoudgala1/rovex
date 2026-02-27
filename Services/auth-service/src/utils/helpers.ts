@@ -19,7 +19,7 @@ export function paginationMeta(total: number, page: number, limit: number) {
     total,
     page,
     limit,
-    pages: Math.ceil(total / limit),
+    total_pages: Math.ceil(total / limit),
     hasNext: page * limit < total,
     hasPrev: page > 1,
   };

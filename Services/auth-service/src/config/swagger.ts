@@ -281,6 +281,14 @@ Complete authentication and user management API for ROVEX fleet management platf
               type: "integer",
               example: 10,
             },
+            has_next: {
+              type: "boolean",
+              example: true,
+            },
+            has_prev: {
+              type: "boolean",
+              example: false,
+            },
           },
         },
         CompanyUserDetailed: {
