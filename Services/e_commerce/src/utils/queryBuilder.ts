@@ -7,6 +7,7 @@ export class QueryBuilder<T> {
 
     public modelQuery: Query<T[], T>;
     public queryString: IQueryString;
+    private totalCount: number = 0;
 
   constructor(modelQuery: Query<T[], T>, queryString: IQueryString) {
     this.modelQuery = modelQuery;
@@ -54,11 +55,33 @@ export class QueryBuilder<T> {
 
   paginate() {
     const page = Number(this.queryString.page) || 1;
-    const limit = Number(this.queryString.limit) || 100;
+    const limit = Number(this.queryString.limit) || 10; 
     const skip = (page - 1) * limit;
 
     this.modelQuery = this.modelQuery.skip(skip).limit(limit);
 
     return this;
+  }
+
+  async countTotal() {
+    const totalQueries = this.modelQuery.model.countDocuments(this.modelQuery.getFilter());
+    this.totalCount = await totalQueries;
+    return this;
+  }
+
+  
+  getPaginationMetadata() {
+    const page = Number(this.queryString.page) || 1;
+    const limit = Number(this.queryString.limit) || 10;
+    const total_pages = Math.ceil(this.totalCount / limit);
+
+    return {
+      total: this.totalCount,
+      page,
+      limit,
+      total_pages,
+      has_next: page < total_pages,
+      has_prev: page > 1,
+    };
   }
 }

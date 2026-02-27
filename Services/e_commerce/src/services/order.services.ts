@@ -340,8 +340,16 @@ export const getAllOrdersService = async (
     .sort()
     .limitFields()
     .paginate();
+     await features.countTotal();
 
-  return await await features.modelQuery;
+    
+  const allOrders = await features.modelQuery;
+   const pagination = features.getPaginationMetadata();
+    
+   return {
+    data: allOrders,
+    pagination,
+  };
 };
 
 export const updateOrderService = async (

@@ -130,7 +130,7 @@ export const GetAllOrders = asyncHandler(
     const user_id = (req as any).user.id;
     const company = (req as any).user.company;
     const role = (req as any).user.role;
-    const orders = await OrderService.getAllOrdersService(
+    const {data, pagination} = await OrderService.getAllOrdersService(
       user_id,
       company,
       role,
@@ -139,8 +139,8 @@ export const GetAllOrders = asyncHandler(
 
     res.status(200).json({
       success: true,
-      results: orders.length,
-      data: orders,
+      results: data.length,
+      data: {data:data,pagination:pagination},
     });
   },
 );

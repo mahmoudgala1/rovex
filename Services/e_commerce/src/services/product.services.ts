@@ -39,10 +39,16 @@ export const getAllProductsService = async(queryString:IQueryString,company:stri
             .sort()
             .limitFields()
             .paginate();
+      
+            await features.countTotal();
    
     const allProducts = await features.modelQuery;
+    const pagination = features.getPaginationMetadata();
     
-    return allProducts
+   return {
+    data: allProducts,
+    pagination,
+  };
 
 }
 // export const getProductByIdService = async(id:string) =>
