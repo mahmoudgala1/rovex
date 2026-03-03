@@ -70,11 +70,11 @@ export const updateCoupon = asyncHandler(async (req: Request, res, next) => {
 });
 
 export const getAllCoupons = asyncHandler(async (req: Request, res, next) => {
+  const queryString = req.query
 
-  const coupons = await getAllCouponsService((req as any).user.company); //logged admin id
+  const coupons = await getAllCouponsService((req as any).user.company, queryString); //logged admin id
   res.status(200).json({
     success: true,
-
     message: "Coupons retrieved successfully",
     data: coupons,
   });

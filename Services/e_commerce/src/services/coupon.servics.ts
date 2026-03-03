@@ -1,10 +1,11 @@
 import coupon_model from "../models/coupon.models";
 import {UpdateCouponInput} from "../types/cart.types";
 import { AppError } from "../utils/AppError";
-
+import { QueryBuilder } from "../utils/queryBuilder";
 import CartModel from "../models/cart.model";  
 import { validateCoupon } from "../helper/validate_coupon.helper";  
 import { calculateCartStats } from "../helper/calculate.cart.price.helper";
+import { IQueryString } from "../types";
 
 
 export const createCouponService = async(
@@ -45,10 +46,30 @@ export const updateCouponService = async(
     }       
 
 export const getAllCouponsService = async(
-     company:string
+     company:string,
+     queryString:IQueryString
     ) =>{
-        const coupons = await coupon_model.find({company, is_deleted:false});
-        return coupons;
+
+         const queryObj = { ...queryString };
+        
+              if (queryObj.title && typeof queryObj.title === 'string') {
+                  queryObj.title = { $regex: queryObj.title, $options: 'i' };
+              }
+              const features = new QueryBuilder(coupon_model.find({ is_deleted: false, company: company }), queryObj)
+                    .filter()
+                    .sort()
+                    .limitFields()
+                    .paginate();
+              
+                    await features.countTotal();
+           
+            const allCoupons = await features.modelQuery;
+            const pagination = features.getPaginationMetadata();
+            
+           return {
+            data: allCoupons,
+            pagination,
+          };
     }           
 
 
