@@ -27,9 +27,6 @@ COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/src/public ./dist/public
 COPY --from=builder /app/src/protos ./dist/protos
 
-COPY .env .env
-
-
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S nodejs -u 1001
 
