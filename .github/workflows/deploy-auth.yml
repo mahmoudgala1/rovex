@@ -35,5 +35,5 @@ jobs:
                   key: ${{ secrets.SSH_PRIVATE_KEY }}
                   script: |
                       cd /home/ubuntu/rovex-deployment/production
-                      docker-compose pull auth-service
-                      docker-compose up -d --no-deps --build auth-service
+                      docker compose pull auth-service
+                      docker compose up -d --no-deps --build auth-service
