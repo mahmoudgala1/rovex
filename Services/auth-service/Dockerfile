@@ -40,4 +40,3 @@ RUN chown -R nodejs:nodejs /app
 USER nodejs
 
 CMD ["node", "dist/server.js"]
-
