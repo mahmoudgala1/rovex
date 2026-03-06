@@ -4,7 +4,10 @@ import path from "path";
 import { logger } from "../../utils/logger";
 
 const isDevelopment = process.env.NODE_ENV !== "production";
-const PROTO_PATH = path.join(__dirname, "../../protos/payment.proto");
+const PROTO_PATH = path.join(
+  process.cwd(),
+  `${isDevelopment ? "src" : "dist"}/protos/payment.proto`,
+);
 // const PAYMENT_SERVICE_URL = process.env.PAYMENT_SERVICE_URL || "localhost:50052";
 const PAYMENT_SERVICE_URL = isDevelopment
   ? "localhost:50052"

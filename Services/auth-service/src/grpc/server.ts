@@ -4,7 +4,11 @@ import path from "path";
 import { AuthGrpcService } from "./services/auth.service";
 import { logger } from "../utils/logger";
 
-const PROTO_PATH = path.join(__dirname, "../protos/auth.proto");
+const isDevelopment = process.env.NODE_ENV !== "production";
+const PROTO_PATH = path.join(
+  process.cwd(),
+  `${isDevelopment ? "src" : "dist"}/protos/auth.proto`,
+);
 const GRPC_PORT = process.env.GRPC_PORT || "50051";
 
 export const startGrpcServer = (): void => {
