@@ -1,11 +1,11 @@
-name: Deploy Auth Service
+name: Deploy Ecommerce Service
 
 on:
     push:
         branches:
             - main
         paths:
-            - "Services/auth-service/**"
+            - "Services/e_commerce/**"
 
 jobs:
     build-and-deploy:
@@ -23,16 +23,16 @@ jobs:
             - name: Set up Docker Buildx
               uses: docker/setup-buildx-action@v3
 
-            - name: Build and Push Auth Image
+            - name: Build and Push Ecommerce Image
               uses: docker/build-push-action@v6
               with:
-                  context: ./Services/auth-service
+                  context: ./Services/e_commerce
                   push: true
-                  tags: ${{ secrets.DOCKERHUB_USERNAME }}/rovex-auth-service:latest
-                  cache-from: type=gha,scope=auth-service
-                  cache-to: type=gha,mode=max,scope=auth-service
+                  tags: ${{ secrets.DOCKERHUB_USERNAME }}/rovex-ecommerce-service:latest
+                  cache-from: type=gha,scope=ecommerce-service
+                  cache-to: type=gha,mode=max,scope=ecommerce-service
 
-            - name: Deploy Auth to EC2
+            - name: Deploy Ecommerce to EC2
               uses: appleboy/ssh-action@master
               with:
                   host: ${{ secrets.EC2_HOST }}
@@ -40,5 +40,5 @@ jobs:
                   key: ${{ secrets.SSH_PRIVATE_KEY }}
                   script: |
                       cd /home/ubuntu/rovex-deployment/production
-                      docker compose pull auth-service
-                      docker compose up -d --no-deps --build auth-service
+                      docker compose pull ecommerce-service
+                      docker compose up -d --no-deps --build ecommerce-service
