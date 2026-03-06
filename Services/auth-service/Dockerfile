@@ -8,13 +8,13 @@ WORKDIR /app
 COPY package*.json ./
 COPY tsconfig.json ./
 
-RUN npm ci
+RUN npm ci --prefer-offline --no-audit --no-fund
 
 COPY . .
 
 RUN npm run build
 
-RUN npm prune --production && npm cache clean --force
+RUN npm prune --production --no-audit --no-fund && npm cache clean --force
 
 # ==========================================
 # 2. Production Stage
