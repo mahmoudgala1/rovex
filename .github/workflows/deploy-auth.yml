@@ -26,7 +26,7 @@ jobs:
             - name: Build and Push Auth Image
               uses: docker/build-push-action@v6
               with:
-                  context: ./services/auth-service
+                  context: ./Services/auth-service
                   push: true
                   tags: ${{ secrets.DOCKERHUB_USERNAME }}/rovex-auth:latest
                   cache-from: type=gha,scope=auth-service
