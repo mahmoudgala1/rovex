@@ -11,6 +11,7 @@ import swaggerUi from "swagger-ui-express";
 import { swaggerSpec } from "./swagger/swagger";
 import cors from "cors";
 import path from "path";
+import fs from "fs";
 
 const swaggerOptions = {
   customCss: `
@@ -68,6 +69,15 @@ const swaggerOptions = {
   },
 };
 
+const isDevelopment = process.env.NODE_ENV !== "production";
+let swaggerDocument: any;
+const swaggerPath = path.join(process.cwd(), "swagger.json");
+if (fs.existsSync(swaggerPath)) {
+  swaggerDocument = JSON.parse(fs.readFileSync(swaggerPath, "utf8"));
+} else {
+  console.warn('⚠️ swagger.json not found! Run "npm run build:swagger" first.');
+}
+
 const app: Application = express();
 app.use(cors());
 app.use(express.json());
@@ -75,7 +85,11 @@ app.use(LoggerMiddleware);
 app.use(express.static(path.join(__dirname, "public")));
 
 const specs = swaggerJsDoc(swaggerSpec);
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs, swaggerOptions));
+app.use(
+  "/api-docs",
+  swaggerUi.serve,
+  swaggerUi.setup(isDevelopment ? specs : swaggerDocument, swaggerOptions),
+);
 
 app.get("/health", (req, res) => {
   res.status(200).json({
