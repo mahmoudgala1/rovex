@@ -1,5 +1,4 @@
 import { Options } from "swagger-jsdoc";
-import path from "path";
 
 const isDevelopment = process.env.NODE_ENV !== "production";
 
@@ -91,8 +90,8 @@ export const swaggerSpec: Options = {
         "./src/controllers/*.ts",
       ]
     : [
-        "./dist/swagger/swagger.schemas.js",
-        "./dist/routes/*.js",
-        "./dist/controllers/*.js",
+        "./dist/*.js",
+        "./dist/*.js",
+        "./dist/*.js",
       ],
 };
