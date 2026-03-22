@@ -4,6 +4,7 @@ import { AppError } from "../utils/AppError";
 
 export const createOrderIssue = async (
   userId: string,
+  companyId: string,
   userName: string,
   orderId: string,
   rating: number,
@@ -22,6 +23,7 @@ export const createOrderIssue = async (
 
   const issue = await OrderIssue.create({
     userId,
+    companyId,
     userName,
     orderId,
     rating,
