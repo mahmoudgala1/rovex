@@ -1,87 +1,1886 @@
 {
-  "definition": {
-    "openapi": "3.0.0",
-    "info": {
-      "title": "E-commerce API",
-      "version": "1.0.0",
-      "description": "E-commerce API documentation"
+  "openapi": "3.0.0",
+  "info": {
+    "title": "E-commerce API",
+    "version": "1.0.0",
+    "description": "E-commerce API documentation"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8001/api/v1",
+      "description": "Local development"
     },
-    "servers": [
-      {
-        "url": "http://localhost:8001/api/v1",
-        "description": "Local development"
-      },
-      {
-        "url": "https://api.rovex.com/ecommerce/api/v1",
-        "description": "Staging development"
-      },
-      {
-        "url": "https://rovex.click/ecommerce/api/v1",
-        "description": "Production environment"
+    {
+      "url": "https://api.rovex.com/ecommerce/api/v1",
+      "description": "Staging development"
+    },
+    {
+      "url": "https://rovex.click/ecommerce/api/v1",
+      "description": "Production environment"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Enter your JWT access token (without \"Bearer\" prefix)"
       }
-    ],
-    "components": {
-      "securitySchemes": {
-        "bearerAuth": {
-          "type": "http",
-          "scheme": "bearer",
-          "bearerFormat": "JWT",
-          "description": "Enter your JWT access token (without \"Bearer\" prefix)"
+    },
+    "schemas": {
+      "SuccessResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "message": {
+            "type": "string",
+            "example": "Success"
+          },
+          "data": {
+            "type": "object"
+          }
         }
       },
-      "schemas": {
-        "SuccessResponse": {
-          "type": "object",
-          "properties": {
-            "success": {
-              "type": "boolean",
-              "example": true
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": false
+          },
+          "error": {
+            "type": "string",
+            "example": "Error message"
+          }
+        }
+      },
+      "Location": {
+        "type": "object",
+        "properties": {
+          "lat": {
+            "type": "number",
+            "example": 30.0444
+          },
+          "lng": {
+            "type": "number",
+            "example": 31.2357
+          },
+          "address": {
+            "type": "string",
+            "example": "123 Street, Cairo"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "Point"
+            ],
+            "default": "Point",
+            "example": "Point"
+          },
+          "coordinates": {
+            "type": "array",
+            "description": "Format must be [Longitude, Latitude]",
+            "items": {
+              "type": "number"
             },
-            "message": {
-              "type": "string",
-              "example": "Success"
+            "minItems": 2,
+            "maxItems": 2,
+            "example": [
+              31.2357,
+              30.0444
+            ]
+          }
+        },
+        "required": [
+          "type",
+          "coordinates"
+        ]
+      },
+      "Product": {
+        "type": "object",
+        "required": [
+          "title",
+          "price",
+          "stock",
+          "description",
+          "images_URL"
+        ],
+        "properties": {
+          "_id": {
+            "type": "string",
+            "example": "64b5f8c12d4a2b1234567890"
+          },
+          "title": {
+            "type": "string",
+            "example": "Sony WH-1000XM5"
+          },
+          "price": {
+            "type": "number",
+            "example": 350
+          },
+          "description": {
+            "type": "string",
+            "example": "Wireless noise canceling headphones"
+          },
+          "stock": {
+            "type": "number",
+            "example": 20
+          },
+          "discount": {
+            "type": "number",
+            "description": "Percentage discount on the product",
+            "example": 10
+          },
+          "images_URL": {
+            "type": "array",
+            "items": {
+              "type": "string"
             },
-            "data": {
-              "type": "object"
+            "example": [
+              "https://res.cloudinary.com/demo/image/upload/v1/product1.jpg"
+            ]
+          },
+          "is_active": {
+            "type": "boolean",
+            "example": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "CreateProductInput": {
+        "type": "object",
+        "required": [
+          "title",
+          "price",
+          "stock",
+          "description"
+        ],
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "price": {
+            "type": "number"
+          },
+          "description": {
+            "type": "string"
+          },
+          "stock": {
+            "type": "number"
+          },
+          "discount": {
+            "type": "number"
+          }
+        }
+      },
+      "UpdateProductInput": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "price": {
+            "type": "number"
+          },
+          "description": {
+            "type": "string"
+          },
+          "stock": {
+            "type": "number"
+          },
+          "is_active": {
+            "type": "boolean"
+          }
+        }
+      },
+      "APIResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "nullable": true
+          }
+        }
+      },
+      "WishlistItem": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "$ref": "#/components/schemas/Product"
+          }
+        }
+      },
+      "Wishlist": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string",
+            "example": "69653abf186a01d3748e7d83"
+          },
+          "user": {
+            "type": "string",
+            "example": "64b5f8c12345678901230000"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WishlistItem"
+            }
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "WishlistIDs": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "69655405465cae4f71883653"
+        }
+      },
+      "AddToCartBody": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "string",
+            "description": "ID of the product to add",
+            "example": "6965444f8546e5e0adc05995"
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "Quantity of the product to add (optional, defaults to 1)",
+            "example": 3
+          }
+        },
+        "required": [
+          "product"
+        ]
+      },
+      "CartItem": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string"
+          },
+          "product": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "integer"
+          },
+          "price": {
+            "type": "number",
+            "format": "float"
+          }
+        }
+      },
+      "Cart": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string"
+          },
+          "cartItems": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CartItem"
+            }
+          },
+          "totalCartPrice": {
+            "type": "number",
+            "format": "float"
+          },
+          "user": {
+            "type": "string"
+          },
+          "coupon_id": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "__v": {
+            "type": "integer"
+          }
+        }
+      },
+      "Coupon": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string",
+            "example": "SAVE20"
+          },
+          "discount": {
+            "type": "number",
+            "example": 20
+          },
+          "discount_type": {
+            "type": "string",
+            "enum": [
+              "percentage",
+              "fixed"
+            ]
+          },
+          "expiration_date": {
+            "type": "string",
+            "format": "date"
+          },
+          "user": {
+            "type": "string",
+            "example": "Users12356"
+          },
+          "company": {
+            "type": "string",
+            "example": "companyX120"
+          },
+          "max_usage": {
+            "type": "number",
+            "example": 100
+          },
+          "min_purchase_amount": {
+            "type": "number",
+            "example": 500
+          },
+          "is_deleted": {
+            "type": "boolean",
+            "example": false
+          },
+          "used_count": {
+            "type": "number",
+            "example": 13
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "OrderItem": {
+        "type": "object",
+        "properties": {
+          "product_id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "images_URL": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "price": {
+            "type": "number"
+          },
+          "quantity": {
+            "type": "number"
+          }
+        }
+      },
+      "Order": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string",
+            "example": "ORDER12345"
+          },
+          "user": {
+            "type": "string"
+          },
+          "company": {
+            "type": "string"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OrderItem"
+            }
+          },
+          "shipping_address": {
+            "$ref": "#/components/schemas/ShippingAddress"
+          },
+          "total_price": {
+            "type": "number"
+          },
+          "discount_amount": {
+            "type": "number"
+          },
+          "final_price": {
+            "type": "number"
+          },
+          "coupon": {
+            "type": "string",
+            "nullable": true
+          },
+          "payment_method": {
+            "type": "string",
+            "enum": [
+              "Cash",
+              "Card"
+            ]
+          },
+          "payment_status": {
+            "type": "string",
+            "enum": [
+              "Pending",
+              "Paid",
+              "Failed",
+              "Refund_Pending",
+              "Refunded"
+            ]
+          },
+          "order_status": {
+            "type": "string",
+            "enum": [
+              "Pending_Payment",
+              "Processing",
+              "Shipped",
+              "Delivered",
+              "Cancelled",
+              "RETURNED"
+            ]
+          },
+          "payment_id": {
+            "type": "string"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/cart": {
+      "get": {
+        "summary": "Get the authenticated user's cart",
+        "tags": [
+          "Cart"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Cart retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/APIResponse"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/Cart"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "Cart found but is empty",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/APIResponse"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "description": "Empty array because no cart exists",
+                          "example": []
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Clear all products from the authenticated user's cart",
+        "tags": [
+          "Cart"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Cart cleared successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/APIResponse"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/Cart"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/cart/additem": {
+      "post": {
+        "summary": "Add a product to the authenticated user's cart",
+        "tags": [
+          "Cart"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddToCartBody"
+              }
             }
           }
         },
-        "ErrorResponse": {
-          "type": "object",
-          "properties": {
-            "success": {
-              "type": "boolean",
-              "example": false
+        "responses": {
+          "200": {
+            "description": "Product added to cart successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/APIResponse"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/Cart"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request (invalid product ID or quantity)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized (user not authenticated)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/cart/deleteitem/{productId}": {
+      "delete": {
+        "summary": "Delete a specific product from the authenticated user's cart",
+        "tags": [
+          "Cart"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "productId",
+            "required": true,
+            "schema": {
+              "type": "string"
             },
-            "error": {
-              "type": "string",
-              "example": "Error message"
+            "description": "ID of the product to remove from the cart"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Product removed successfully from cart",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/APIResponse"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/Cart"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/coupons": {
+      "get": {
+        "summary": "Get all coupons for the company",
+        "tags": [
+          "Coupons"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Coupons retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Coupon"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a new coupon",
+        "tags": [
+          "Coupons"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "code",
+                  "discount",
+                  "expiration_date",
+                  "max_usage",
+                  "min_purchase_amount"
+                ],
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "example": "SAVE20"
+                  },
+                  "discount": {
+                    "type": "number",
+                    "example": 20
+                  },
+                  "expiration_date": {
+                    "type": "string",
+                    "format": "date",
+                    "example": "2026-12-31"
+                  },
+                  "max_usage": {
+                    "type": "number",
+                    "example": 100
+                  },
+                  "min_purchase_amount": {
+                    "type": "number",
+                    "example": 500
+                  }
+                }
+              }
             }
           }
         },
-        "Location": {
-          "type": "object",
-          "properties": {
-            "lat": {
-              "type": "number",
-              "example": 30.0444
+        "responses": {
+          "200": {
+            "description": "Coupon created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Coupon"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/coupons/apply": {
+      "post": {
+        "summary": "Apply coupon to user's cart",
+        "tags": [
+          "Coupons"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "coupon_code"
+                ],
+                "properties": {
+                  "coupon_code": {
+                    "type": "string",
+                    "example": "SAVE20"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Coupon applied successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "cart": {
+                          "$ref": "#/components/schemas/Cart"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/coupons/remove": {
+      "post": {
+        "summary": "Remove coupon from user's cart",
+        "tags": [
+          "Coupons"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Coupon removed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "cart": {
+                          "$ref": "#/components/schemas/Cart"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/coupons/{code}": {
+      "patch": {
+        "summary": "Update coupon (limited fields only)",
+        "tags": [
+          "Coupons"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "code",
+            "required": true,
+            "schema": {
+              "type": "string"
             },
-            "lng": {
-              "type": "number",
-              "example": 31.2357
+            "example": "SAVE20"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "expiration_date": {
+                    "type": "string",
+                    "format": "date"
+                  },
+                  "max_usage": {
+                    "type": "number"
+                  },
+                  "min_purchase_amount": {
+                    "type": "number"
+                  },
+                  "is_deleted": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Coupon updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Coupon"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid updat   e fields"
+          }
+        }
+      }
+    },
+    "/orders": {
+      "post": {
+        "summary": "Place a new order",
+        "tags": [
+          "Orders"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "location",
+                  "payment_method"
+                ],
+                "properties": {
+                  "location": {
+                    "$ref": "#/components/schemas/Location"
+                  },
+                  "payment_method": {
+                    "type": "string",
+                    "enum": [
+                      "Cash",
+                      "Card"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Order placed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Order initialized. Proceed to payment."
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "order_id": {
+                          "type": "string",
+                          "example": "ORDER_xxx"
+                        },
+                        "payment_data": {
+                          "type": "object",
+                          "properties": {
+                            "paymentIntentId": {
+                              "type": "string",
+                              "example": "pi_xxx"
+                            },
+                            "clientSecret": {
+                              "type": "string",
+                              "example": "pi_xxx"
+                            },
+                            "status": {
+                              "type": "string",
+                              "enum": [
+                                "requires_payment_method",
+                                "requires_confirmation",
+                                "requires_action",
+                                "processing",
+                                "requires_capture",
+                                "canceled",
+                                "succeeded"
+                              ],
+                              "example": "requires_payment_method"
+                            }
+                          }
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "PendingPayment",
+                            "Confirmed",
+                            "Paid",
+                            "Failed",
+                            "Cancelled"
+                          ],
+                          "example": "PendingPayment"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Order placed but payment gateway unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Cart empty or stock/coupon error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "Get all orders (filtered & paginated)",
+        "tags": [
+          "Orders"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "sort",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Orders retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "results": {
+                      "type": "number"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Order"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/orders/{order_id}": {
+      "get": {
+        "summary": "Get order details (role-based access)",
+        "tags": [
+          "Orders"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "order_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Order retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ApiSuccess"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/Order"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Order not found"
+          }
+        }
+      },
+      "patch": {
+        "summary": "Update order (role-based permissions)",
+        "description": "Customer:\n- location only\n\nManagement / Fleet:\n- location\n- order_status\n- payment_status\n\nLocation update allowed only in:\n- Processing\n- Pending_Payment\n",
+        "tags": [
+          "Orders"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "order_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "location": {
+                    "$ref": "#/components/schemas/Location"
+                  },
+                  "order_status": {
+                    "type": "string"
+                  },
+                  "payment_status": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Order updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/APIResponse"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/Order"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid update"
+          },
+          "404": {
+            "description": "Order not found or unauthorized"
+          }
+        }
+      }
+    },
+    "/orders/cancel/{order_id}": {
+      "post": {
+        "summary": "Cancel an order and restore stock",
+        "tags": [
+          "Orders"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "order_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Order cancelled successfully"
+          },
+          "400": {
+            "description": "Order cannot be cancelled"
+          },
+          "404": {
+            "description": "Order not found"
+          }
+        }
+      }
+    },
+    "/products": {
+      "get": {
+        "summary": "Get all products for a specific company (you can filter by any property using the same query structure propery[gte]=number, propery[lte]=number, etc.  property=string )",
+        "tags": [
+          "Products"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "header",
+            "name": "company-id",
+            "required": true,
+            "schema": {
+              "type": "string"
             },
-            "address": {
-              "type": "string",
-              "example": "123 Street, Cairo"
+            "description": "Company ID used to fetch company-specific products"
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "type": "number"
+            },
+            "description": "Page number for pagination"
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "number"
+            },
+            "description": "Number of products per page"
+          },
+          {
+            "in": "query",
+            "name": "title",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Search by product title"
+          },
+          {
+            "in": "query",
+            "name": "price[gte]",
+            "schema": {
+              "type": "number"
+            },
+            "description": "Minimum product price"
+          },
+          {
+            "in": "query",
+            "name": "price[lte]",
+            "schema": {
+              "type": "number"
+            },
+            "description": "Maximum product price (use the same query structure for any property)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "All products retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/APIResponse"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Product"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/products/{id}": {
+      "get": {
+        "summary": "Get product by ID for a specific company",
+        "tags": [
+          "Products"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "header",
+            "name": "company-id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Company ID used to validate product ownership"
+          },
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Product ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Product retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/APIResponse"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/Product"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/products/create": {
+      "post": {
+        "summary": "Create new product",
+        "tags": [
+          "Products"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/CreateProductInput"
+                  }
+                ],
+                "properties": {
+                  "images": {
+                    "type": "array",
+                    "description": "Product images (multiple files allowed)",
+                    "items": {
+                      "type": "string",
+                      "format": "binary"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Product created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/APIResponse"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/Product"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/products/update/{id}": {
+      "patch": {
+        "summary": "Update product or soft delete it",
+        "tags": [
+          "Products"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Product ID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProductInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Product updated or deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/APIResponse"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "oneOf": [
+                            {
+                              "$ref": "#/components/schemas/Product"
+                            },
+                            {
+                              "type": "string",
+                              "example": ""
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wishlist": {
+      "get": {
+        "summary": "Get the authenticated user's wishlist",
+        "tags": [
+          "Wishlist"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Wishlist retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/APIResponse"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/Wishlist"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Add product to user wishlist",
+        "tags": [
+          "Wishlist"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "productId"
+                ],
+                "properties": {
+                  "productId": {
+                    "type": "string",
+                    "description": "Product ID to add to wishlist",
+                    "example": "69655405465cae4f71883653"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Item added to wishlist successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/APIResponse"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/Wishlist"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Clear all items from the authenticated user's wishlist",
+        "tags": [
+          "Wishlist"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Wishlist cleared successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/APIResponse"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/Wishlist"
+                        }
+                      }
+                    }
+                  ]
+                },
+                "examples": {
+                  "cleared": {
+                    "summary": "Example response when wishlist is empty",
+                    "value": {
+                      "success": true,
+                      "message": "Wishlist cleared successfully",
+                      "data": {
+                        "_id": "69653abf186a01d3748e7d83",
+                        "user": "64b5f8c12345678901230000",
+                        "items": [],
+                        "createdAt": "2026-01-13T01:19:49.687Z",
+                        "updatedAt": "2026-01-13T02:25:48.287Z",
+                        "__v": 0
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wishlist/ids": {
+      "get": {
+        "summary": "Get only product IDs in the authenticated user's wishlist",
+        "tags": [
+          "Wishlist"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Wishlist IDs retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/APIResponse"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/WishlistIDs"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wishlist/remove": {
+      "delete": {
+        "summary": "Remove product from user wishlist",
+        "tags": [
+          "Wishlist"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "productId"
+                ],
+                "properties": {
+                  "productId": {
+                    "type": "string",
+                    "description": "Product ID to remove from wishlist",
+                    "example": "69655405465cae4f71883653"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Item removed from wishlist successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/APIResponse"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/Wishlist"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
             }
           }
         }
       }
     }
   },
-  "apis": [
-    "./src/swagger/swagger.schemas.ts",
-    "./src/routes/*.ts",
-    "./src/controllers/*.ts"
-  ]
+  "tags": []
 }

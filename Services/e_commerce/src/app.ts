@@ -88,7 +88,7 @@ const specs = swaggerJsDoc(swaggerSpec);
 app.use(
   "/api-docs",
   swaggerUi.serve,
-  swaggerUi.setup( swaggerDocument, swaggerOptions),
+  swaggerUi.setup(isDevelopment ? specs : swaggerDocument, swaggerOptions),
 );
 
 app.get("/health", (req, res) => {
