@@ -15,8 +15,9 @@ export const getReviews = async (
       page = "1",
       limit = "20",
     } = req.query as any;
+    const companyId = (req as any).user!.company;
     res.json(
-      await svc.adminGetReviews({
+      await svc.adminGetReviews(companyId, {
         rating: rating !== undefined ? +rating : undefined,
         is_visible:
           is_visible !== undefined ? is_visible === "true" : undefined,
@@ -32,12 +33,13 @@ export const getReviews = async (
 };
 
 export const getReviewStats = async (
-  _req: Request,
+  req: Request,
   res: Response,
   next: NextFunction,
 ) => {
   try {
-    res.json(await svc.adminGetReviewStats());
+    const companyId = (req as any).user!.company;
+    res.json(await svc.adminGetReviewStats(companyId));
   } catch (e) {
     next(e);
   }
@@ -49,8 +51,13 @@ export const updateVisibility = async (
   next: NextFunction,
 ) => {
   try {
+    const companyId = (req as any).user!.company;
     res.json(
-      await svc.toggleReviewVisibility(req.params.id, req.body.is_visible),
+      await svc.toggleReviewVisibility(
+        companyId,
+        req.params.id,
+        req.body.is_visible,
+      ),
     );
   } catch (e) {
     next(e);
@@ -73,8 +80,9 @@ export const getIssues = async (
       page = "1",
       limit = "20",
     } = req.query as any;
+    const companyId = (req as any).user!.company;
     res.json(
-      await svc.adminGetIssues({
+      await svc.adminGetIssues(companyId, {
         status,
         type,
         roverId,
@@ -96,7 +104,8 @@ export const getIssueById = async (
   next: NextFunction,
 ) => {
   try {
-    res.json(await svc.adminGetIssueById(req.params.issueId));
+    const companyId = (req as any).user!.company;
+    res.json(await svc.adminGetIssueById(companyId, req.params.issueId));
   } catch (e) {
     next(e);
   }
@@ -133,8 +142,9 @@ export const getRoverIssues = async (
       page = "1",
       limit = "20",
     } = req.query as any;
+    const companyId = (req as any).user!.company;
     res.json(
-      await svc.adminGetIssues({
+      await svc.adminGetIssues(companyId, {
         roverId,
         status,
         type,
@@ -188,12 +198,13 @@ export const getRoverReviews = async (
 };
 
 export const getDashboardStats = async (
-  _req: Request,
+  req: Request,
   res: Response,
   next: NextFunction,
 ) => {
   try {
-    res.json(await svc.getDashboardFeedbackStats());
+    const companyId = (req as any).user!.company;
+    res.json(await svc.getDashboardFeedbackStats(companyId));
   } catch (e) {
     next(e);
   }

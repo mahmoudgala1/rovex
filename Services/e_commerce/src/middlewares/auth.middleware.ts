@@ -1,7 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { AppError } from "../utils/AppError";
 import { asyncHandler } from "../utils/asyncHandler";
-import { Types } from "mongoose";
 
 export const extractUserFromHeaders = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {

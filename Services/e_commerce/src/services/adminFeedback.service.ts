@@ -5,15 +5,18 @@ import { AppError } from "../utils/AppError";
 
 /* ───── Service Reviews ───── */
 
-export const adminGetReviews = async (filters: {
-  rating?: number;
-  is_visible?: boolean;
-  from?: string;
-  to?: string;
-  page: number;
-  limit: number;
-}) => {
-  const query: any = {};
+export const adminGetReviews = async (
+  companyId: string,
+  filters: {
+    rating?: number;
+    is_visible?: boolean;
+    from?: string;
+    to?: string;
+    page: number;
+    limit: number;
+  },
+) => {
+  const query: any = { companyId};
   if (filters.rating !== undefined) query.rating = filters.rating;
   if (filters.is_visible !== undefined) query.isVisible = filters.is_visible;
   if (filters.from || filters.to) {
@@ -32,9 +35,11 @@ export const adminGetReviews = async (filters: {
   return { reviews };
 };
 
-export const adminGetReviewStats = async () => {
+export const adminGetReviewStats = async (companyId: string) => {
+
   const [reviewStats, lowRatings] = await Promise.all([
     ServiceReview.aggregate([
+      { $match: { companyId } },
       {
         $group: {
           _id: null,
@@ -45,7 +50,7 @@ export const adminGetReviewStats = async () => {
         },
       },
     ]),
-    OrderIssue.countDocuments(),
+    OrderIssue.countDocuments({ companyId}),
   ]);
 
   const s = reviewStats[0] ?? { avg: 0, total: 0, count4: 0, count5: 0 };
@@ -58,11 +63,12 @@ export const adminGetReviewStats = async () => {
 };
 
 export const toggleReviewVisibility = async (
+  companyId: string,
   id: string,
   is_visible: boolean,
 ) => {
-  const review = await ServiceReview.findByIdAndUpdate(
-    id,
+  const review = await ServiceReview.findOneAndUpdate(
+    { _id: id, companyId },
     { isVisible: is_visible },
     { new: true },
   ).lean();
@@ -72,17 +78,20 @@ export const toggleReviewVisibility = async (
 
 /* ───── Order Issues ───── */
 
-export const adminGetIssues = async (filters: {
-  status?: string;
-  type?: string;
-  roverId?: string;
-  rating?: number;
-  from?: string;
-  to?: string;
-  page: number;
-  limit: number;
-}) => {
-  const query: any = {};
+export const adminGetIssues = async (
+  companyId: string,
+  filters: {
+    status?: string;
+    type?: string;
+    roverId?: string;
+    rating?: number;
+    from?: string;
+    to?: string;
+    page: number;
+    limit: number;
+  },
+) => {
+  const query: any = { companyId };
   if (filters.status) query.status = filters.status;
   if (filters.type) query.issueType = filters.type;
   if (filters.roverId)
@@ -108,13 +117,17 @@ export const adminGetIssues = async (filters: {
   return { total, open: openCount, issues };
 };
 
-export const adminGetIssueById = async (issueId: string) => {
-  const issue = await OrderIssue.findById(issueId).lean();
+export const adminGetIssueById = async (companyId: string, issueId: string) => {
+  const issue = await OrderIssue.findOne({
+    _id: issueId,
+    companyId,
+  }).lean();
   if (!issue) throw new AppError("Issue not found", 404);
   return issue;
 };
 
 export const adminUpdateIssueStatus = async (
+  companyId: string,
   issueId: string,
   status: string,
   adminNote?: string,
@@ -123,9 +136,11 @@ export const adminUpdateIssueStatus = async (
   if (adminNote) update.adminNote = adminNote;
   if (status === "resolved") update.resolvedAt = new Date();
 
-  const issue = await OrderIssue.findByIdAndUpdate(issueId, update, {
-    new: true,
-  }).lean();
+  const issue = await OrderIssue.findOneAndUpdate(
+    { _id: issueId, companyId },
+    update,
+    { new: true },
+  ).lean();
   if (!issue) throw new AppError("Issue not found", 404);
 
   return {
@@ -138,10 +153,12 @@ export const adminUpdateIssueStatus = async (
 
 /* ───── Dashboard ───── */
 
-export const getDashboardFeedbackStats = async () => {
+export const getDashboardFeedbackStats = async (companyId: string) => {
+
   const [reviewAgg, issueAgg, breakdownAgg, mostCommonAgg, roverAgg] =
     await Promise.all([
       ServiceReview.aggregate([
+        { $match: { companyId } },
         {
           $group: {
             _id: null,
@@ -153,18 +170,22 @@ export const getDashboardFeedbackStats = async () => {
         },
       ]),
       OrderIssue.aggregate([
+        { $match: { companyId } },
         { $group: { _id: "$status", count: { $sum: 1 } } },
       ]),
       OrderIssue.aggregate([
+        { $match: { companyId } },
         { $group: { _id: "$issueType", count: { $sum: 1 } } },
         { $sort: { count: -1 } },
       ]),
       OrderIssue.aggregate([
+        { $match: { companyId } },
         { $group: { _id: "$issueType", count: { $sum: 1 } } },
         { $sort: { count: -1 } },
         { $limit: 1 },
       ]),
       OrderIssue.aggregate([
+        { $match: { companyId } },
         {
           $group: {
             _id: "$roverId",

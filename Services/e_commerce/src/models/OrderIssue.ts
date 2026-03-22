@@ -14,7 +14,6 @@ export interface IOrderIssue extends Document {
   orderId: string;
   userName: string;
   roverId?: string;
-  roverName?: string;
   rating: number;
   issueType: IssueType;
   comment?: string;
@@ -46,7 +45,6 @@ const OrderIssueSchema = new Schema<IOrderIssue>(
     },
     userName: { type: String, required: true },
     roverId: { type: String, ref: "Rover" },
-    roverName: { type: String },
     rating: { type: Number, enum: [1, 2, 3], required: true },
     issueType: { type: String, enum: ISSUE_TYPES, required: true },
     comment: { type: String },

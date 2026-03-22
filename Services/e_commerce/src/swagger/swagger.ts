@@ -80,6 +80,54 @@ export const swaggerSpec: Options = {
             },
           },
         },
+        ServiceReview: {
+          type: "object",
+          properties: {
+            id: { type: "string", format: "uuid" },
+            userName: { type: "string" },
+            userId: { type: "string", format: "uuid" },
+            orderId: { type: "string", format: "uuid" },
+            rating: { type: "integer", enum: [4, 5] },
+            comment: { type: "string" },
+            isVisible: { type: "boolean" },
+            createdAt: { type: "string", format: "date-time" },
+          },
+        },
+        OrderIssue: {
+          type: "object",
+          properties: {
+            id: { type: "string", format: "uuid" },
+            orderId: { type: "string", format: "uuid" },
+            userId: { type: "string", format: "uuid" },
+            userName: { type: "string" },
+            roverId: { type: "string", format: "uuid" },
+            roverName: { type: "string" },
+            rating: { type: "integer", enum: [1, 2, 3] },
+            issueType: {
+              type: "string",
+              enum: [
+                "rover_slow",
+                "package_damaged",
+                "wrong_delivery",
+                "rover_malfunction",
+                "other",
+              ],
+            },
+            comment: { type: "string" },
+            images: {
+              type: "array",
+              items: { type: "string", format: "uri" },
+              maxItems: 5,
+            },
+            status: {
+              type: "string",
+              enum: ["open", "in_progress", "resolved"],
+            },
+            adminNote: { type: "string", nullable: true },
+            resolvedAt: { type: "string", format: "date-time", nullable: true },
+            createdAt: { type: "string", format: "date-time" },
+          },
+        },
       },
     },
   },
@@ -89,9 +137,5 @@ export const swaggerSpec: Options = {
         "./src/routes/*.ts",
         "./src/controllers/*.ts",
       ]
-    : [
-        "./dist/*.js",
-        "./dist/*.js",
-        "./dist/*.js",
-      ],
+    : ["./dist/*.js", "./dist/*.js", "./dist/*.js"],
 };

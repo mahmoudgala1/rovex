@@ -8,8 +8,8 @@ export const reportIssue = async (
 ) => {
   try {
     const { orderId } = req.params;
-    const { rating, issueType, comment, images, roverId, roverName } = req.body;
-    const { id: userId, company: companyId } = req.user!;
+    const { rating, issueType, comment, images, roverId } = req.body;
+    const { id: userId, company: companyId } = (req as any).user!;
     const userName = "Mahmoud galal";
     const result = await svc.createOrderIssue(
       userId,
@@ -21,7 +21,6 @@ export const reportIssue = async (
       comment,
       images,
       roverId,
-      roverName,
     );
     res.status(201).json(result);
   } catch (e) {
@@ -36,7 +35,12 @@ export const getOrderIssue = async (
 ) => {
   try {
     const { orderId } = req.params;
-    const result = await svc.getOrderIssueByOrderId(orderId, req.user!.id);
+    const companyId = (req as any).user!.company;
+    const result = await svc.getOrderIssueByOrderId(
+      orderId,
+      companyId,
+      (req as any).user!.id,
+    );
     res.json(result);
   } catch (e) {
     next(e);
