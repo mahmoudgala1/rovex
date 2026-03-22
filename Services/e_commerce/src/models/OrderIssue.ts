@@ -9,13 +9,13 @@ export type IssueType =
   | "other";
 
 export interface IOrderIssue extends Document {
-  userId: String;
-  companyId: String;
-  orderId: String;
+  userId: string;
+  companyId: string;
+  orderId: string;
   userName: string;
-  roverId?: String;
+  roverId?: string;
   roverName?: string;
-  rating: 1 | 2 | 3;
+  rating: number;
   issueType: IssueType;
   comment?: string;
   images: string[];

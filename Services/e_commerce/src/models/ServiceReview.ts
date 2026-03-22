@@ -1,14 +1,14 @@
 import mongoose, { Document, Schema } from "mongoose";
 
 export interface IServiceReview extends Document {
-  userId: String;
-  companyId: String;
-  orderId: String;
+  userId: string;
+  companyId: string;
+  orderId: string;
   userName: string;
-  rating: 4 | 5;
+  rating: number;
   comment?: string;
   isVisible: boolean;
-  roverId?: String;
+  roverId?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -27,7 +27,7 @@ const ServiceReviewSchema = new Schema<IServiceReview>(
     rating: { type: Number, enum: [4, 5], required: true },
     comment: { type: String },
     isVisible: { type: Boolean, default: true },
-    roverId: { type: Schema.Types.ObjectId, ref: "Rover" },
+    roverId: { type: String, ref: "Rover" },
   },
   { timestamps: true },
 );
