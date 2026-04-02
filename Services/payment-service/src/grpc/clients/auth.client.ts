@@ -5,8 +5,11 @@ import { Logger } from "../../utils/logger";
 import { User } from "../../types/stripe.types";
 import { env } from "../../config/environment";
 
-const isDevelopment = env.NODE_ENV !== "production";
-const PROTO_PATH = path.join(__dirname, "../../protos/auth.proto");
+const isDevelopment = process.env.NODE_ENV !== "production";
+const PROTO_PATH = path.join(
+  process.cwd(),
+  `${isDevelopment ? "src" : "dist"}/protos/auth.proto`,
+);
 // const AUTH_SERVICE_URL = process.env.AUTH_SERVICE_GRPC_URL || "localhost:50051";
 const AUTH_SERVICE_URL = isDevelopment
   ? "localhost:50051"

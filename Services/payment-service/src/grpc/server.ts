@@ -4,7 +4,11 @@ import path from "path";
 import { PaymentGrpcService } from "./services/payment.service";
 import { Logger } from "../utils/logger";
 
-const PROTO_PATH = path.join(__dirname, "../protos/payment.proto");
+const isDevelopment = process.env.NODE_ENV !== "production";
+const PROTO_PATH = path.join(
+  process.cwd(),
+  `${isDevelopment ? "src" : "dist"}/protos/payment.proto`,
+);
 const GRPC_PORT = process.env.GRPC_PORT || "50052";
 const logger =new Logger("GRPC Server");
 

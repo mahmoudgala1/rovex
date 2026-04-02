@@ -10,6 +10,7 @@ import { connectDatabase } from "./config/database";
 import { startGrpcServer } from "./grpc/server";
 import { rawBodyMiddleware } from "./middleware/raw-body.middleware";
 import rabbitmq from "./config/rabbitmq";
+import fs from "fs";
 
 const swaggerOptions = {
   customCss: `
@@ -67,6 +68,14 @@ const swaggerOptions = {
   },
 };
 
+const isDevelopment = process.env.NODE_ENV !== "production";
+let swaggerDocument: any;
+const swaggerPath = path.join(process.cwd(), "swagger.json");
+if (fs.existsSync(swaggerPath)) {
+  swaggerDocument = JSON.parse(fs.readFileSync(swaggerPath, "utf8"));
+} else {
+  console.warn('⚠️ swagger.json not found! Run "npm run build:swagger" first.');
+}
 class Server {
   public app: Application;
 
@@ -87,13 +96,16 @@ class Server {
   private configureRoutes(): void {
     this.app.get("/api-docs.json", (req, res) => {
       res.setHeader("Content-Type", "application/json");
-      res.send(swaggerSpec);
+      res.send(isDevelopment ? swaggerSpec : swaggerDocument);
     });
 
     this.app.use(
       "/api-docs",
       swaggerUi.serve,
-      swaggerUi.setup(swaggerSpec, swaggerOptions),
+      swaggerUi.setup(
+        isDevelopment ? swaggerSpec : swaggerDocument,
+        swaggerOptions,
+      ),
     );
 
     this.app.get("/health", (req, res) => {

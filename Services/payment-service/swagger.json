@@ -1,0 +1,1623 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "ROVEX Fleet Management - Payment Service API",
+    "version": "1.0.0",
+    "description": "\n## Base URL\n- Production: `https://rovex.click/payment/api/v1`\n      ",
+    "contact": {
+      "name": "ROVEX Development Team",
+      "email": "rovex.zu.eg@gmail.com"
+    },
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/licenses/MIT"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8003/api/v1",
+      "description": "Local development"
+    },
+    {
+      "url": "https://api.rovex.com/payment/api/v1",
+      "description": "Staging development"
+    },
+    {
+      "url": "https://rovex.click/payment/api/v1",
+      "description": "Production environment"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Enter your JWT access token (without \"Bearer\" prefix)"
+      }
+    },
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": false
+          },
+          "error": {
+            "type": "string",
+            "example": "Error message"
+          }
+        }
+      },
+      "Success": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "message": {
+            "type": "string",
+            "example": "Operation successful"
+          },
+          "data": {
+            "type": "object"
+          }
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Customers",
+      "description": "Customer management endpoints"
+    },
+    {
+      "name": "Payments",
+      "description": "Payment processing endpoints"
+    },
+    {
+      "name": "Subscriptions",
+      "description": "Subscription management endpoints"
+    },
+    {
+      "name": "Payment Methods",
+      "description": "Payment method management endpoints"
+    },
+    {
+      "name": "Products",
+      "description": "Product endpoints"
+    },
+    {
+      "name": "Prices",
+      "description": "Price endpoints"
+    },
+    {
+      "name": "Webhooks",
+      "description": "Stripe webhook endpoints"
+    }
+  ],
+  "paths": {
+    "/customers/search": {
+      "get": {
+        "tags": [
+          "Customers"
+        ],
+        "summary": "Search customers",
+        "description": "Search for customers using Stripe's search API",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Search query (e.g., name:\"Ahmed\" or email:\"user@example.com\")",
+            "example": "name:\"Ahmed\""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Search results"
+          },
+          "400": {
+            "description": "Missing search query"
+          }
+        }
+      }
+    },
+    "/customers/{customerId}": {
+      "get": {
+        "tags": [
+          "Customers"
+        ],
+        "summary": "Get customer by ID",
+        "description": "Retrieves a specific customer from Stripe",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "customerId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Stripe customer ID",
+            "example": "cus_xxxxx"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Customer retrieved successfully"
+          },
+          "404": {
+            "description": "Customer not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Customers"
+        ],
+        "summary": "Update customer",
+        "description": "Updates an existing customer in Stripe",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "customerId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "cus_xxxxx"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "phone": {
+                    "type": "string"
+                  },
+                  "metadata": {
+                    "type": "object"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Customer updated successfully"
+          },
+          "404": {
+            "description": "Customer not found"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Customers"
+        ],
+        "summary": "Delete customer",
+        "description": "Deletes a customer from Stripe",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "customerId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "cus_xxxxx"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Customer deleted successfully"
+          },
+          "404": {
+            "description": "Customer not found"
+          }
+        }
+      }
+    },
+    "/customers": {
+      "get": {
+        "tags": [
+          "Customers"
+        ],
+        "summary": "List all customers",
+        "description": "Retrieves a paginated list of customers",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer",
+              "default": 10,
+              "minimum": 1,
+              "maximum": 100
+            },
+            "description": "Number of customers to return"
+          },
+          {
+            "in": "query",
+            "name": "starting_after",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Customer ID to start after for pagination"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of customers"
+          }
+        }
+      }
+    },
+    "/payments": {
+      "post": {
+        "tags": [
+          "Payments"
+        ],
+        "summary": "Create payment intent",
+        "description": "Creates a new payment intent for processing a payment",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "amount",
+                  "currency"
+                ],
+                "properties": {
+                  "amount": {
+                    "type": "integer",
+                    "description": "Amount in smallest currency unit (e.g., cents for USD)",
+                    "example": 100000
+                  },
+                  "currency": {
+                    "type": "string",
+                    "description": "Three-letter ISO currency code",
+                    "example": "usd"
+                  },
+                  "description": {
+                    "type": "string",
+                    "example": "ROVEX Order"
+                  },
+                  "metadata": {
+                    "type": "object",
+                    "example": {
+                      "orderId": "order_123",
+                      "items": "3"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Payment intent created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "paymentIntentId": {
+                          "type": "string",
+                          "example": "pi_xxxxx"
+                        },
+                        "clientSecret": {
+                          "type": "string",
+                          "example": "pi_xxxxx_secret_xxxxx"
+                        },
+                        "status": {
+                          "type": "string",
+                          "example": "requires_payment_method"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Payments"
+        ],
+        "summary": "List payment intents",
+        "description": "Lists payment intents with optional customer filter",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer",
+              "default": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of payment intents"
+          }
+        }
+      }
+    },
+    "/payments/{paymentIntentId}": {
+      "get": {
+        "tags": [
+          "Payments"
+        ],
+        "summary": "Get payment intent",
+        "description": "Retrieves a specific payment intent",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "paymentIntentId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "pi_xxxxx"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Payment intent retrieved"
+          }
+        }
+      }
+    },
+    "/payments/{paymentIntentId}/confirm": {
+      "post": {
+        "tags": [
+          "Payments"
+        ],
+        "summary": "Confirm payment intent",
+        "description": "Confirms a payment intent with a payment method",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "paymentIntentId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "pi_xxxxx"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "paymentMethodId"
+                ],
+                "properties": {
+                  "paymentMethodId": {
+                    "type": "string",
+                    "example": "pm_xxxxx"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Payment confirmed"
+          }
+        }
+      }
+    },
+    "/payments/{paymentIntentId}/cancel": {
+      "post": {
+        "tags": [
+          "Payments"
+        ],
+        "summary": "Cancel payment intent",
+        "description": "Cancels a payment intent",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "paymentIntentId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "pi_xxxxx"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Payment cancelled"
+          }
+        }
+      }
+    },
+    "/payments/{paymentIntentId}/refund": {
+      "post": {
+        "tags": [
+          "Payments"
+        ],
+        "summary": "Create refund",
+        "description": "Creates a refund for a payment",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "paymentIntentId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "pi_xxxxx"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "amount": {
+                    "type": "integer",
+                    "description": "Amount to refund (optional, full refund if not specified)",
+                    "example": 50000
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Refund created"
+          }
+        }
+      }
+    },
+    "/payment-methods/setup-intent": {
+      "post": {
+        "tags": [
+          "Payment Methods"
+        ],
+        "summary": "Create setup intent (RECOMMENDED)",
+        "description": "Creates a setup intent to securely collect payment method details",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "paymentMethodTypes": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "default": [
+                      "card"
+                    ],
+                    "example": [
+                      "card"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Setup intent created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "setupIntentId": {
+                          "type": "string"
+                        },
+                        "clientSecret": {
+                          "type": "string",
+                          "description": "Use this with Stripe Elements"
+                        },
+                        "status": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/payment-methods/setup-intent/{setupIntentId}": {
+      "get": {
+        "tags": [
+          "Payment Methods"
+        ],
+        "summary": "Get setup intent",
+        "description": "Retrieves a setup intent",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "setupIntentId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "seti_xxxxx"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Setup intent retrieved"
+          }
+        }
+      }
+    },
+    "/payment-methods/customer": {
+      "get": {
+        "tags": [
+          "Payment Methods"
+        ],
+        "summary": "List payment methods",
+        "description": "Lists all payment methods for a customer",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "type",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "card",
+                "us_bank_account",
+                "sepa_debit"
+              ]
+            },
+            "example": "card"
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer",
+              "default": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of payment methods"
+          }
+        }
+      }
+    },
+    "/payment-methods/{paymentMethodId}": {
+      "get": {
+        "tags": [
+          "Payment Methods"
+        ],
+        "summary": "Get payment method",
+        "description": "Retrieves a specific payment method",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "paymentMethodId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "pm_xxxxx"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Payment method retrieved"
+          }
+        }
+      }
+    },
+    "/payment-methods/detach/{paymentMethodId}": {
+      "post": {
+        "tags": [
+          "Payment Methods"
+        ],
+        "summary": "Delete payment method",
+        "description": "Detaches (deletes) a payment method from customer",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "paymentMethodId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "pm_xxxxx"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Payment method deleted"
+          }
+        }
+      }
+    },
+    "/payment-methods/default": {
+      "post": {
+        "tags": [
+          "Payment Methods"
+        ],
+        "summary": "Set default payment method",
+        "description": "Sets the default payment method for a customer",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "paymentMethodId"
+                ],
+                "properties": {
+                  "paymentMethodId": {
+                    "type": "string",
+                    "example": "pm_xxxxx"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Default payment method set"
+          }
+        }
+      }
+    },
+    "/payment-methods/customer/default": {
+      "get": {
+        "tags": [
+          "Payment Methods"
+        ],
+        "summary": "Get default payment method",
+        "description": "Retrieves the default payment method for a customer",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default payment method retrieved"
+          }
+        }
+      }
+    },
+    "/prices": {
+      "post": {
+        "tags": [
+          "Prices"
+        ],
+        "summary": "Create price",
+        "description": "Creates a new price for a product",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "productId",
+                  "currency",
+                  "unitAmount"
+                ],
+                "properties": {
+                  "productId": {
+                    "type": "string",
+                    "example": "prod_xxxxx"
+                  },
+                  "currency": {
+                    "type": "string",
+                    "example": "usd"
+                  },
+                  "unitAmount": {
+                    "type": "integer",
+                    "example": 2999
+                  },
+                  "recurring": {
+                    "type": "object",
+                    "properties": {
+                      "interval": {
+                        "type": "string",
+                        "enum": [
+                          "day",
+                          "week",
+                          "month",
+                          "year"
+                        ]
+                      },
+                      "intervalCount": {
+                        "type": "integer"
+                      },
+                      "trialPeriodDays": {
+                        "type": "integer"
+                      }
+                    }
+                  },
+                  "nickname": {
+                    "type": "string",
+                    "example": "Monthly Premium"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Price created"
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Prices"
+        ],
+        "summary": "List prices",
+        "description": "Lists prices with optional product filter",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "productId",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "active",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer",
+              "default": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of prices"
+          }
+        }
+      }
+    },
+    "/products": {
+      "post": {
+        "tags": [
+          "Products"
+        ],
+        "summary": "Create product",
+        "description": "Creates a new product in Stripe",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "name"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "example": "Premium Plan"
+                  },
+                  "description": {
+                    "type": "string",
+                    "example": "Full access to all features"
+                  },
+                  "active": {
+                    "type": "boolean",
+                    "default": true
+                  },
+                  "images": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "example": [
+                      "https://example.com/image.png"
+                    ]
+                  },
+                  "metadata": {
+                    "type": "object"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Product created"
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Products"
+        ],
+        "summary": "List products",
+        "description": "Lists all products with optional filters",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "active",
+            "schema": {
+              "type": "boolean"
+            },
+            "description": "Filter by active status"
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer",
+              "default": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of products"
+          }
+        }
+      }
+    },
+    "/products/with-price": {
+      "post": {
+        "tags": [
+          "Products"
+        ],
+        "summary": "Create product with price",
+        "description": "Creates a product and price in one request",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "name",
+                  "currency",
+                  "unitAmount"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "example": "Basic Plan"
+                  },
+                  "description": {
+                    "type": "string"
+                  },
+                  "currency": {
+                    "type": "string",
+                    "example": "usd"
+                  },
+                  "unitAmount": {
+                    "type": "integer",
+                    "example": 999
+                  },
+                  "recurring": {
+                    "type": "object",
+                    "properties": {
+                      "interval": {
+                        "type": "string",
+                        "enum": [
+                          "day",
+                          "week",
+                          "month",
+                          "year"
+                        ],
+                        "example": "month"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Product with price created"
+          }
+        }
+      }
+    },
+    "/products/{productId}": {
+      "get": {
+        "tags": [
+          "Products"
+        ],
+        "summary": "Get product",
+        "description": "Retrieves a specific product",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "productId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "prod_xxxxx"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Product retrieved"
+          }
+        }
+      }
+    },
+    "/products/{productId}/with-prices": {
+      "get": {
+        "tags": [
+          "Products"
+        ],
+        "summary": "Get product with all prices",
+        "description": "Retrieves a product and all its associated prices",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "productId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "prod_xxxxx"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Product with prices retrieved"
+          }
+        }
+      }
+    },
+    "/subscriptions/checkout": {
+      "post": {
+        "tags": [
+          "Subscriptions"
+        ],
+        "summary": "Create checkout session",
+        "description": "Creates a Stripe Checkout session for subscription",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "priceId"
+                ],
+                "properties": {
+                  "priceId": {
+                    "type": "string",
+                    "example": "price_xxxxx"
+                  },
+                  "trialDays": {
+                    "type": "integer",
+                    "example": 14
+                  },
+                  "successUrl": {
+                    "type": "string",
+                    "example": "https://myapp.com/success"
+                  },
+                  "cancelUrl": {
+                    "type": "string",
+                    "example": "https://myapp.com/cancel"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Checkout session created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "sessionId": {
+                          "type": "string"
+                        },
+                        "url": {
+                          "type": "string",
+                          "description": "Redirect user to this URL"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/subscriptions": {
+      "post": {
+        "tags": [
+          "Subscriptions"
+        ],
+        "summary": "Create subscription",
+        "description": "Creates a new subscription for a customer",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "priceId"
+                ],
+                "properties": {
+                  "priceId": {
+                    "type": "string",
+                    "example": "price_xxxxx"
+                  },
+                  "trialDays": {
+                    "type": "integer",
+                    "example": 7
+                  },
+                  "metadata": {
+                    "type": "object"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Subscription created"
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Subscriptions"
+        ],
+        "summary": "List subscriptions",
+        "description": "Lists subscriptions with optional customer filter",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer",
+              "default": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of subscriptions"
+          }
+        }
+      }
+    },
+    "/subscriptions/{subscriptionId}": {
+      "get": {
+        "tags": [
+          "Subscriptions"
+        ],
+        "summary": "Get subscription",
+        "description": "Retrieves a specific subscription",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "subscriptionId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "sub_xxxxx"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Subscription retrieved"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Subscriptions"
+        ],
+        "summary": "Update subscription",
+        "description": "Updates a subscription (upgrade/downgrade)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "subscriptionId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "sub_xxxxx"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "priceId"
+                ],
+                "properties": {
+                  "priceId": {
+                    "type": "string",
+                    "description": "New price ID",
+                    "example": "price_premium_xxxxx"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Subscription updated"
+          }
+        }
+      }
+    },
+    "/subscriptions/{subscriptionId}/cancel": {
+      "post": {
+        "tags": [
+          "Subscriptions"
+        ],
+        "summary": "Cancel subscription",
+        "description": "Cancels a subscription",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "subscriptionId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "sub_xxxxx"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "immediately": {
+                    "type": "boolean",
+                    "description": "Cancel immediately (true) or at period end (false)",
+                    "default": false
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Subscription cancelled"
+          }
+        }
+      }
+    },
+    "/subscriptions/{subscriptionId}/resume": {
+      "post": {
+        "tags": [
+          "Subscriptions"
+        ],
+        "summary": "Resume subscription",
+        "description": "Resumes a cancelled subscription",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "subscriptionId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "sub_xxxxx"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Subscription resumed"
+          }
+        }
+      }
+    },
+    "/subscriptions/portal": {
+      "post": {
+        "tags": [
+          "Subscriptions"
+        ],
+        "summary": "Create billing portal session",
+        "description": "Creates a session for Stripe Customer Portal",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "returnUrl": {
+                    "type": "string",
+                    "example": "https://myapp.com/account"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Portal session created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "url": {
+                          "type": "string",
+                          "description": "Redirect user to this URL"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/subscriptions/customer/invoices": {
+      "get": {
+        "tags": [
+          "Subscriptions"
+        ],
+        "summary": "Get customer invoices",
+        "description": "Retrieves invoices for a customer",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Upcoming invoice"
+          },
+          "404": {
+            "description": "No upcoming invoice found"
+          }
+        }
+      }
+    },
+    "/subscriptions/invoices/{invoiceId}": {
+      "get": {
+        "tags": [
+          "Subscriptions"
+        ],
+        "summary": "Get customer invoices",
+        "description": "Retrieves invoices for a customer",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "invoiceId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "in_xxxxx"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Upcoming invoice"
+          },
+          "404": {
+            "description": "No upcoming invoice found"
+          }
+        }
+      }
+    },
+    "/webhooks/stripe": {
+      "post": {
+        "tags": [
+          "Webhooks"
+        ],
+        "summary": "Stripe webhook endpoint",
+        "description": "Receives and processes webhook events from Stripe",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Stripe webhook event object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Webhook processed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "received": {
+                          "type": "boolean",
+                          "example": true
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid webhook signature or payload"
+          }
+        }
+      }
+    }
+  }
+}
