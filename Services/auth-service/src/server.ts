@@ -20,7 +20,6 @@ import { startGrpcServer } from "./grpc/server";
 import fs from "fs";
 import path from "path";
 
-const isDevelopment = process.env.NODE_ENV !== "production";
 const swaggerOptions = {
   customCss: `
     .swagger-ui .topbar {
@@ -76,6 +75,8 @@ const swaggerOptions = {
     defaultModelExpandDepth: 1,
   },
 };
+
+const isDevelopment = process.env.NODE_ENV !== "production";
 let swaggerDocument: any;
 const swaggerPath = path.join(process.cwd(), "swagger.json");
 if (fs.existsSync(swaggerPath)) {

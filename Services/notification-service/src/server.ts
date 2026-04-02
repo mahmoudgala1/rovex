@@ -2,6 +2,7 @@ import express from "express";
 import rabbitmq from "./config/rabbitmq";
 import consumer from "./consumers/consumer";
 import { env } from "./config/environment";
+import { PushChannel } from "./channels/push.channel";
 
 const app = express();
 const PORT = env.PORT;
@@ -39,3 +40,13 @@ process.on("SIGTERM", shutdown);
 process.on("SIGINT", shutdown);
 
 startService();
+
+// const push = new PushChannel();
+// const data = {
+//   title: "ROVEX",
+//   body: "🦅🦅🦅",
+// };
+// push.send(
+//   "dgrfqmI1S5aVnB53pvf-y7:APA91bF_ewdYHc8hpMvQuTk9T0JbrQClKpYtDt0hzE6hV3eZ5iasp0ZPDnAHjqWdFQmCU96rRcvltJoXP77hbvYcXCsi8U-XeEyIHBjMYbwgB3Coc_FL4X8",
+//   data,
+// );

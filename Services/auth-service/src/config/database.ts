@@ -1,13 +1,15 @@
 import mongoose from "mongoose";
 import { env } from "./environment";
 import { logger } from "../utils/logger";
+import FleetOperator from "../models/FleetOperator";
+import { getRolePermissions } from "./permissions";
 
 export const connectDatabase = async (): Promise<void> => {
   try {
-    const uri =env.MONGODB_URI;
+    const uri = env.MONGODB_URI;
 
     await mongoose.connect(uri, {
-      dbName: "fleet-auth",
+      dbName: "rovex-auth",
       maxPoolSize: 10,
       serverSelectionTimeoutMS: 5000,
       socketTimeoutMS: 45000,
