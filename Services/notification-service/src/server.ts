@@ -9,6 +9,7 @@ import path from "path";
 import { swaggerSpec } from "./config/swagger";
 import swaggerUi from "swagger-ui-express";
 import { errorMiddleware } from "./middleware/error.middleware";
+import fcmTokenRoutes from "./routes/fcmToken.routes";
 
 const swaggerOptions = {
   customCss: `
@@ -113,7 +114,7 @@ class Server {
       });
     });
 
-    // this.app.use(`/api/${env.API_VERSION}`, routes);
+    this.app.use(`/api/${env.API_VERSION}`, fcmTokenRoutes);
 
     this.app.use("*", (req, res) => {
       res.status(404).json({
