@@ -53,7 +53,7 @@ const swaggerOptions = {
   customSiteTitle: "ROVEX Auth API Docs",
   customJs:
     env.NODE_ENV !== "development"
-      ? "/auth/swagger-custom.js"
+      ? "/notification/swagger-custom.js"
       : "/swagger-custom.js",
   swaggerOptions: {
     persistAuthorization: true,

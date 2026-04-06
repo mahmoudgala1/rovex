@@ -1,0 +1,33 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "ROVEX Fleet Management - Notification Service API",
+    "version": "1.0.0",
+    "description": "\n## Base URL\n- Production: `https://rovex.click/notification/api/v1`\n      ",
+    "contact": {
+      "name": "ROVEX Development Team",
+      "email": "rovex.zu.eg@gmail.com"
+    },
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/licenses/MIT"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8002/api/v1",
+      "description": "Local development"
+    },
+    {
+      "url": "https://api.rovex.com/notification/api/v1",
+      "description": "Staging development"
+    },
+    {
+      "url": "https://rovex.click/notification/api/v1",
+      "description": "Production environment"
+    }
+  ],
+  "paths": {},
+  "components": {},
+  "tags": []
+}

@@ -1,9 +1,10 @@
 import mongoose from "mongoose";
+import { env } from "./environment";
 
 export async function connectDatabase(): Promise<void> {
   try {
     const uri =
-      process.env.MONGODB_URI || "mongodb://localhost:27017/rovex_notifications";
+      env.MONGODB_URI || "mongodb://localhost:27017/rovex_notifications";
 
     await mongoose.connect(uri, {
       dbName: "rovex_notifications",
