@@ -23,7 +23,7 @@ export async function authMiddleware(
     }
 
     if (user_role == "customer") {
-      company_id = "COMP_MJ6C7OD5JRCX9";
+      company_id = "COMP_MNHLYD2O1RE2M";
     }
 
     const customer = await CustomerModel.findOne({
