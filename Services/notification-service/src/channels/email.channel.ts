@@ -13,7 +13,7 @@ export class EmailChannel extends BaseNotificationChannel {
   constructor() {
     super();
 
-    this.templatesPath = path.join(__dirname, "../templates/emails");
+    this.templatesPath = path.join(process.cwd(), "/templates/emails");
     this.transporter = nodemailer.createTransport({
       host: env.SMTP_HOST,
       port: env.SMTP_PORT,
@@ -36,7 +36,7 @@ export class EmailChannel extends BaseNotificationChannel {
   async send(
     recipient: string,
     data: any,
-    metadata?: Record<string, any>
+    metadata?: Record<string, any>,
   ): Promise<ChannelResult> {
     try {
       let htmlContent = "";
@@ -45,7 +45,7 @@ export class EmailChannel extends BaseNotificationChannel {
         htmlContent = await this.renderTemplate(
           data.template,
           data.theme,
-          data.data
+          data.data,
         );
       }
 
@@ -69,12 +69,12 @@ export class EmailChannel extends BaseNotificationChannel {
   private renderTemplate(
     templateName: string,
     theme: string,
-    data: Record<string, any>
+    data: Record<string, any>,
   ): string {
     try {
       const templatePath = path.join(
         this.templatesPath,
-        `${templateName}.html`
+        `${templateName}.html`,
       );
       let template = fs.readFileSync(templatePath, "utf-8");
 
@@ -83,7 +83,7 @@ export class EmailChannel extends BaseNotificationChannel {
         /\{\{#if_dark\}\}([\s\S]*?)\{\{else\}\}([\s\S]*?)\{\{\/if_dark\}\}/g,
         (match, darkContent, lightContent) => {
           return isDark ? darkContent.trim() : lightContent.trim();
-        }
+        },
       );
 
       Object.keys(data).forEach((key) => {
@@ -96,5 +96,4 @@ export class EmailChannel extends BaseNotificationChannel {
       throw new Error(`Email template not found: ${templateName}`);
     }
   }
-
 }

@@ -1,7 +1,7 @@
 # ==========================================
 # 1. Builder Stage
 # ==========================================
-FROM node:18-alpine AS builder
+FROM node:20-alpine AS builder
 
 WORKDIR /app
 
@@ -19,7 +19,7 @@ RUN npm prune --production --no-audit --no-fund && npm cache clean --force
 # ==========================================
 # 2. Production Stage
 # ==========================================
-FROM node:18-alpine AS production
+FROM node:20-alpine AS production
 
 WORKDIR /app
 
@@ -31,7 +31,7 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/swagger.json ./
 COPY --from=builder /app/src/public ./dist/public
-COPY --from=builder /app/src/protos ./dist/protos
+COPY --from=builder /app/src/templates ./dist/templates
 
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S nodejs -u 1001
