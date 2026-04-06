@@ -1,7 +1,7 @@
 import { Schema, model, Document, Types } from "mongoose";
 
 export interface IFCMToken extends Document {
-  userId: Types.ObjectId;
+  userId: string;
   fcmToken: string;
   platform?: "android" | "ios" | "web";
   isActive: boolean;
@@ -12,7 +12,7 @@ export interface IFCMToken extends Document {
 const FCMTokenSchema = new Schema<IFCMToken>(
   {
     userId: {
-      type: Schema.Types.ObjectId,
+      type: String,
       ref: "User",
       required: true,
       index: true,
@@ -35,7 +35,7 @@ const FCMTokenSchema = new Schema<IFCMToken>(
   {
     timestamps: true,
     versionKey: false,
-  }
+  },
 );
 
 FCMTokenSchema.index({ userId: 1, platform: 1 }, { unique: true });

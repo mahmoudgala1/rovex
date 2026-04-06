@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { fcmTokenController } from "../controllers/fcmToken.controller";
-// import { authMiddleware } from "../middleware/auth.middleware"; 
+import { authMiddleware } from "../middleware/auth.middleware"; 
 
 const router = Router();
 
@@ -137,7 +137,7 @@ const router = Router();
  */
 router.post(
   "/",
-  // authMiddleware,
+  authMiddleware,
   fcmTokenController.register.bind(fcmTokenController)
 );
 
@@ -181,7 +181,7 @@ router.post(
  */
 router.get(
   "/",
-  // authMiddleware,
+  authMiddleware,
   fcmTokenController.getMyTokens.bind(fcmTokenController)
 );
 
@@ -223,7 +223,7 @@ router.get(
  */
 router.delete(
   "/",
-  // authMiddleware,
+  authMiddleware,
   fcmTokenController.deactivate.bind(fcmTokenController)
 );
 
@@ -255,7 +255,7 @@ router.delete(
  */
 router.delete(
   "/all",
-  // authMiddleware,
+  authMiddleware,
   fcmTokenController.deleteAll.bind(fcmTokenController)
 );
 

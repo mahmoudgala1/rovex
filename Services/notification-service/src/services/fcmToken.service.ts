@@ -13,12 +13,12 @@ export class FCMTokenService {
     const { userId, fcmToken, platform = "android" } = dto;
 
     const token = await FCMTokenModel.findOneAndUpdate(
-      { userId: new Types.ObjectId(userId), platform },
+      { userId, platform },
       {
         $set: { fcmToken, isActive: true },
-        $setOnInsert: { userId: new Types.ObjectId(userId), platform },
+        $setOnInsert: { userId, platform },
       },
-      { upsert: true, new: true, runValidators: true }
+      { upsert: true, returnDocument: "after", runValidators: true },
     );
 
     return token!;
@@ -27,7 +27,7 @@ export class FCMTokenService {
   
   async getTokensByUser(userId: string): Promise<IFCMToken[]> {
     return FCMTokenModel.find({
-      userId: new Types.ObjectId(userId),
+      userId,
       isActive: true,
     }).lean();
   }
@@ -38,7 +38,7 @@ export class FCMTokenService {
     platform: "android" | "ios" | "web"
   ): Promise<IFCMToken | null> {
     return FCMTokenModel.findOne({
-      userId: new Types.ObjectId(userId),
+      userId,
       platform,
       isActive: true,
     }).lean();
@@ -47,7 +47,7 @@ export class FCMTokenService {
   
   async deactivateToken(userId: string, fcmToken: string): Promise<boolean> {
     const result = await FCMTokenModel.updateOne(
-      { userId: new Types.ObjectId(userId), fcmToken },
+      { userId, fcmToken },
       { $set: { isActive: false } }
     );
     return result.modifiedCount > 0;
@@ -56,7 +56,7 @@ export class FCMTokenService {
   
   async deleteToken(userId: string, fcmToken: string): Promise<boolean> {
     const result = await FCMTokenModel.deleteOne({
-      userId: new Types.ObjectId(userId),
+      userId,
       fcmToken,
     });
     return result.deletedCount > 0;
@@ -65,7 +65,7 @@ export class FCMTokenService {
   
   async deleteAllTokensForUser(userId: string): Promise<number> {
     const result = await FCMTokenModel.deleteMany({
-      userId: new Types.ObjectId(userId),
+      userId,
     });
     return result.deletedCount;
   }

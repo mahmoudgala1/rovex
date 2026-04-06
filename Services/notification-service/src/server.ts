@@ -88,6 +88,9 @@ class Server {
 
   private configureMiddleware(): void {
     this.app.use(cors());
+    this.app.use(express.json());
+    this.app.use(express.urlencoded({ extended: true, limit: "10mb" }));
+    this.app.use(express.static(path.join(__dirname, "public")));
   }
 
   private configureRoutes(): void {
@@ -114,7 +117,7 @@ class Server {
       });
     });
 
-    this.app.use(`/api/${env.API_VERSION}`, fcmTokenRoutes);
+    this.app.use(`/api/${env.API_VERSION}/fcm-tokens`, fcmTokenRoutes);
 
     this.app.use("*", (req, res) => {
       res.status(404).json({
