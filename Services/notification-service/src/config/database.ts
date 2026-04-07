@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import { env } from "./environment";
+import path from "path";
 
 export async function connectDatabase(): Promise<void> {
   try {

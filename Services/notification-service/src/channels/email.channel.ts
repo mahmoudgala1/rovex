@@ -5,6 +5,7 @@ import fs from "fs";
 import path from "path";
 import { env } from "../config/environment";
 
+const isDevelopment = process.env.NODE_ENV !== "production";
 export class EmailChannel extends BaseNotificationChannel {
   channelType = NotificationChannel.EMAIL;
   private transporter: Transporter;
@@ -13,7 +14,8 @@ export class EmailChannel extends BaseNotificationChannel {
   constructor() {
     super();
 
-    this.templatesPath = path.join(process.cwd(), "/templates/emails");
+    this.templatesPath = path.join(process.cwd(), `${isDevelopment ? "src" : "dist"}/templates/emails`);
+    console.log(this.templatesPath);
     this.transporter = nodemailer.createTransport({
       host: env.SMTP_HOST,
       port: env.SMTP_PORT,
