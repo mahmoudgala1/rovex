@@ -34,8 +34,7 @@ class FleetController {
 
       const tempPassword = authService.generateTempPassword();
 
-      const rolePermissions =
-        permissions || getRolePermissions(role, "fleet_operator");
+      const rolePermissions =getRolePermissions(role, "fleet_operator");
 
       const operator = await FleetOperator.create({
         email,
