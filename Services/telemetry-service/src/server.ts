@@ -4,7 +4,8 @@ import { connectDatabase } from "./config/database";
 import cors from "cors";
 import path from "path";
 import { errorMiddleware } from "./middleware/error.middleware";
-
+import { initMqttClient } from "./mqtt/mqttClient";
+import "./mqtt/routes/telemetryRoutes";
 
 class Server {
   public app: Application;
@@ -49,6 +50,7 @@ class Server {
   public async start(): Promise<void> {
     try {
       await connectDatabase();
+      initMqttClient();
 
       const PORT = env.PORT || 8004;
       this.app.listen(PORT, () => {
@@ -71,10 +73,10 @@ process.on("uncaughtException", (error: Error) => {
   process.exit(1);
 });
 
-process.on("SIGTERM", () => {
-  console.info("SIGTERM received, shutting down gracefully...");
-  process.exit(0);
-});
+// process.on("SIGTERM", () => {
+//   console.info("SIGTERM received, shutting down gracefully...");
+//   process.exit(0);
+// });
 
 const server = new Server();
 server.start();
