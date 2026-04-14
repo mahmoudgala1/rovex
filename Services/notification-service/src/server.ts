@@ -10,6 +10,7 @@ import { swaggerSpec } from "./config/swagger";
 import swaggerUi from "swagger-ui-express";
 import { errorMiddleware } from "./middleware/error.middleware";
 import fcmTokenRoutes from "./routes/fcmToken.routes";
+import { PushChannel } from "./channels/push.channel";
 
 const swaggerOptions = {
   customCss: `
@@ -166,5 +167,15 @@ process.on("SIGTERM", () => {
 
 const server = new Server();
 server.start();
+
+const push = new PushChannel();
+const data = {
+  title: "Test Notification",
+  body: "Hi there! This is a test notification from ROVEX.",
+};
+push.send(
+  "czYPaSsMQ82Ip8KcdCglco:APA91bFuaaBa6nMRqkVAj1WUapC707vg_48_7-wzMwVPQG_FD37xYjvPON4UpG9xYkr27xYvaMt6Pk9gmjfr3B44xVrAT7Rl_Hpsf1e_XVQPOw4WncoQDdE",
+  data,
+);
 
 export default server.app;
