@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "nodemon --exec ts-node src/server.ts",
     "build:swagger": "ts-node src/scripts/generate-swagger.ts",
-    "build": "npm run build:swagger && esbuild src/server.ts --bundle --platform=node --packages=external --outdir=dist",
+    "build": "esbuild src/server.ts --bundle --platform=node --packages=external --outdir=dist",
     "start": "node dist/server.js"
   },
   "keywords": [],
