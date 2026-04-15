@@ -6,6 +6,8 @@ import path from "path";
 import { errorMiddleware } from "./middleware/error.middleware";
 import { initMqttClient } from "./mqtt/mqttClient";
 import "./mqtt/routes/telemetryRoutes";
+import { initSocket } from "./utils/websocket";
+import http from "http";
 
 class Server {
   public app: Application;
@@ -52,8 +54,11 @@ class Server {
       await connectDatabase();
       initMqttClient();
 
+      const httpServer = http.createServer(this.app);
+      initSocket(httpServer);
+
       const PORT = env.PORT || 8004;
-      this.app.listen(PORT, () => {
+      httpServer.listen(PORT, () => {
         console.info(`Notification service running on port ${PORT}`);
       });
     } catch (error) {

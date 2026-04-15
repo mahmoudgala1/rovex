@@ -1,10 +1,11 @@
 import mqtt from "mqtt";
 import { mqttRouter } from "./mqttRouter";
+import { env } from "../config/environment";
 
 let client: mqtt.MqttClient;
 
 export const initMqttClient = () => {
-  client = mqtt.connect(process.env.MQTT_URL || "mqtt://mqtt-broker:1883");
+  client = mqtt.connect(env.MQTT_URL || "mqtt://mqtt-broker:1883");
 
   client.on("connect", () => {
     console.log("MQTT Connected");
