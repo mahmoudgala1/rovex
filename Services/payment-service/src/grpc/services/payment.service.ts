@@ -30,6 +30,7 @@ export class PaymentGrpcService {
 
         const stripeCustomer = await new CustomerService().createCustomer({
           customerId: user!.customer_id,
+          companyId: user!.customer_id as string,
           name: user!.name,
           email: user!.email,
           phone: user!.phone,

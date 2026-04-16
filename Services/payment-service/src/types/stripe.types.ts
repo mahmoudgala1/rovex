@@ -30,6 +30,7 @@ export interface CreateSubscriptionDTO {
 
 export interface CreateCustomerDTO {
   customerId: string;
+  companyId: string;
   name: string;
   email: string;
   phone?: string;

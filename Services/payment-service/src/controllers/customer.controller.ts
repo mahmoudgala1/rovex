@@ -23,6 +23,7 @@ export class CustomerController {
 
       const customer = await this.customerService.createCustomer({
         customerId: (req as any).user.id,
+        companyId: (req as any).user.company,
         name,
         email,
         phone,
@@ -97,8 +98,10 @@ export class CustomerController {
   listCustomers = async (req: AuthenticatedRequest, res: Response) => {
     try {
       const { limit, starting_after } = req.query;
+      const companyId = (req as any).user.company;
 
       const customers = await this.customerService.listCustomers(
+        companyId,
         limit ? parseInt(limit as string) : 10,
         starting_after as string,
       );
@@ -120,8 +123,10 @@ export class CustomerController {
       }
 
       const customers = await this.customerService.searchCustomers(
+        (req as any).user.company,
         query as string,
       );
+
       const dto = this.customerService.mapSearchResultToDTO(
         customers,
         (customer) => this.customerService.mapCustomerToDTO(customer),

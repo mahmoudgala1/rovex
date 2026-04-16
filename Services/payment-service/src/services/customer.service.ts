@@ -10,10 +10,15 @@ export class CustomerService {
       name: data.name,
       email: data.email,
       phone: data.phone,
+      metadata: {
+        internalCustomerId: data.customerId,
+        companyId: data.companyId,
+      },
     });
 
     await CustomerModel.create({
       customerId: data.customerId,
+      companyId: data.companyId,
       stripeCustomerId: customer.id,
       name: data.name,
       email: data.email,
@@ -38,17 +43,26 @@ export class CustomerService {
     return deleted;
   }
 
-  async listCustomers(limit: number = 10, startingAfter?: string) {
+  async listCustomers(
+    companyId: string,
+    limit: number = 10,
+    startingAfter?: string,
+  ) {
     const customers = await stripe.customers.list({
       limit,
       starting_after: startingAfter,
     });
-    return customers;
+    return customers.data.filter(
+      (customer) => customer.metadata?.companyId === companyId,
+    );
   }
 
-  async searchCustomers(query: string) {
+  async searchCustomers(companyId: string, query: string) {
+    const baseQuery = `metadata['companyId']:'${companyId}'`;
+
+    const finalQuery = query ? `${query} AND ${baseQuery}` : baseQuery;
     const customers = await stripe.customers.search({
-      query,
+      query: finalQuery,
     });
     return customers;
   }

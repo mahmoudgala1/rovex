@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { CustomerController } from "../controllers/customer.controller";
-import { authMiddleware } from "../middleware/auth.middleware";
+import { authMiddleware, restrictTo } from "../middleware/auth.middleware";
+import { MANAGEMENT_ROLES } from "../utils/permissions";
 
 const router = Router();
 const customerController = new CustomerController();
@@ -75,7 +76,7 @@ const customerController = new CustomerController();
 //  *       500:
 //  *         description: Internal server error
 //  */
-// router.post("/", authMiddleware, customerController.createCustomer);
+// router.post("/", authMiddleware, restrictTo(...MANAGEMENT_ROLES), customerController.createCustomer);
 
 /**
  * @openapi
@@ -101,7 +102,12 @@ const customerController = new CustomerController();
  *       400:
  *         description: Missing search query
  */
-router.get("/search", authMiddleware, customerController.searchCustomers);
+router.get(
+  "/search",
+  authMiddleware,
+  restrictTo(...MANAGEMENT_ROLES),
+  customerController.searchCustomers,
+);
 
 /**
  * @openapi
@@ -129,7 +135,12 @@ router.get("/search", authMiddleware, customerController.searchCustomers);
  *       500:
  *         description: Internal server error
  */
-router.get("/:customerId", authMiddleware, customerController.getCustomer);
+router.get(
+  "/:customerId",
+  authMiddleware,
+  restrictTo(...MANAGEMENT_ROLES),
+  customerController.getCustomer,
+);
 
 /**
  * @openapi
@@ -169,7 +180,12 @@ router.get("/:customerId", authMiddleware, customerController.getCustomer);
  *       404:
  *         description: Customer not found
  */
-router.put("/:customerId", authMiddleware, customerController.updateCustomer);
+router.put(
+  "/:customerId",
+  authMiddleware,
+  restrictTo(...MANAGEMENT_ROLES),
+  customerController.updateCustomer,
+);
 
 /**
  * @openapi
@@ -197,6 +213,7 @@ router.put("/:customerId", authMiddleware, customerController.updateCustomer);
 router.delete(
   "/:customerId",
   authMiddleware,
+  restrictTo(...MANAGEMENT_ROLES),
   customerController.deleteCustomer,
 );
 
@@ -228,8 +245,11 @@ router.delete(
  *       200:
  *         description: List of customers
  */
-router.get("/", authMiddleware, customerController.listCustomers);
-
-
+router.get(
+  "/",
+  authMiddleware,
+  restrictTo(...MANAGEMENT_ROLES),
+  customerController.listCustomers,
+);
 
 export default router;
