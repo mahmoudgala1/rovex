@@ -1,6 +1,7 @@
 import { Router } from "express";
 import * as ctrl from "../controllers/orderIssue.controller";
 import { extractUserFromHeaders } from "../middlewares/auth.middleware";
+import { upload } from "../middlewares/multer.middleware";
 
 const router = Router({ mergeParams: true }); // mounted at /orders/:orderId
 
@@ -29,7 +30,7 @@ const router = Router({ mergeParams: true }); // mounted at /orders/:orderId
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
  *             type: object
  *             required: [rating, issueType]
@@ -38,6 +39,10 @@ const router = Router({ mergeParams: true }); // mounted at /orders/:orderId
  *                 type: string
  *                 format: uuid
  *                 description: Optional rover linked to this order
+ *               userName:
+ *                 type: string
+ *               userAvatarUrl:
+ *                 type: string
  *               rating:
  *                 type: integer
  *                 enum: [1, 2, 3]
@@ -52,7 +57,7 @@ const router = Router({ mergeParams: true }); // mounted at /orders/:orderId
  *                 type: array
  *                 items:
  *                   type: string
- *                   format: uri
+ *                   format: binary
  *                 maxItems: 5
  *                 description: Upload via POST /uploads first, then pass URLs here
  *     responses:
@@ -87,7 +92,12 @@ const router = Router({ mergeParams: true }); // mounted at /orders/:orderId
  *       401:
  *         description: Unauthorized
  */
-router.post("/issue", extractUserFromHeaders, ctrl.reportIssue);
+router.post(
+  "/issue",
+  extractUserFromHeaders,
+  upload.array("images", 5),
+  ctrl.reportIssue,
+);
 
 /**
  * @swagger

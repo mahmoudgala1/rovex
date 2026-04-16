@@ -5,13 +5,14 @@ export const createServiceReview = async (
   userId: string,
   companyId: string,
   userName: string,
+  userAvatarUrl: string,
   orderId: string,
   rating: number,
   comment?: string,
   roverId?: string,
 ) => {
-  if (rating < 4)
-    throw new AppError("Rating must be 4 or 5 for a service review", 422);
+  // if (rating < 4)
+  //   throw new AppError("Rating must be 4 or 5 for a service review", 422);
 
   const existing = await ServiceReview.findOne({ orderId });
   if (existing)
@@ -21,6 +22,7 @@ export const createServiceReview = async (
     userId,
     companyId,
     userName,
+    userAvatarUrl,
     orderId,
     rating,
     comment,
@@ -29,21 +31,18 @@ export const createServiceReview = async (
   return { message: "Review submitted successfully" };
 };
 
-export const getPublicReviews = async (
-  page: number,
-  limit: number,
-) => {
+export const getPublicReviews = async (page: number, limit: number) => {
   const skip = (page - 1) * limit;
   const [reviews, totalReviews, avgResult] = await Promise.all([
-    ServiceReview.find({  isVisible: true })
+    ServiceReview.find({ isVisible: true })
       .select("userName rating comment createdAt")
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
       .lean(),
-    ServiceReview.countDocuments({  isVisible: true }),
+    ServiceReview.countDocuments({ isVisible: true }),
     ServiceReview.aggregate([
-      { $match: {  isVisible: true } },
+      { $match: { isVisible: true } },
       { $group: { _id: null, avg: { $avg: "$rating" } } },
     ]),
   ]);
@@ -57,7 +56,7 @@ export const getPublicReviews = async (
 
 export const getPublicReviewStats = async () => {
   const result = await ServiceReview.aggregate([
-    { $match: {  isVisible: true } },
+    { $match: { isVisible: true } },
     { $group: { _id: null, avg: { $avg: "$rating" }, count: { $sum: 1 } } },
   ]);
   return {

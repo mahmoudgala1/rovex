@@ -13,6 +13,7 @@ export interface IOrderIssue extends Document {
   companyId: string;
   orderId: string;
   userName: string;
+  userAvatarUrl?: string;
   roverId?: string;
   rating: number;
   issueType: IssueType;
@@ -44,6 +45,7 @@ const OrderIssueSchema = new Schema<IOrderIssue>(
       unique: true,
     },
     userName: { type: String, required: true },
+    userAvatarUrl: { type: String },
     roverId: { type: String, ref: "Rover" },
     rating: { type: Number, enum: [1, 2, 3], required: true },
     issueType: { type: String, enum: ISSUE_TYPES, required: true },

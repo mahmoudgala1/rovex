@@ -6,6 +6,7 @@ export const createOrderIssue = async (
   userId: string,
   companyId: string,
   userName: string,
+  userAvatarUrl: string,
   orderId: string,
   rating: number,
   issueType: IssueType,
@@ -13,7 +14,7 @@ export const createOrderIssue = async (
   images: string[] = [],
   roverId?: string,
 ) => {
-  if (rating >= 4) throw new AppError("Issue rating must be 1, 2, or 3", 422);
+  // if (rating >= 4) throw new AppError("Issue rating must be 1, 2, or 3", 422);
   if (images.length > 5) throw new AppError("Max 5 images allowed", 422);
 
   const existing = await OrderIssue.findOne({ orderId });
@@ -24,6 +25,7 @@ export const createOrderIssue = async (
     userId,
     companyId,
     userName,
+    userAvatarUrl,
     orderId,
     rating,
     issueType,

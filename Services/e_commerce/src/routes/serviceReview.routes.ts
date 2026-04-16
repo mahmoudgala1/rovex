@@ -30,6 +30,10 @@ const router = Router();
  *               orderId:
  *                 type: string
  *                 format: uuid
+ *               userName:
+ *                 type: string
+ *               userAvatarUrl:
+ *                 type: string
  *               rating:
  *                 type: integer
  *                 enum: [4, 5]

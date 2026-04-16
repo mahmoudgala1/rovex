@@ -7,13 +7,13 @@ export const createReview = async (
   next: NextFunction,
 ) => {
   try {
-    const { rating, comment, orderId, roverId } = req.body;
+    const { userName, userAvatarUrl, rating, comment, orderId, roverId } = req.body;
     const { id: userId, company: companyId } = (req as any).user!;
-    const userName = "Mahmoud galal";
     const result = await svc.createServiceReview(
       userId,
       companyId,
       userName,
+      userAvatarUrl,
       orderId,
       rating,
       comment,
@@ -33,7 +33,7 @@ export const getReviews = async (
   try {
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 20;
-    res.json(await svc.getPublicReviews( page, limit));
+    res.json(await svc.getPublicReviews(page, limit));
   } catch (e) {
     next(e);
   }

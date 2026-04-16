@@ -5,6 +5,7 @@ export interface IServiceReview extends Document {
   companyId: string;
   orderId: string;
   userName: string;
+  userAvatarUrl?: string;
   rating: number;
   comment?: string;
   isVisible: boolean;
@@ -24,6 +25,7 @@ const ServiceReviewSchema = new Schema<IServiceReview>(
       unique: true,
     },
     userName: { type: String, required: true },
+    userAvatarUrl: { type: String },
     rating: { type: Number, enum: [4, 5], required: true },
     comment: { type: String },
     isVisible: { type: Boolean, default: true },
