@@ -1,28 +1,26 @@
 {
   "compilerOptions": {
     /* Base Options */
-    "target": "es2020",                                /* Convert to modern JS (ES2020) */
-    "module": "commonjs",                              /* Node uses CommonJS (require/module.exports) */
-    "outDir": "./dist",                                /* Redirect output structure to the directory. */
-    "rootDir": "./src",                                /* Specify the root directory of input files. */
-    "esModuleInterop": true,   
+    "target": "es2020" /* Convert to modern JS (ES2020) */,
+    "module": "nodenext" /* Node uses CommonJS (require/module.exports) */,
+    "outDir": "./dist" /* Redirect output structure to the directory. */,
+    "rootDir": "./src" /* Specify the root directory of input files. */,
+    "esModuleInterop": true,
     "typeRoots": ["./node_modules/@types", "./src/types"],
-"allowSyntheticDefaultImports": true,
+    "allowSyntheticDefaultImports": true,
 
-    
     // 2. Make sure this is true to process the global files
-    "skipLibCheck": true    ,                    /* Enables cleaner imports (import x from 'y') */
-    
+    "skipLibCheck": true /* Enables cleaner imports (import x from 'y') */,
+
     /* Strict Type-Checking Options (The Rules) */
-    "strict": true,                                    /* Enable all strict type-checking options. */
-    "noImplicitAny": true,                             /* Raise error on expressions and declarations with an implied 'any' type. */
-    "strictNullChecks": true,                          /* null and undefined are distinct types. */
-    
+    "strict": true /* Enable all strict type-checking options. */,
+    "noImplicitAny": true /* Raise error on expressions and declarations with an implied 'any' type. */,
+    "strictNullChecks": true /* null and undefined are distinct types. */,
+
     /* Module Resolution Options */
-    "moduleResolution": "node",                        /* Resolve modules like Node.js */
-    "baseUrl": ".",
-    "paths": {                                         /* Cleaner imports using aliases */
-      "*": ["node_modules/*"]
+    "moduleResolution": "nodenext" /* Resolve modules like Node.js */,
+    "paths": {
+      "@/*": ["./src/*"]
     }
   },
   "include": ["src/**/*", "src/types/**/*.d.ts"],                             /* Only compile files in src */

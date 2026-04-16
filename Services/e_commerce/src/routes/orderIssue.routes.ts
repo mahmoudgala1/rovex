@@ -1,6 +1,6 @@
 import { Router } from "express";
 import * as ctrl from "../controllers/orderIssue.controller";
-import { extractUserFromHeaders } from "../middlewares/auth.middleware";
+import { extractUserFromHeaders, restrictTo } from "../middlewares/auth.middleware";
 import { upload } from "../middlewares/multer.middleware";
 
 const router = Router({ mergeParams: true }); // mounted at /orders/:orderId
@@ -95,6 +95,7 @@ const router = Router({ mergeParams: true }); // mounted at /orders/:orderId
 router.post(
   "/issue",
   extractUserFromHeaders,
+  restrictTo("customer"),
   upload.array("images", 5),
   ctrl.reportIssue,
 );
@@ -135,6 +136,11 @@ router.post(
  *       401:
  *         description: Unauthorized
  */
-router.get("/issue", extractUserFromHeaders, ctrl.getOrderIssue);
+router.get(
+  "/issue",
+  extractUserFromHeaders,
+  restrictTo("customer"),
+  ctrl.getOrderIssue,
+);
 
 export default router;

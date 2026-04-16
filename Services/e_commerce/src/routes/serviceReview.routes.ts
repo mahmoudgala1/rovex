@@ -1,6 +1,6 @@
 import { Router } from "express";
 import * as ctrl from "../controllers/serviceReview.controller";
-import { extractUserFromHeaders } from "../middlewares/auth.middleware";
+import { extractUserFromHeaders, restrictTo } from "../middlewares/auth.middleware";
 
 const router = Router();
 
@@ -71,7 +71,7 @@ const router = Router();
  *       401:
  *         description: Unauthorized — missing or invalid token
  */
-router.post("/", extractUserFromHeaders, ctrl.createReview);
+router.post("/", extractUserFromHeaders, restrictTo("customer"), ctrl.createReview);
 
 /**
  * @swagger
