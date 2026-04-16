@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import * as svc from "../services/adminFeedback.service";
+import { ServiceReview } from "../models/ServiceReview";
 
 export const getReviews = async (
   req: Request,
@@ -175,8 +176,6 @@ export const getRoverReviews = async (
       page = "1",
       limit = "20",
     } = req.query as any;
-    // Re-uses adminGetReviews but pre-filters by roverId via the model directly
-    const { ServiceReview } = await import("../models/ServiceReview");
     const query: any = { roverId };
     if (rating !== undefined) query.rating = +rating;
     if (is_visible !== undefined) query.isVisible = is_visible === "true";

@@ -7,17 +7,15 @@ export const createReview = async (
   next: NextFunction,
 ) => {
   try {
-    const { userName, userAvatarUrl, rating, comment, orderId, roverId } = req.body;
+    const { userName, userAvatarUrl, rating, comment} = req.body;
     const { id: userId, company: companyId } = (req as any).user!;
     const result = await svc.createServiceReview(
       userId,
       companyId,
       userName,
       userAvatarUrl,
-      orderId,
       rating,
-      comment,
-      roverId,
+      comment
     );
     res.status(201).json(result);
   } catch (e) {

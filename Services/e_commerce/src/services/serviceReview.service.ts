@@ -6,27 +6,16 @@ export const createServiceReview = async (
   companyId: string,
   userName: string,
   userAvatarUrl: string,
-  orderId: string,
   rating: number,
   comment?: string,
-  roverId?: string,
 ) => {
-  // if (rating < 4)
-  //   throw new AppError("Rating must be 4 or 5 for a service review", 422);
-
-  const existing = await ServiceReview.findOne({ orderId });
-  if (existing)
-    throw new AppError("A review for this order already exists", 409);
-
   await ServiceReview.create({
     userId,
     companyId,
     userName,
     userAvatarUrl,
-    orderId,
     rating,
     comment,
-    roverId,
   });
   return { message: "Review submitted successfully" };
 };

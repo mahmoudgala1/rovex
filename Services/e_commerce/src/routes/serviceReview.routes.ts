@@ -27,9 +27,6 @@ const router = Router();
  *             type: object
  *             required: [rating, orderId]
  *             properties:
- *               orderId:
- *                 type: string
- *                 format: uuid
  *               userName:
  *                 type: string
  *               userAvatarUrl:
@@ -41,10 +38,6 @@ const router = Router();
  *               comment:
  *                 type: string
  *                 description: Optional feedback text
- *               roverId:
- *                 type: string
- *                 format: uuid
- *                 description: Optional rover linked to this order
  *     responses:
  *       201:
  *         description: Review submitted successfully
