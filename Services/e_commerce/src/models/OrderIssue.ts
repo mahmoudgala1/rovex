@@ -47,7 +47,7 @@ const OrderIssueSchema = new Schema<IOrderIssue>(
     userName: { type: String, required: true },
     userAvatarUrl: { type: String },
     roverId: { type: String, ref: "Rover" },
-    rating: { type: Number, enum: [1, 2, 3], required: true },
+    rating: { type: Number, required: true },
     issueType: { type: String, enum: ISSUE_TYPES, required: true },
     comment: { type: String },
     images: {
