@@ -17,18 +17,18 @@ export async function authMiddleware(
     let company_id = req.headers["x-company-id"] || null;
     let stripeCustomerId = null;
 
-    // if (!user_id || !user_role) {
-    //   errorResponse(res, "Unauthorized", 401);
-    //   return;
-    // }
+    if (!user_id || !user_role) {
+      errorResponse(res, "Unauthorized", 401);
+      return;
+    }
 
     if (user_role == "customer") {
       company_id = "COMP_MNHLYD2O1RE2M";
     }
 
     const customer = await CustomerModel.findOne({
-      customerId: "CUST_MNH5J2FNOFG6C",
-      // customerId: user_id,
+      // customerId: "CUST_MNH5J2FNOFG6C",
+      customerId: user_id,
     });
 
     if (!customer) {
@@ -47,10 +47,10 @@ export async function authMiddleware(
     }
 
     (req as any).user = {
-      id: "CUST_MNH5J2FNOFG6C",
-      role: "company_admin",
+      id: user_id,
+      role: user_role,
       type: user_type,
-      company: "COMP_MNHLYD2O1RE2M",
+      company: company_id,
       stripeCustomerId,
     };
 
