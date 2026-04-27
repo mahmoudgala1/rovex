@@ -1,10 +1,11 @@
+
 import "./config/dotenv"
 import {logger} from "./utils/logger"
-import {startDispatchWorker} from "./workers/orders.worker"
 import app from "./app";
+import {startDispatchWorker} from "./workers/orders.worker"
+
 
 const port = process.env.PORT;
-
 const startServer = async () => {
   try {
     const server = app.listen(port, () => {

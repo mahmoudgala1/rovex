@@ -8,6 +8,7 @@
     "typeRoots": ["./node_modules/@types", "./src/types"],
     "skipLibCheck": true,
     "strict": true,
+    "ignoreDeprecations": "6.0",
     "noImplicitAny": true,
     "strictNullChecks": true,
     "moduleResolution": "node",

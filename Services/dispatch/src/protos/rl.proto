@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package rl;
+
+service RLService {
+    rpc AssignRover(AssignRoverRequest) returns (AssignRoverResponse);
+}
+
+message Rover {
+    string rover_id = 1;
+    double latitude = 2;
+    double longitude = 3;
+    string status = 4;
+    float battery_level = 5;
+}
+
+message AssignRoverRequest {
+    repeated Rover rovers = 1;
+    double order_latitude = 2;
+    double order_longitude = 3;
+}
+
+message AssignRoverResponse {
+    bool success = 1;
+    string rover_id = 2;
+    string error = 3;
+}

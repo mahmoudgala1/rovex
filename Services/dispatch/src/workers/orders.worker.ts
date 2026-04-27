@@ -1,5 +1,6 @@
 import amqp from "amqplib";
 import { logger } from "../utils/logger"; 
+import { rlGrpcClient } from "../gRPC/clients/RL.client"
 
 const RABBITMQ_URL = process.env.RABBITMQ_URL || "amqp://localhost";
 const EXCHANGE_NAME = "ecommerce_exchange";
@@ -31,7 +32,7 @@ export async function startDispatchWorker() {
       logger.info(` Received Order: ${orderData._id} from ${msg.fields.routingKey}`);
 
       try {
-        processOrder(orderData)
+        processOrder()
 
         channel.ack(msg);
         logger.info(`Order ${orderData._id} Processed & Ack'd`);
@@ -56,15 +57,47 @@ export async function startDispatchWorker() {
 }
 
 
-async function processOrder(order: any) {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      
-      logger.debug(`🧠 AI assigning rover for Order ${order._id}...`);
-      resolve(true);
-    }, 2000); 
-        logger.info(` ${order._id} processing is done`);
-  });
 
+
+async function processOrder() {
+  try {
+    // Fetch available rovers from your DB here
+    const rovers =  [
+        { rover_id: "r1", latitude: 29.9575, longitude: 31.2820, status: "broken", battery_level: 0 },
+        { rover_id: "r2", latitude: 29.9600, longitude: 31.2850, status: "idle", battery_level: 0.7 },
+      ]
+
+    if (!rovers || rovers.length === 0) {
+      throw new Error("No available rovers");
+    }
+
+    const order = {
+      latitude :  29.9650,
+      longitude : 31.2900   
+
+    }
+    const result = await rlGrpcClient.assignRover(
+      rovers.map((r) => ({
+        rover_id: r.rover_id,
+        latitude: r.latitude,
+        longitude: r.longitude,
+        status: r.status,
+        battery_level: r.battery_level,
+      })),
+      order.latitude,
+      order.longitude
+    );
+
+    if (!result.success || !result.roverId) {
+      throw new Error(result.error || "RL model failed to assign a rover");
+    }
+
+    console.log( result.roverId)
+    return result.roverId;
+
+  } catch (error) {
+    throw new Error(`processOrder failed: ${(error as Error).message}`);
+  }
 }
 
+processOrder()
