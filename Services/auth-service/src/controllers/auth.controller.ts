@@ -18,7 +18,7 @@ class AuthController {
   fleetLogin = async (
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ): Promise<void> => {
     try {
       const { email, password } = req.body;
@@ -38,6 +38,7 @@ class AuthController {
         email: operator.email,
         user_type: "fleet_operator",
         role: operator.role,
+        company_id: "COMP_ROVEX",
         permissions: operator.permissions,
         token_version: operator.token_version,
       });
@@ -67,7 +68,7 @@ class AuthController {
           },
           tokens,
         },
-        "Login successful"
+        "Login successful",
       );
     } catch (error) {
       next(error);
@@ -77,7 +78,7 @@ class AuthController {
   changePasswordFleet = async (
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ): Promise<void> => {
     try {
       const { current_password, new_password } = req.body;
@@ -92,7 +93,7 @@ class AuthController {
       }
 
       const isCurrentPasswordValid = await (user as any).comparePassword(
-        current_password
+        current_password,
       );
       if (!isCurrentPasswordValid) {
         throw new AppError("Current password is incorrect", 401);
@@ -102,7 +103,7 @@ class AuthController {
       if (isSamePassword) {
         throw new AppError(
           "New password must be different from current password",
-          400
+          400,
         );
       }
 
@@ -152,7 +153,7 @@ class AuthController {
   forgotPasswordFleet = async (
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ): Promise<void> => {
     try {
       const { email } = req.body;
@@ -199,7 +200,7 @@ class AuthController {
       });
 
       logger.info(
-        `Password reset requested for fleet operator ${user.operator_id}`
+        `Password reset requested for fleet operator ${user.operator_id}`,
       );
 
       successResponse(res, {
@@ -213,7 +214,7 @@ class AuthController {
   resetPasswordFleet = async (
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ): Promise<void> => {
     try {
       const { user_id, token, new_password } = req.body;
@@ -270,7 +271,7 @@ class AuthController {
   async fleetLogout(
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ): Promise<void> {
     try {
       const { refresh_token } = req.body;
@@ -280,7 +281,7 @@ class AuthController {
         throw new AppError(
           "Access token and refresh token are required",
           400,
-          "VALIDATION_ERROR"
+          "VALIDATION_ERROR",
         );
       }
 
@@ -288,7 +289,7 @@ class AuthController {
         accessToken,
         refresh_token,
         req.user!.user_id,
-        "fleet_operator"
+        "fleet_operator",
       );
 
       successResponse(res, null, "Logged out successfully");
@@ -300,7 +301,7 @@ class AuthController {
   companyLogin = async (
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ): Promise<void> => {
     try {
       const { email, password } = req.body;
@@ -314,7 +315,7 @@ class AuthController {
         throw new AppError(
           "Invalid email or password",
           401,
-          "INVALID_CREDENTIALS"
+          "INVALID_CREDENTIALS",
         );
       }
 
@@ -323,7 +324,7 @@ class AuthController {
         throw new AppError(
           "Invalid email or password",
           401,
-          "INVALID_CREDENTIALS"
+          "INVALID_CREDENTIALS",
         );
       }
 
@@ -369,7 +370,7 @@ class AuthController {
   changePasswordCompany = async (
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ): Promise<void> => {
     try {
       const { current_password, new_password } = req.body;
@@ -381,7 +382,7 @@ class AuthController {
       }
 
       const isCurrentPasswordValid = await (user as any).comparePassword(
-        current_password
+        current_password,
       );
       if (!isCurrentPasswordValid) {
         throw new AppError("Current password is incorrect", 401);
@@ -391,7 +392,7 @@ class AuthController {
       if (isSamePassword) {
         throw new AppError(
           "New password must be different from current password",
-          400
+          400,
         );
       }
 
@@ -442,7 +443,7 @@ class AuthController {
   forgotPasswordCompany = async (
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ): Promise<void> => {
     try {
       const { email } = req.body;
@@ -504,7 +505,7 @@ class AuthController {
   resetPasswordCompany = async (
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ): Promise<void> => {
     try {
       const { user_id, token, new_password } = req.body;
@@ -557,7 +558,7 @@ class AuthController {
   async companyLogout(
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ): Promise<void> {
     try {
       const { refresh_token } = req.body;
@@ -567,7 +568,7 @@ class AuthController {
         throw new AppError(
           "Access token and refresh token are required",
           400,
-          "VALIDATION_ERROR"
+          "VALIDATION_ERROR",
         );
       }
 
@@ -575,7 +576,7 @@ class AuthController {
         accessToken,
         refresh_token,
         req.user!.user_id,
-        "company_user"
+        "company_user",
       );
 
       successResponse(res, null, "Logged out successfully");
@@ -587,24 +588,24 @@ class AuthController {
   async logoutAllDevices(
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ): Promise<void> {
     try {
       const userType = req.path.includes("fleet")
         ? "fleet_operator"
         : req.path.includes("company")
-        ? "company_user"
-        : "customer";
+          ? "company_user"
+          : "customer";
 
       const devicesCount = await authService.logoutAllDevices(
         req.user!.user_id,
-        userType
+        userType,
       );
 
       successResponse(
         res,
         { devices_logged_out: devicesCount },
-        "Logged out from all devices successfully"
+        "Logged out from all devices successfully",
       );
     } catch (error) {
       next(error);
@@ -614,7 +615,7 @@ class AuthController {
   async refreshToken(
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ): Promise<void> {
     try {
       const { refresh_token } = req.body;
@@ -623,7 +624,7 @@ class AuthController {
         throw new AppError(
           "Refresh token is required",
           400,
-          "VALIDATION_ERROR"
+          "VALIDATION_ERROR",
         );
       }
 
