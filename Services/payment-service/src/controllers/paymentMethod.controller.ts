@@ -3,6 +3,7 @@ import { PaymentMethodService } from "../services/paymentMethod.service";
 import { AuthenticatedRequest } from "../types/stripe.types";
 import { successResponse, errorResponse } from "../utils/response";
 import { Logger } from "../utils/logger";
+import { Company } from "../models/company.model";
 
 export class PaymentMethodController {
   private paymentMethodService: PaymentMethodService;
@@ -227,6 +228,7 @@ export class PaymentMethodController {
         return;
       }
       const companyId = (req as any).user.company;
+      const company = await Company.findOne({ companyId });
 
       const setupIntent = await this.paymentMethodService.createSetupIntent(
         companyId,
@@ -241,6 +243,7 @@ export class PaymentMethodController {
           setupIntentId: setupIntent.id,
           clientSecret: setupIntent.client_secret,
           status: setupIntent.status,
+          publishableKey: company!.stripe.publishableKey,
         },
         "Setup intent created successfully",
         201,

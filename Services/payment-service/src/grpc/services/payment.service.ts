@@ -4,6 +4,7 @@ import { PaymentService } from "../../services/payment.service";
 import { CustomerModel } from "../../models/customer.model";
 import { authGrpcClient } from "../clients/auth.client";
 import { CustomerService } from "../../services/customer.service";
+import { Company } from "@/models/company.model";
 
 export class PaymentGrpcService {
   private logger: Logger;
@@ -53,6 +54,9 @@ export class PaymentGrpcService {
         });
         return;
       }
+      const company = await Company.findOne({
+        companyId: "COMP_MNHLYD2O1RE2M",
+      });
 
       callback(null, {
         success: true,
@@ -60,6 +64,7 @@ export class PaymentGrpcService {
           paymentIntentId: paymentIntent.id,
           clientSecret: paymentIntent.client_secret,
           status: paymentIntent.status,
+          publishableKey: company!.stripe.publishableKey,
         },
       });
     } catch (error) {

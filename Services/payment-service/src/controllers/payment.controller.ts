@@ -3,6 +3,7 @@ import { PaymentService } from "../services/payment.service";
 import { AuthenticatedRequest } from "../types/stripe.types";
 import { successResponse, errorResponse } from "../utils/response";
 import { Logger } from "../utils/logger";
+import { Company } from "@/models/company.model";
 
 export class PaymentController {
   private paymentService: PaymentService;
@@ -18,6 +19,7 @@ export class PaymentController {
       const { amount, currency, description, metadata } = req.body;
       const stripeCustomerId = (req as any).user.stripeCustomerId;
       const companyId = (req as any).user.company;
+      const company = await Company.findOne({ companyId });
 
       if (!amount || !currency) {
         return errorResponse(res, "Amount and currency are required", 400);
@@ -37,7 +39,7 @@ export class PaymentController {
       this.logger.info(`Payment intent created: ${paymentIntent.id}`);
       return successResponse(
         res,
-        dto,
+        { ...dto, publishableKey: company!.stripe.publishableKey },
         "Payment intent created successfully",
         201,
       );
