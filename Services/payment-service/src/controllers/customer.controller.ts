@@ -41,8 +41,12 @@ export class CustomerController {
   getCustomer = async (req: AuthenticatedRequest, res: Response) => {
     try {
       const customerId = String(req.params.customerId);
+      const companyId = (req as any).user.company;
 
-      const customer = await this.customerService.getCustomer(customerId);
+      const customer = await this.customerService.getCustomer(
+        companyId,
+        customerId,
+      );
       const dto = this.customerService.mapCustomerToDTO(customer);
 
       return successResponse(res, dto);
@@ -55,9 +59,11 @@ export class CustomerController {
   updateCustomer = async (req: AuthenticatedRequest, res: Response) => {
     try {
       const customerId = String(req.params.customerId);
+      const companyId = (req as any).user.company;
       const updates = req.body;
 
       const customer = await this.customerService.updateCustomer(
+        companyId,
         customerId,
         updates,
       );
@@ -74,8 +80,12 @@ export class CustomerController {
   deleteCustomer = async (req: AuthenticatedRequest, res: Response) => {
     try {
       const customerId = String(req.params.customerId);
+      const companyId = (req as any).user.company;
 
-      const deleted = await this.customerService.deleteCustomer(customerId);
+      const deleted = await this.customerService.deleteCustomer(
+        companyId,
+        customerId,
+      );
       if (deleted.deleted) {
         this.logger.info(`Customer deleted: ${deleted.id}`);
         successResponse(
