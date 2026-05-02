@@ -41,6 +41,7 @@ export class PaymentGrpcService {
       }
 
       const paymentIntent = await this.paymentService.createPaymentIntent(
+        "COMP_MNHLYD2O1RE2M",
         { amount, currency, description, metadata },
         stripeCustomerId,
       );

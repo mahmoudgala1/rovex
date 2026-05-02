@@ -1,4 +1,3 @@
-// models/company.model.ts
 import { Schema, model, Document } from "mongoose";
 
 export interface ICompanyStripe {
