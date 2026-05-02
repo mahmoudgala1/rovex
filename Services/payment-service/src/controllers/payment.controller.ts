@@ -17,7 +17,7 @@ export class PaymentController {
     try {
       const { amount, currency, description, metadata } = req.body;
       const stripeCustomerId = (req as any).user.stripeCustomerId;
-      const companyId = (req as any).user.companyId;
+      const companyId = (req as any).user.company;
 
       if (!amount || !currency) {
         return errorResponse(res, "Amount and currency are required", 400);
@@ -50,7 +50,7 @@ export class PaymentController {
   getPayment = async (req: AuthenticatedRequest, res: Response) => {
     try {
       const paymentIntentId = String(req.params.paymentIntentId);
-      const companyId = (req as any).user.companyId;
+      const companyId = (req as any).user.company;
 
       const paymentIntent = await this.paymentService.getPaymentIntent(
         companyId,
@@ -72,7 +72,7 @@ export class PaymentController {
   confirmPayment = async (req: AuthenticatedRequest, res: Response) => {
     try {
       const paymentIntentId = String(req.params.paymentIntentId);
-      const companyId = (req as any).user.companyId;
+      const companyId = (req as any).user.company;
       const { paymentMethodId } = req.body;
 
       if (!paymentMethodId) {
@@ -101,7 +101,7 @@ export class PaymentController {
   cancelPayment = async (req: AuthenticatedRequest, res: Response) => {
     try {
       const paymentIntentId = String(req.params.paymentIntentId);
-      const companyId = (req as any).user.companyId;
+      const companyId = (req as any).user.company;
       const paymentIntent = await this.paymentService.cancelPaymentIntent(
         companyId,
         paymentIntentId,
@@ -124,7 +124,7 @@ export class PaymentController {
     try {
       const paymentIntentId = String(req.params.paymentIntentId);
       const { amount } = req.body;
-      const companyId = (req as any).user.companyId;
+      const companyId = (req as any).user.company;
 
       const refund = await this.paymentService.createRefund(
         companyId,
@@ -146,7 +146,7 @@ export class PaymentController {
     try {
       const { limit } = req.query;
       const stripeCustomerId = (req as any).user.stripeCustomerId;
-      const companyId = (req as any).user.companyId;
+      const companyId = (req as any).user.company;
       const paymentIntents = await this.paymentService.listPaymentIntents(
         companyId,
         stripeCustomerId as string,

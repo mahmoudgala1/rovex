@@ -29,7 +29,7 @@ export class PaymentMethodController {
         );
         return;
       }
-      const companyId = (req as any).user.companyId;
+      const companyId = (req as any).user.company;
 
       const paymentMethod = await this.paymentMethodService.attachPaymentMethod(
         companyId,
@@ -57,7 +57,7 @@ export class PaymentMethodController {
   ): Promise<void> => {
     try {
       const paymentMethodId = String(req.params.paymentMethodId);
-      const companyId = (req as any).user.companyId;
+      const companyId = (req as any).user.company;
 
       const paymentMethod = await this.paymentMethodService.detachPaymentMethod(
         companyId,
@@ -82,7 +82,7 @@ export class PaymentMethodController {
   ): Promise<void> => {
     try {
       const paymentMethodId = String(req.params.paymentMethodId);
-      const companyId = (req as any).user.companyId;
+      const companyId = (req as any).user.company;
       const paymentMethod = await this.paymentMethodService.getPaymentMethod(
         companyId,
         paymentMethodId,
@@ -105,7 +105,7 @@ export class PaymentMethodController {
     try {
       const stripeCustomerId = (req as any).user.stripeCustomerId;
       const { type, limit } = req.query;
-      const companyId = (req as any).user.companyId;
+      const companyId = (req as any).user.company;
 
       const paymentMethods = await this.paymentMethodService.listPaymentMethods(
         companyId,
@@ -131,7 +131,7 @@ export class PaymentMethodController {
     try {
       const paymentMethodId = String(req.params.paymentMethodId);
       const { billingDetails, card, metadata } = req.body;
-      const companyId = (req as any).user.companyId;
+      const companyId = (req as any).user.company;
 
       const paymentMethod = await this.paymentMethodService.updatePaymentMethod(
         companyId,
@@ -167,7 +167,7 @@ export class PaymentMethodController {
         );
         return;
       }
-      const companyId = (req as any).user.companyId;
+      const companyId = (req as any).user.company;
 
       const customer = await this.paymentMethodService.setDefaultPaymentMethod(
         companyId,
@@ -191,7 +191,7 @@ export class PaymentMethodController {
   ): Promise<void> => {
     try {
       const stripeCustomerId = (req as any).user.stripeCustomerId;
-      const companyId = (req as any).user.companyId;
+      const companyId = (req as any).user.company;
 
       const paymentMethod =
         await this.paymentMethodService.getDefaultPaymentMethod(
@@ -226,7 +226,7 @@ export class PaymentMethodController {
         errorResponse(res, "Customer ID is required", 400);
         return;
       }
-      const companyId = (req as any).user.companyId;
+      const companyId = (req as any).user.company;
 
       const setupIntent = await this.paymentMethodService.createSetupIntent(
         companyId,
@@ -263,7 +263,7 @@ export class PaymentMethodController {
         errorResponse(res, "Payment method ID is required", 400);
         return;
       }
-      const companyId = (req as any).user.companyId;
+      const companyId = (req as any).user.company;
       const setupIntent = await this.paymentMethodService.confirmSetupIntent(
         companyId,
         setupIntentId,
@@ -284,7 +284,7 @@ export class PaymentMethodController {
   ): Promise<void> => {
     try {
       const setupIntentId = String(req.params.setupIntentId);
-      const companyId = (req as any).user.companyId;
+      const companyId = (req as any).user.company;
       const setupIntent = await this.paymentMethodService.getSetupIntent(
         companyId,
         setupIntentId,
@@ -302,7 +302,7 @@ export class PaymentMethodController {
   ): Promise<void> => {
     try {
       const setupIntentId = String(req.params.setupIntentId);
-      const companyId = (req as any).user.companyId;
+      const companyId = (req as any).user.company;
       const setupIntent = await this.paymentMethodService.cancelSetupIntent(
         companyId,
         setupIntentId,
