@@ -17,12 +17,14 @@ export class PaymentController {
     try {
       const { amount, currency, description, metadata } = req.body;
       const stripeCustomerId = (req as any).user.stripeCustomerId;
+      const companyId = (req as any).user.companyId;
 
       if (!amount || !currency) {
         return errorResponse(res, "Amount and currency are required", 400);
       }
 
       const paymentIntent = await this.paymentService.createPaymentIntent(
+        companyId,
         { amount, currency, description, metadata },
         stripeCustomerId,
       );
@@ -48,9 +50,12 @@ export class PaymentController {
   getPayment = async (req: AuthenticatedRequest, res: Response) => {
     try {
       const paymentIntentId = String(req.params.paymentIntentId);
+      const companyId = (req as any).user.companyId;
 
-      const paymentIntent =
-        await this.paymentService.getPaymentIntent(paymentIntentId);
+      const paymentIntent = await this.paymentService.getPaymentIntent(
+        companyId,
+        paymentIntentId,
+      );
 
       const dto = this.paymentService.mapPaymentIntentToDTO(paymentIntent, {
         orderId: paymentIntent.metadata.orderId,
@@ -67,6 +72,7 @@ export class PaymentController {
   confirmPayment = async (req: AuthenticatedRequest, res: Response) => {
     try {
       const paymentIntentId = String(req.params.paymentIntentId);
+      const companyId = (req as any).user.companyId;
       const { paymentMethodId } = req.body;
 
       if (!paymentMethodId) {
@@ -74,6 +80,7 @@ export class PaymentController {
       }
 
       const paymentIntent = await this.paymentService.confirmPaymentIntent(
+        companyId,
         paymentIntentId,
         paymentMethodId,
       );
@@ -94,9 +101,11 @@ export class PaymentController {
   cancelPayment = async (req: AuthenticatedRequest, res: Response) => {
     try {
       const paymentIntentId = String(req.params.paymentIntentId);
-
-      const paymentIntent =
-        await this.paymentService.cancelPaymentIntent(paymentIntentId);
+      const companyId = (req as any).user.companyId;
+      const paymentIntent = await this.paymentService.cancelPaymentIntent(
+        companyId,
+        paymentIntentId,
+      );
 
       const dto = this.paymentService.mapPaymentIntentToDTO(paymentIntent, {
         orderId: paymentIntent.metadata.orderId,
@@ -115,8 +124,10 @@ export class PaymentController {
     try {
       const paymentIntentId = String(req.params.paymentIntentId);
       const { amount } = req.body;
+      const companyId = (req as any).user.companyId;
 
       const refund = await this.paymentService.createRefund(
+        companyId,
         paymentIntentId,
         amount,
       );
@@ -135,8 +146,9 @@ export class PaymentController {
     try {
       const { limit } = req.query;
       const stripeCustomerId = (req as any).user.stripeCustomerId;
-
+      const companyId = (req as any).user.companyId;
       const paymentIntents = await this.paymentService.listPaymentIntents(
+        companyId,
         stripeCustomerId as string,
         limit ? parseInt(limit as string) : 10,
       );
