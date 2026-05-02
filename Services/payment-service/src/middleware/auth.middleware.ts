@@ -11,48 +11,48 @@ export async function authMiddleware(
   next: NextFunction,
 ): Promise<void> {
   try {
-    const user_id = req.headers["x-user-id"] || null;
-    const user_role = req.headers["x-user-role"] || null;
-    const user_type = (req.headers["x-user-type"] as string) || null;
-    let company_id = req.headers["x-company-id"] || null;
-    let stripeCustomerId = null;
+    // const user_id = req.headers["x-user-id"] || null;
+    // const user_role = req.headers["x-user-role"] || null;
+    // const user_type = (req.headers["x-user-type"] as string) || null;
+    // let company_id = req.headers["x-company-id"] || null;
+    // let stripeCustomerId = null;
 
-    if (!user_id || !user_role) {
-      errorResponse(res, "Unauthorized", 401);
-      return;
-    }
+    // if (!user_id || !user_role) {
+    //   errorResponse(res, "Unauthorized", 401);
+    //   return;
+    // }
 
-    if (user_role == "customer") {
-      company_id = "COMP_MNHLYD2O1RE2M";
-    }
+    // if (user_role == "customer") {
+    //   company_id = "COMP_MNHLYD2O1RE2M";
+    // }
 
     const customer = await CustomerModel.findOne({
-      // customerId: "CUST_MNH5J2FNOFG6C",
-      customerId: user_id,
+      customerId: "CUST_MNH5J2FNOFG6C",
+      // customerId: user_id,
     });
 
-    if (!customer) {
-      const { user } = await authGrpcClient.getUser(String(user_id));
+    // if (!customer) {
+    //   const { user } = await authGrpcClient.getUser(String(user_id));
 
-      const stripeCustomer = await new CustomerService().createCustomer({
-        customerId: user!.customer_id,
-        companyId: company_id as string,
-        name: user!.name,
-        email: user!.email,
-        phone: user!.phone,
-      });
-      stripeCustomerId = stripeCustomer.id;
-    } else {
-      stripeCustomerId = customer.stripeCustomerId;
-    }
+    //   const stripeCustomer = await new CustomerService().createCustomer({
+    //     customerId: user!.customer_id,
+    //     companyId: company_id as string,
+    //     name: user!.name,
+    //     email: user!.email,
+    //     phone: user!.phone,
+    //   });
+    //   stripeCustomerId = stripeCustomer.id;
+    // } else {
+    //   stripeCustomerId = customer.stripeCustomerId;
+    // }
 
-    (req as any).user = {
-      id: user_id,
-      role: user_role,
-      type: user_type,
-      company: company_id,
-      stripeCustomerId,
-    };
+    // (req as any).user = {
+    //   id: user_id,
+    //   role: user_role,
+    //   type: user_type,
+    //   company: company_id,
+    //   stripeCustomerId,
+    // };
 
     next();
   } catch (error) {

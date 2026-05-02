@@ -5,6 +5,7 @@ import { successResponse, errorResponse } from "../utils/response";
 import Stripe from "stripe";
 import { WebhookEventDTO } from "../mappers/stripe.mapper";
 import RabbitMQPublisher from "../services/rabbitmq.service";
+import { Company } from "../models/company.model";
 
 export class WebhookController {
   private logger: Logger;
@@ -37,9 +38,16 @@ export class WebhookController {
     }
     this.logger.info(`-----------------------------------`);
     this.logger.info(`Webhook received: ${event.type}`);
+    const stripeAccountId = event.account;
 
     try {
       switch (event.type) {
+        case "account.updated": {
+          const account = event.data.object as Stripe.Account;
+          await this.handleAccountUpdated(stripeAccountId!, account);
+          break;
+        }
+
         // Payment Events
         case "payment_intent.succeeded":
           await this.onPaymentIntentSucceeded(event.data.object);
@@ -175,6 +183,25 @@ export class WebhookController {
       createdAt: new Date(event.created * 1000).toISOString(),
       data: event.data.object,
     };
+  }
+
+  private async handleAccountUpdated(
+    stripeAccountId: string,
+    account: Stripe.Account,
+  ) {
+    await Company.findOneAndUpdate(
+      { "stripe.accountId": stripeAccountId },
+      {
+        "stripe.chargesEnabled": account.charges_enabled,
+        "stripe.payoutsEnabled": account.payouts_enabled,
+        "stripe.detailsSubmitted": account.details_submitted,
+        status: account.charges_enabled ? "active" : "restricted",
+      },
+    );
+
+    console.log(
+      `Account updated: ${stripeAccountId} — chargesEnabled: ${account.charges_enabled}`,
+    );
   }
 
   // ============================================================

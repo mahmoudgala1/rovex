@@ -6,6 +6,7 @@ import paymentMethodRoutes from "./paymentMethod.routes";
 import productRoutes from "./product.routes";
 import priceRoutes from "./price.routes";
 import webhookRoutes from "./webhook.routes";
+import connectRoutes from "./connect.routes";
 
 const router = Router();
 
@@ -16,5 +17,7 @@ router.use("/payment-methods", paymentMethodRoutes);
 router.use("/products", productRoutes);
 router.use("/prices", priceRoutes);
 router.use("/webhooks", webhookRoutes);
+router.use("/connect", connectRoutes);
+
 
 export default router;
