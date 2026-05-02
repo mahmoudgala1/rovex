@@ -3,69 +3,92 @@ import {
   PaymentMethodListDTO,
 } from "../mappers/stripe.mapper";
 import { stripe } from "../config/stripe.config";
+import { Company } from "../models/company.model";
 import Stripe from "stripe";
 
 export class PaymentMethodService {
-  async createPaymentMethod(data: {
-    type: string;
-    card?: Stripe.PaymentMethodCreateParams.Card;
-    billingDetails?: Stripe.PaymentMethodCreateParams.BillingDetails;
-    metadata?: Record<string, string>;
-  }): Promise<Stripe.PaymentMethod> {
-    const paymentMethod = await stripe.paymentMethods.create({
-      type: data.type as any,
-      card: data.card,
-      billing_details: data.billingDetails,
-      metadata: data.metadata,
-    });
+  private async getStripeAccount(companyId: string): Promise<string> {
+    const company = await Company.findOne({ companyId });
 
-    return paymentMethod;
+    if (!company?.stripe?.accountId) {
+      throw new Error(`Company ${companyId} has no connected Stripe account`);
+    }
+
+    if (!company.stripe.chargesEnabled) {
+      throw new Error(
+        `Company ${companyId} Stripe account is not fully activated`,
+      );
+    }
+
+    return company.stripe.accountId;
   }
 
   async attachPaymentMethod(
+    companyId: string,
     paymentMethodId: string,
-    customerId: string,
+    stripeCustomerId: string,
   ): Promise<Stripe.PaymentMethod> {
-    const paymentMethod = await stripe.paymentMethods.attach(paymentMethodId, {
-      customer: customerId,
-    });
+    const stripeAccount = await this.getStripeAccount(companyId);
+
+    const paymentMethod = await stripe.paymentMethods.attach(
+      paymentMethodId,
+      { customer: stripeCustomerId },
+      { stripeAccount },
+    );
 
     return paymentMethod;
   }
 
   async detachPaymentMethod(
+    companyId: string,
     paymentMethodId: string,
   ): Promise<Stripe.PaymentMethod> {
-    const paymentMethod = await stripe.paymentMethods.detach(paymentMethodId);
+    const stripeAccount = await this.getStripeAccount(companyId);
+
+    const paymentMethod = await stripe.paymentMethods.detach(paymentMethodId, {
+      stripeAccount,
+    });
+
     return paymentMethod;
   }
 
   async getPaymentMethod(
+    companyId: string,
     paymentMethodId: string,
   ): Promise<Stripe.PaymentMethod> {
-    const paymentMethod = await stripe.paymentMethods.retrieve(paymentMethodId);
+    const stripeAccount = await this.getStripeAccount(companyId);
+
+    const paymentMethod = await stripe.paymentMethods.retrieve(
+      paymentMethodId,
+      { stripeAccount },
+    );
+
     return paymentMethod;
   }
 
   async listPaymentMethods(
-    customerId: string,
+    companyId: string,
+    stripeCustomerId: string,
     type?: string,
     limit: number = 10,
   ): Promise<Stripe.ApiList<Stripe.PaymentMethod>> {
+    const stripeAccount = await this.getStripeAccount(companyId);
+
     const params: Stripe.PaymentMethodListParams = {
-      customer: customerId,
+      customer: stripeCustomerId,
       limit,
+      ...(type && { type: type as Stripe.PaymentMethodListParams.Type }),
     };
 
-    if (type) {
-      params.type = type as any;
-    }
+    const paymentMethods = await stripe.paymentMethods.list(params, {
+      stripeAccount,
+    });
 
-    const paymentMethods = await stripe.paymentMethods.list(params);
     return paymentMethods;
   }
 
   async updatePaymentMethod(
+    companyId: string,
     paymentMethodId: string,
     data: {
       billingDetails?: Stripe.PaymentMethodUpdateParams.BillingDetails;
@@ -73,119 +96,130 @@ export class PaymentMethodService {
       metadata?: Record<string, string>;
     },
   ): Promise<Stripe.PaymentMethod> {
-    const paymentMethod = await stripe.paymentMethods.update(paymentMethodId, {
-      billing_details: data.billingDetails,
-      card: data.card,
-      metadata: data.metadata,
-    });
+    const stripeAccount = await this.getStripeAccount(companyId);
+
+    const paymentMethod = await stripe.paymentMethods.update(
+      paymentMethodId,
+      {
+        billing_details: data.billingDetails,
+        card: data.card,
+        metadata: data.metadata,
+      },
+      { stripeAccount },
+    );
 
     return paymentMethod;
   }
 
   async setDefaultPaymentMethod(
-    customerId: string,
+    companyId: string,
+    stripeCustomerId: string,
     paymentMethodId: string,
   ): Promise<Stripe.Customer> {
-    const customer = await stripe.customers.update(customerId, {
-      invoice_settings: {
-        default_payment_method: paymentMethodId,
+    const stripeAccount = await this.getStripeAccount(companyId);
+
+    const customer = await stripe.customers.update(
+      stripeCustomerId,
+      {
+        invoice_settings: {
+          default_payment_method: paymentMethodId,
+        },
       },
-    });
+      { stripeAccount },
+    );
 
     return customer;
   }
 
   async getDefaultPaymentMethod(
-    customerId: string,
+    companyId: string,
+    stripeCustomerId: string,
   ): Promise<Stripe.PaymentMethod | null> {
-    const customer = (await stripe.customers.retrieve(customerId, {
-      expand: ["invoice_settings.default_payment_method"],
-    })) as Stripe.Customer;
+    const stripeAccount = await this.getStripeAccount(companyId);
 
-    if (
-      customer.invoice_settings?.default_payment_method &&
-      typeof customer.invoice_settings.default_payment_method === "object"
-    ) {
-      return customer.invoice_settings
-        .default_payment_method as Stripe.PaymentMethod;
+    const customer = (await stripe.customers.retrieve(
+      stripeCustomerId,
+      { expand: ["invoice_settings.default_payment_method"] },
+      { stripeAccount },
+    )) as Stripe.Customer;
+
+    const defaultPm = customer.invoice_settings?.default_payment_method;
+
+    if (defaultPm && typeof defaultPm === "object") {
+      return defaultPm as Stripe.PaymentMethod;
     }
 
     return null;
   }
 
   async createSetupIntent(
-    customerId: string,
+    companyId: string,
+    stripeCustomerId: string,
     paymentMethodTypes: string[] = ["card"],
   ): Promise<Stripe.SetupIntent> {
-    const setupIntent = await stripe.setupIntents.create({
-      customer: customerId,
-      payment_method_types: paymentMethodTypes as any,
-      usage: "off_session",
-    });
+    const stripeAccount = await this.getStripeAccount(companyId);
+
+    const setupIntent = await stripe.setupIntents.create(
+      {
+        customer: stripeCustomerId,
+        payment_method_types: paymentMethodTypes as any,
+        usage: "off_session",
+      },
+      { stripeAccount },
+    );
 
     return setupIntent;
   }
 
   async confirmSetupIntent(
+    companyId: string,
     setupIntentId: string,
     paymentMethodId: string,
   ): Promise<Stripe.SetupIntent> {
-    const setupIntent = await stripe.setupIntents.confirm(setupIntentId, {
-      payment_method: paymentMethodId,
+    const stripeAccount = await this.getStripeAccount(companyId);
+
+    const setupIntent = await stripe.setupIntents.confirm(
+      setupIntentId,
+      { payment_method: paymentMethodId },
+      { stripeAccount },
+    );
+
+    return setupIntent;
+  }
+
+  async getSetupIntent(
+    companyId: string,
+    setupIntentId: string,
+  ): Promise<Stripe.SetupIntent> {
+    const stripeAccount = await this.getStripeAccount(companyId);
+
+    const setupIntent = await stripe.setupIntents.retrieve(setupIntentId, {
+      stripeAccount,
     });
 
     return setupIntent;
   }
 
-  async getSetupIntent(setupIntentId: string): Promise<Stripe.SetupIntent> {
-    const setupIntent = await stripe.setupIntents.retrieve(setupIntentId);
-    return setupIntent;
-  }
+  async cancelSetupIntent(
+    companyId: string,
+    setupIntentId: string,
+  ): Promise<Stripe.SetupIntent> {
+    const stripeAccount = await this.getStripeAccount(companyId);
 
-  async cancelSetupIntent(setupIntentId: string): Promise<Stripe.SetupIntent> {
-    const setupIntent = await stripe.setupIntents.cancel(setupIntentId);
-    return setupIntent;
-  }
-
-  async createAndAttachPaymentMethod(
-    customerId: string,
-    data: {
-      type: string;
-      card?: Stripe.PaymentMethodCreateParams.Card;
-      billingDetails?: Stripe.PaymentMethodCreateParams.BillingDetails;
-      setAsDefault?: boolean;
-    },
-  ): Promise<{
-    paymentMethod: Stripe.PaymentMethod;
-    customer?: Stripe.Customer;
-  }> {
-    const paymentMethod = await this.createPaymentMethod({
-      type: data.type,
-      card: data.card,
-      billingDetails: data.billingDetails,
+    const setupIntent = await stripe.setupIntents.cancel(setupIntentId, {
+      stripeAccount,
     });
 
-    await this.attachPaymentMethod(paymentMethod.id, customerId);
-
-    let customer: Stripe.Customer | undefined;
-    if (data.setAsDefault) {
-      customer = await this.setDefaultPaymentMethod(
-        customerId,
-        paymentMethod.id,
-      );
-    }
-
-    return { paymentMethod, customer };
+    return setupIntent;
   }
 
-  async validateCard(
+  validateCard(
     cardNumber: string,
     expMonth: number,
     expYear: number,
     cvc: string,
-  ): Promise<{ valid: boolean; errors: string[] }> {
+  ): { valid: boolean; errors: string[] } {
     const errors: string[] = [];
-
     const cleanNumber = cardNumber.replace(/\s/g, "");
 
     if (cleanNumber.length < 13 || cleanNumber.length > 19) {
@@ -200,8 +234,7 @@ export class PaymentMethodService {
       errors.push("Invalid expiration month");
     }
 
-    const currentYear = new Date().getFullYear();
-    if (expYear < currentYear) {
+    if (expYear < new Date().getFullYear()) {
       errors.push("Card has expired");
     }
 
@@ -209,15 +242,12 @@ export class PaymentMethodService {
       errors.push("Invalid CVC");
     }
 
-    return {
-      valid: errors.length === 0,
-      errors,
-    };
+    return { valid: errors.length === 0, errors };
   }
 
   mapPaymentMethodToDTO(
     pm: Stripe.PaymentMethod,
-    options?: { isDefault?: boolean; status?: "active" | "archived" },
+    options?: { isDefault?: boolean },
   ): PaymentMethodDTO {
     const card = pm.card!;
     return {

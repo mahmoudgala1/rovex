@@ -13,39 +13,6 @@ export class PaymentMethodController {
     this.logger = new Logger("PaymentMethodController");
   }
 
-  createPaymentMethod = async (
-    req: AuthenticatedRequest,
-    res: Response,
-  ): Promise<void> => {
-    try {
-      const { type, card, billingDetails, metadata } = req.body;
-
-      if (!type) {
-        errorResponse(res, "Payment method type is required", 400);
-        return;
-      }
-
-      const paymentMethod = await this.paymentMethodService.createPaymentMethod(
-        {
-          type,
-          card,
-          billingDetails,
-          metadata,
-        },
-      );
-
-      const dto = this.paymentMethodService.mapPaymentMethodToDTO(
-        paymentMethod!,
-      );
-
-      this.logger.info(`Payment method created: ${paymentMethod.id}`);
-      successResponse(res, dto, "Payment method created successfully", 201);
-    } catch (error) {
-      this.logger.error("Error creating payment method:", error);
-      errorResponse(res, (error as Error).message, 500);
-    }
-  };
-
   attachPaymentMethod = async (
     req: AuthenticatedRequest,
     res: Response,
@@ -62,8 +29,10 @@ export class PaymentMethodController {
         );
         return;
       }
+      const companyId = (req as any).user.companyId;
 
       const paymentMethod = await this.paymentMethodService.attachPaymentMethod(
+        companyId,
         paymentMethodId,
         stripeCustomerId,
       );
@@ -88,9 +57,12 @@ export class PaymentMethodController {
   ): Promise<void> => {
     try {
       const paymentMethodId = String(req.params.paymentMethodId);
+      const companyId = (req as any).user.companyId;
 
-      const paymentMethod =
-        await this.paymentMethodService.detachPaymentMethod(paymentMethodId);
+      const paymentMethod = await this.paymentMethodService.detachPaymentMethod(
+        companyId,
+        paymentMethodId,
+      );
 
       const dto = this.paymentMethodService.mapPaymentMethodToDTO(
         paymentMethod!,
@@ -110,9 +82,11 @@ export class PaymentMethodController {
   ): Promise<void> => {
     try {
       const paymentMethodId = String(req.params.paymentMethodId);
-
-      const paymentMethod =
-        await this.paymentMethodService.getPaymentMethod(paymentMethodId);
+      const companyId = (req as any).user.companyId;
+      const paymentMethod = await this.paymentMethodService.getPaymentMethod(
+        companyId,
+        paymentMethodId,
+      );
 
       const dto =
         this.paymentMethodService.mapPaymentMethodToDTO(paymentMethod);
@@ -131,8 +105,10 @@ export class PaymentMethodController {
     try {
       const stripeCustomerId = (req as any).user.stripeCustomerId;
       const { type, limit } = req.query;
+      const companyId = (req as any).user.companyId;
 
       const paymentMethods = await this.paymentMethodService.listPaymentMethods(
+        companyId,
         stripeCustomerId,
         type as string,
         limit ? parseInt(limit as string) : 10,
@@ -155,8 +131,10 @@ export class PaymentMethodController {
     try {
       const paymentMethodId = String(req.params.paymentMethodId);
       const { billingDetails, card, metadata } = req.body;
+      const companyId = (req as any).user.companyId;
 
       const paymentMethod = await this.paymentMethodService.updatePaymentMethod(
+        companyId,
         paymentMethodId,
         { billingDetails, card, metadata },
       );
@@ -189,8 +167,10 @@ export class PaymentMethodController {
         );
         return;
       }
+      const companyId = (req as any).user.companyId;
 
       const customer = await this.paymentMethodService.setDefaultPaymentMethod(
+        companyId,
         stripeCustomerId,
         paymentMethodId,
       );
@@ -211,9 +191,11 @@ export class PaymentMethodController {
   ): Promise<void> => {
     try {
       const stripeCustomerId = (req as any).user.stripeCustomerId;
+      const companyId = (req as any).user.companyId;
 
       const paymentMethod =
         await this.paymentMethodService.getDefaultPaymentMethod(
+          companyId,
           stripeCustomerId,
         );
 
@@ -244,8 +226,10 @@ export class PaymentMethodController {
         errorResponse(res, "Customer ID is required", 400);
         return;
       }
+      const companyId = (req as any).user.companyId;
 
       const setupIntent = await this.paymentMethodService.createSetupIntent(
+        companyId,
         stripeCustomerId,
         paymentMethodTypes,
       );
@@ -279,8 +263,9 @@ export class PaymentMethodController {
         errorResponse(res, "Payment method ID is required", 400);
         return;
       }
-
+      const companyId = (req as any).user.companyId;
       const setupIntent = await this.paymentMethodService.confirmSetupIntent(
+        companyId,
         setupIntentId,
         paymentMethodId,
       );
@@ -299,9 +284,11 @@ export class PaymentMethodController {
   ): Promise<void> => {
     try {
       const setupIntentId = String(req.params.setupIntentId);
-
-      const setupIntent =
-        await this.paymentMethodService.getSetupIntent(setupIntentId);
+      const companyId = (req as any).user.companyId;
+      const setupIntent = await this.paymentMethodService.getSetupIntent(
+        companyId,
+        setupIntentId,
+      );
       successResponse(res, setupIntent);
     } catch (error) {
       this.logger.error("Error fetching setup intent:", error);
@@ -315,52 +302,16 @@ export class PaymentMethodController {
   ): Promise<void> => {
     try {
       const setupIntentId = String(req.params.setupIntentId);
-
-      const setupIntent =
-        await this.paymentMethodService.cancelSetupIntent(setupIntentId);
+      const companyId = (req as any).user.companyId;
+      const setupIntent = await this.paymentMethodService.cancelSetupIntent(
+        companyId,
+        setupIntentId,
+      );
 
       this.logger.info(`Setup intent cancelled: ${setupIntentId}`);
       successResponse(res, setupIntent, "Setup intent cancelled successfully");
     } catch (error) {
       this.logger.error("Error cancelling setup intent:", error);
-      errorResponse(res, (error as Error).message, 500);
-    }
-  };
-
-  createAndAttachPaymentMethod = async (
-    req: AuthenticatedRequest,
-    res: Response,
-  ): Promise<void> => {
-    try {
-      const { type, card, billingDetails, setAsDefault } = req.body;
-      const stripeCustomerId = (req as any).user.stripeCustomerId;
-
-      if (!stripeCustomerId || !type) {
-        errorResponse(
-          res,
-          "Customer ID and payment method type are required",
-          400,
-        );
-        return;
-      }
-
-      const result =
-        await this.paymentMethodService.createAndAttachPaymentMethod(
-          stripeCustomerId,
-          { type, card, billingDetails, setAsDefault },
-        );
-
-      this.logger.info(
-        `Payment method created and attached: ${result.paymentMethod.id}`,
-      );
-      successResponse(
-        res,
-        result,
-        "Payment method created and attached successfully",
-        201,
-      );
-    } catch (error) {
-      this.logger.error("Error creating and attaching payment method:", error);
       errorResponse(res, (error as Error).message, 500);
     }
   };
