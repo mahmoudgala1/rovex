@@ -26,6 +26,8 @@ export async function authMiddleware(
       company_id = "COMP_MNHLYD2O1RE2M";
     }
 
+    console.log(user_id, user_role, user_type, company_id);
+
     const customer = await CustomerModel.findOne({
       // customerId: "CUST_MNH5J2FNOFG6C",
       customerId: user_id,

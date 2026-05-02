@@ -7,6 +7,7 @@ import { Company } from "../models/company.model";
 
 export class CustomerService {
   private async getStripeAccount(companyId: string): Promise<string> {
+    console.log("Getting Stripe account for company:", companyId);
     const company = await Company.findOne({ companyId });
 
     if (!company?.stripe?.accountId) {
