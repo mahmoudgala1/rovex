@@ -8,9 +8,6 @@ import { env } from "../config/environment";
 
 const stripe = new Stripe(env.STRIPE_SECRET_KEY!);
 
-// ─────────────────────────────────────────
-// POST /api/connect/authorize
-// ─────────────────────────────────────────
 export const generateOAuthLink = async (
   req: Request,
   res: Response,
@@ -33,7 +30,7 @@ export const generateOAuthLink = async (
     client_id: env.STRIPE_CLIENT_ID!,
     scope: "read_write",
     state,
-    redirect_uri: `${env.APP_URL}/api/connect/callback`,
+    redirect_uri: `${env.APP_URL}/api/v1/connect/callback`,
     "stripe_user[email]": email,
     "stripe_user[business_name]": name ?? "",
   });
@@ -43,9 +40,6 @@ export const generateOAuthLink = async (
   });
 };
 
-// ─────────────────────────────────────────
-// GET /api/connect/callback
-// ─────────────────────────────────────────
 export const handleCallback = async (
   req: Request<{}, {}, {}, { code?: string; state?: string; error?: string }>,
   res: Response,
@@ -77,7 +71,7 @@ export const handleCallback = async (
   const account = await stripe.accounts.retrieve(tokenResponse.stripe_user_id!);
 
   const webhook = await stripe.webhookEndpoints.create({
-    url: `${env.APP_URL}/api/webhooks/stripe/${tokenResponse.stripe_user_id}`,
+    url: `${env.APP_URL}/api/v1/webhooks/stripe/${tokenResponse.stripe_user_id}`,
     enabled_events: [
       "payment_intent.succeeded",
       "payment_intent.payment_failed",
@@ -111,9 +105,6 @@ export const handleCallback = async (
   res.redirect(`${env.FRONTEND_URL}/settings?connect=success`);
 };
 
-// ─────────────────────────────────────────
-// DELETE /api/connect/disconnect
-// ─────────────────────────────────────────
 export const disconnect = async (
   req: Request,
   res: Response,
@@ -151,9 +142,6 @@ export const disconnect = async (
   res.json({ message: "Disconnected successfully" });
 };
 
-// ─────────────────────────────────────────
-// GET /api/connect/onboarding-link
-// ─────────────────────────────────────────
 export const getOnboardingLink = async (
   req: Request,
   res: Response,
@@ -184,7 +172,7 @@ export const getOnboardingLink = async (
 
   const accountLink = await stripe.accountLinks.create({
     account: company.stripe.accountId,
-    refresh_url: `${env.APP_URL}/api/connect/onboarding-link/refresh?companyId=${companyId}`,
+    refresh_url: `${env.APP_URL}/api/v1/connect/onboarding-link/refresh?companyId=${companyId}`,
     return_url: `${env.FRONTEND_URL}/settings?onboarding=complete`,
     type: "account_onboarding",
   });
@@ -192,9 +180,6 @@ export const getOnboardingLink = async (
   res.json({ url: accountLink.url });
 };
 
-// ─────────────────────────────────────────
-// GET /api/connect/onboarding-link/refresh
-// ─────────────────────────────────────────
 export const refreshOnboardingLink = async (
   req: Request,
   res: Response,
@@ -215,7 +200,7 @@ export const refreshOnboardingLink = async (
 
   const accountLink = await stripe.accountLinks.create({
     account: company.stripe.accountId,
-    refresh_url: `${env.APP_URL}/api/connect/onboarding-link/refresh?companyId=${companyId}`,
+    refresh_url: `${env.APP_URL}/api/v1/connect/onboarding-link/refresh?companyId=${companyId}`,
     return_url: `${env.FRONTEND_URL}/settings?onboarding=complete`,
     type: "account_onboarding",
   });
