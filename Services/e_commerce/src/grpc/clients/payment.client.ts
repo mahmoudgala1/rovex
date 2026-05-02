@@ -65,6 +65,7 @@ class PaymentGrpcClient {
                   paymentIntentId: response.payment.paymentIntentId,
                   clientSecret: response.payment.clientSecret,
                   status: response.payment.status,
+                  publishableKey: response.payment.publishableKey,
                 }
               : undefined,
             error: response.error,

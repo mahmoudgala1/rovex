@@ -1,4 +1,3 @@
-import axios from "axios"; // To talk to Payment Microservice
 import { AppError } from "../utils/AppError";
 import { OrderModel } from "../models/order.model";
 import { productModel } from "../models/product.models";

@@ -24,6 +24,7 @@ message Payment {
     string paymentIntentId = 1;
     string clientSecret = 2;
     string status = 3;
+    string publishableKey = 4;
 }
 
 message MetaData {
