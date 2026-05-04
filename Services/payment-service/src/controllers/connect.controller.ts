@@ -70,18 +70,18 @@ export const handleCallback = async (
 
   const account = await stripe.accounts.retrieve(tokenResponse.stripe_user_id!);
 
-  const webhook = await stripe.webhookEndpoints.create({
-    url: `${env.APP_URL}/api/v1/webhooks/stripe/${tokenResponse.stripe_user_id}`,
-    enabled_events: [
-      "payment_intent.succeeded",
-      "payment_intent.payment_failed",
-      "invoice.payment_succeeded",
-      "invoice.payment_failed",
-      "customer.subscription.updated",
-      "customer.subscription.deleted",
-      "account.updated",
-    ],
-  });
+  // const webhook = await stripe.webhookEndpoints.create({
+  //   url: `${env.APP_URL}/api/v1/webhooks/stripe/${tokenResponse.stripe_user_id}`,
+  //   enabled_events: [
+  //     "payment_intent.succeeded",
+  //     "payment_intent.payment_failed",
+  //     "invoice.payment_succeeded",
+  //     "invoice.payment_failed",
+  //     "customer.subscription.updated",
+  //     "customer.subscription.deleted",
+  //     "account.updated",
+  //   ],
+  // });
 
   await Company.findOneAndUpdate(
     { companyId },
@@ -95,8 +95,8 @@ export const handleCallback = async (
       "stripe.chargesEnabled": account.charges_enabled,
       "stripe.payoutsEnabled": account.payouts_enabled,
       "stripe.detailsSubmitted": account.details_submitted,
-      "stripe.webhookEndpointId": webhook.id,
-      "stripe.webhookSecret": encrypt(webhook.secret!),
+      // "stripe.webhookEndpointId": webhook.id,
+      // "stripe.webhookSecret": encrypt(webhook.secret!),
       status: account.charges_enabled ? "active" : "pending_connect",
     },
     { upsert: true, new: true },
