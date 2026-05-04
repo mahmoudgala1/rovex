@@ -3,7 +3,7 @@ import { PaymentService } from "../services/payment.service";
 import { AuthenticatedRequest } from "../types/stripe.types";
 import { successResponse, errorResponse } from "../utils/response";
 import { Logger } from "../utils/logger";
-import { Company } from "@/models/company.model";
+import { Company } from "../models/company.model";
 
 export class PaymentController {
   private paymentService: PaymentService;

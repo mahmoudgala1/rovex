@@ -39,6 +39,7 @@ export class WebhookController {
     this.logger.info(`-----------------------------------`);
     this.logger.info(`Webhook received: ${event.type}`);
     const stripeAccountId = event.account;
+    console.log(stripeAccountId);
 
     try {
       switch (event.type) {
@@ -242,8 +243,6 @@ export class WebhookController {
     this.logger.info(
       `✅ One-time payment succeeded: ${pi.id} | orderId: ${orderId} | ${amount} ${currency}`,
     );
-
-    console.log(pi);
 
     // TODO: Update payment + activate order
     // await paymentRepo.update({ stripePaymentIntentId: pi.id, status: 'succeeded' });

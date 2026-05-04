@@ -4,7 +4,7 @@ import { PaymentService } from "../../services/payment.service";
 import { CustomerModel } from "../../models/customer.model";
 import { authGrpcClient } from "../clients/auth.client";
 import { CustomerService } from "../../services/customer.service";
-import { Company } from "@/models/company.model";
+import { Company } from "../../models/company.model";
 
 export class PaymentGrpcService {
   private logger: Logger;
