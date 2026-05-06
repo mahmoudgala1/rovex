@@ -126,7 +126,7 @@ export class PaymentService {
 
     const paymentIntents = await stripe.paymentIntents.list(
       {
-        customer: stripeCustomerId,
+        // customer: stripeCustomerId,
         limit,
       },
       { stripeAccount: accountId },
