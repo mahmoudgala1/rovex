@@ -109,7 +109,6 @@ mqttRouter.topic("rovex/:roverId/gps", async ({ params }, payload) => {
   publish(`rovex/${roverId}/ack`, { status: "received", ts: Date.now() });
 });
 
-
 mqttRouter.topic("rovex/:roverId/status", async ({ params }, payload) => {
   const { roverId } = params;
   const rover = roverStore.get(roverId);
