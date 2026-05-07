@@ -183,133 +183,6 @@ router.get("/callback", connectCtrl.handleCallback);
 
 /**
  * @swagger
- * /connect/{companyId}/disconnect:
- *   delete:
- *     summary: Disconnect company Stripe account
- *     description: >
- *       Deauthorizes the connected Stripe account and clears all stored tokens from the database.
- *       After disconnecting, the company will no longer be able to accept payments
- *       until they reconnect via `/connect/authorize`.
- *     tags: [Stripe Connect]
- *     security:
- *       - BearerAuth: []
- *     parameters:
- *       - in: path
- *         name: companyId
- *         required: true
- *         schema:
- *           type: string
- *           example: "664f1b2c3d4e5f6a7b8c9d0e"
- *         description: MongoDB ObjectId of the company to disconnect
- *     responses:
- *       200:
- *         description: Stripe account disconnected successfully
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/DisconnectResponse'
- *       400:
- *         description: Company has no connected Stripe account
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
- *             example:
- *               error: "No connected account found"
- *       401:
- *         description: Unauthorized
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
- *       404:
- *         description: Company not found
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
- *       500:
- *         description: Internal server error
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
- */
-router.delete(
-  "/:companyId/disconnect",
-  authMiddleware,
-  restrictTo(...MANAGEMENT_ROLES),
-  connectCtrl.disconnect,
-);
-
-/**
- * @swagger
- * /connect/{companyId}/onboarding-link:
- *   get:
- *     summary: Generate Stripe onboarding link
- *     description: >
- *       Generates a Stripe Account Link for the company to complete their onboarding (KYC, bank details, etc.).
- *       Only available for companies with a connected but not yet fully activated Stripe account.
- *       The link expires after a few minutes — if expired, Stripe redirects to the refresh endpoint automatically.
- *     tags: [Stripe Connect]
- *     security:
- *       - BearerAuth: []
- *     parameters:
- *       - in: path
- *         name: companyId
- *         required: true
- *         schema:
- *           type: string
- *           example: "664f1b2c3d4e5f6a7b8c9d0e"
- *         description: MongoDB ObjectId of the company
- *     responses:
- *       200:
- *         description: Onboarding link generated successfully
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/OnboardingLinkResponse'
- *       400:
- *         description: No connected account or account already fully activated
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
- *             examples:
- *               noAccount:
- *                 value:
- *                   error: "Company has no connected Stripe account"
- *               alreadyActive:
- *                 value:
- *                   error: "Account is already fully activated"
- *       401:
- *         description: Unauthorized
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
- *       404:
- *         description: Company not found
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
- *       500:
- *         description: Internal server error
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
- */
-router.get(
-  "/:companyId/onboarding-link",
-  authMiddleware,
-  restrictTo(...MANAGEMENT_ROLES),
-  connectCtrl.getOnboardingLink,
-);
-
-/**
- * @swagger
  * /connect/onboarding-link/refresh:
  *   get:
  *     summary: Refresh expired onboarding link
@@ -429,6 +302,133 @@ router.get(
   authMiddleware,
   restrictTo(...MANAGEMENT_ROLES),
   connectCtrl.getConnectStatus,
+);
+
+/**
+ * @swagger
+ * /connect/{companyId}/onboarding-link:
+ *   get:
+ *     summary: Generate Stripe onboarding link
+ *     description: >
+ *       Generates a Stripe Account Link for the company to complete their onboarding (KYC, bank details, etc.).
+ *       Only available for companies with a connected but not yet fully activated Stripe account.
+ *       The link expires after a few minutes — if expired, Stripe redirects to the refresh endpoint automatically.
+ *     tags: [Stripe Connect]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: companyId
+ *         required: true
+ *         schema:
+ *           type: string
+ *           example: "664f1b2c3d4e5f6a7b8c9d0e"
+ *         description: MongoDB ObjectId of the company
+ *     responses:
+ *       200:
+ *         description: Onboarding link generated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/OnboardingLinkResponse'
+ *       400:
+ *         description: No connected account or account already fully activated
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *             examples:
+ *               noAccount:
+ *                 value:
+ *                   error: "Company has no connected Stripe account"
+ *               alreadyActive:
+ *                 value:
+ *                   error: "Account is already fully activated"
+ *       401:
+ *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       404:
+ *         description: Company not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
+router.get(
+  "/:companyId/onboarding-link",
+  authMiddleware,
+  restrictTo(...MANAGEMENT_ROLES),
+  connectCtrl.getOnboardingLink,
+);
+
+/**
+ * @swagger
+ * /connect/{companyId}/disconnect:
+ *   delete:
+ *     summary: Disconnect company Stripe account
+ *     description: >
+ *       Deauthorizes the connected Stripe account and clears all stored tokens from the database.
+ *       After disconnecting, the company will no longer be able to accept payments
+ *       until they reconnect via `/connect/authorize`.
+ *     tags: [Stripe Connect]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: companyId
+ *         required: true
+ *         schema:
+ *           type: string
+ *           example: "664f1b2c3d4e5f6a7b8c9d0e"
+ *         description: MongoDB ObjectId of the company to disconnect
+ *     responses:
+ *       200:
+ *         description: Stripe account disconnected successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/DisconnectResponse'
+ *       400:
+ *         description: Company has no connected Stripe account
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *             example:
+ *               error: "No connected account found"
+ *       401:
+ *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       404:
+ *         description: Company not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
+router.delete(
+  "/:companyId/disconnect",
+  authMiddleware,
+  restrictTo(...MANAGEMENT_ROLES),
+  connectCtrl.disconnect,
 );
 
 export default router;
