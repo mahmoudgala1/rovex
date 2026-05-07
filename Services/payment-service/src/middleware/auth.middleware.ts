@@ -28,25 +28,25 @@ export async function authMiddleware(
 
     console.log(user_id, user_role, user_type, company_id);
 
-    const customer = await CustomerModel.findOne({
-      // customerId: "CUST_MNH5J2FNOFG6C",
-      customerId: user_id,
-    });
+    // const customer = await CustomerModel.findOne({
+    //   // customerId: "CUST_MNH5J2FNOFG6C",
+    //   customerId: user_id,
+    // });
 
-    if (!customer) {
-      const { user } = await authGrpcClient.getUser(String(user_id));
+    // if (!customer) {
+    //   const { user } = await authGrpcClient.getUser(String(user_id));
 
-      const stripeCustomer = await new CustomerService().createCustomer({
-        customerId: user!.customer_id,
-        companyId: company_id as string,
-        name: user!.name,
-        email: user!.email,
-        phone: user!.phone,
-      });
-      stripeCustomerId = stripeCustomer.id;
-    } else {
-      stripeCustomerId = customer.stripeCustomerId;
-    }
+    //   const stripeCustomer = await new CustomerService().createCustomer({
+    //     customerId: user!.customer_id,
+    //     companyId: company_id as string,
+    //     name: user!.name,
+    //     email: user!.email,
+    //     phone: user!.phone,
+    //   });
+    //   stripeCustomerId = stripeCustomer.id;
+    // } else {
+    //   stripeCustomerId = customer.stripeCustomerId;
+    // }
 
     (req as any).user = {
       id: user_id,
