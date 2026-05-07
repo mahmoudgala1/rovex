@@ -13,11 +13,11 @@ BASE_DIR = Path(__file__).resolve().parent
 MODEL_PATH = BASE_DIR / "dispatcher_model.zip"
 
 try:
-    print(f"🧠 Loading model from: {MODEL_PATH}")
+    print(f"Loading model from: {MODEL_PATH}")
     model = DQN.load(str(MODEL_PATH))
-    print("✅ AI Brain Loaded Successfully.")
+    print(" AI Brain Loaded Successfully.")
 except Exception as e:
-    print(f"❌ Error loading model: {e}")
+    print(f"Error loading model: {e}")
     model = None
 
 env = MaadiRoverEnv()
@@ -34,20 +34,19 @@ rover_nodes = [env.restaurant_node, env.restaurant_node]
 active_tasks = {0: None, 1: None}
 rover_status = ["IDLE", "IDLE"]
 
-# ================= AI DECISION (UPDATED FOR NORMALIZATION) =================
+# ================= AI DECISION=================
 def get_ai_choice(order_node):
     if model is None:
         return 0
 
     obs = []
     dist_rest_to_order = env._get_path_dist(env.restaurant_node, order_node)
-    max_d = 5000.0 # Must match rover_env.py
+    max_d = 5000.0
 
     for i in range(2):
         dist_to_rest = env._get_path_dist(rover_nodes[i], env.restaurant_node)
         total_trip = dist_to_rest + dist_rest_to_order
 
-        # Status alignment with the new environment logic
         status = 0.0
         if batt[i] <= 0:
             status = 1.0  # Broken
@@ -69,7 +68,6 @@ def get_ai_choice(order_node):
 def spawn_orders():
     global batch_active
     num = random.randint(1, 3)
-    num = 1
     nodes = random.sample(env.nodes, num)
     order_queue.extend(nodes)
     active_orders.extend(nodes)

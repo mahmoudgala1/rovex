@@ -30,6 +30,7 @@ export async function startDispatchWorker() {
 
       const orderData = JSON.parse(msg.content.toString());
       logger.info(` Received Order: ${orderData._id} from ${msg.fields.routingKey}`);
+      processOrder()
 
       try {
         processOrder()
@@ -100,4 +101,4 @@ async function processOrder() {
   }
 }
 
-processOrder()
+processOrder();

@@ -14,6 +14,6 @@ model = DQN("MlpPolicy", env,
             learning_starts=2000)
 
 print("Training AI dispatcher...")
-model.learn(total_timesteps=200000)
+model.learn(total_timesteps=100)
 model.save("dispatcher_model")
 print(" Model Saved.")

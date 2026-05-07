@@ -100,6 +100,120 @@
           "coordinates"
         ]
       },
+      "ServiceReview": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "userName": {
+            "type": "string"
+          },
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "orderId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "rating": {
+            "type": "integer",
+            "enum": [
+              4,
+              5
+            ]
+          },
+          "comment": {
+            "type": "string"
+          },
+          "isVisible": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "OrderIssue": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "orderId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "userName": {
+            "type": "string"
+          },
+          "roverId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "roverName": {
+            "type": "string"
+          },
+          "rating": {
+            "type": "integer",
+            "enum": [
+              1,
+              2,
+              3
+            ]
+          },
+          "issueType": {
+            "type": "string",
+            "enum": [
+              "rover_slow",
+              "package_damaged",
+              "wrong_delivery",
+              "rover_malfunction",
+              "other"
+            ]
+          },
+          "comment": {
+            "type": "string"
+          },
+          "images": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uri"
+            },
+            "maxItems": 5
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "open",
+              "in_progress",
+              "resolved"
+            ]
+          },
+          "adminNote": {
+            "type": "string",
+            "nullable": true
+          },
+          "resolvedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
       "Product": {
         "type": "object",
         "required": [
@@ -490,6 +604,792 @@
     }
   },
   "paths": {
+    "/admin/service-reviews": {
+      "get": {
+        "summary": "Get all public reviews with full details and filters",
+        "tags": [
+          "Admin — Reviews"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "rating",
+            "schema": {
+              "type": "integer",
+              "enum": [
+                4,
+                5
+              ]
+            },
+            "description": "Filter by star value"
+          },
+          {
+            "in": "query",
+            "name": "is_visible",
+            "schema": {
+              "type": "boolean"
+            },
+            "description": "Show only visible or hidden reviews"
+          },
+          {
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "example": "2025-01-01"
+            },
+            "description": "Start of date range"
+          },
+          {
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "example": "2025-12-31"
+            },
+            "description": "End of date range"
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "type": "integer",
+              "default": 1
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer",
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of reviews",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "reviews": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ServiceReview"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      }
+    },
+    "/admin/service-reviews/stats": {
+      "get": {
+        "summary": "Get service rating statistics for the dashboard",
+        "tags": [
+          "Admin — Reviews"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Aggregated review statistics",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "averageRating": {
+                      "type": "number",
+                      "example": 4.2
+                    },
+                    "totalReviews": {
+                      "type": "integer",
+                      "example": 450
+                    },
+                    "lowRatings": {
+                      "type": "integer",
+                      "description": "Count of ratings that triggered issue reports",
+                      "example": 38
+                    },
+                    "breakdown": {
+                      "type": "object",
+                      "properties": {
+                        "4": {
+                          "type": "integer"
+                        },
+                        "5": {
+                          "type": "integer"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/service-reviews/{id}/visibility": {
+      "patch": {
+        "summary": "Show or hide a public review",
+        "tags": [
+          "Admin — Reviews"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "is_visible"
+                ],
+                "properties": {
+                  "is_visible": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated visibility state",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "isVisible": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Review not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/order-issues": {
+      "get": {
+        "summary": "Get all private issue reports with filters",
+        "tags": [
+          "Admin — Issues"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "open",
+                "in_progress",
+                "resolved"
+              ]
+            }
+          },
+          {
+            "in": "query",
+            "name": "type",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "rover_slow",
+                "package_damaged",
+                "wrong_delivery",
+                "rover_malfunction",
+                "other"
+              ]
+            }
+          },
+          {
+            "in": "query",
+            "name": "roverId",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter issues linked to a specific rover"
+          },
+          {
+            "in": "query",
+            "name": "rating",
+            "schema": {
+              "type": "integer",
+              "enum": [
+                1,
+                2,
+                3
+              ]
+            },
+            "description": "Filter by issue severity"
+          },
+          {
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "type": "integer",
+              "default": 1
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer",
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated issue list with open count",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "total": {
+                      "type": "integer"
+                    },
+                    "open": {
+                      "type": "integer"
+                    },
+                    "issues": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/OrderIssue"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/order-issues/{issueId}": {
+      "get": {
+        "summary": "Get full details of a single issue report",
+        "tags": [
+          "Admin — Issues"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "issueId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Full issue details including rover and user info",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderIssue"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Issue not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/order-issues/{issueId}/status": {
+      "patch": {
+        "summary": "Update the status of an issue (and optionally add an admin note)",
+        "tags": [
+          "Admin — Issues"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "issueId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "status"
+                ],
+                "properties": {
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "open",
+                      "in_progress",
+                      "resolved"
+                    ]
+                  },
+                  "adminNote": {
+                    "type": "string",
+                    "description": "Optional internal note",
+                    "example": "Contacted user and issued refund"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated issue status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string",
+                      "example": "resolved"
+                    },
+                    "resolvedAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "adminNote": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Issue not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/rovers/{roverId}/issues": {
+      "get": {
+        "summary": "Get all issue reports linked to a specific rover",
+        "tags": [
+          "Admin — Issues"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "roverId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "open",
+                "in_progress",
+                "resolved"
+              ]
+            }
+          },
+          {
+            "in": "query",
+            "name": "type",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "rover_slow",
+                "package_damaged",
+                "wrong_delivery",
+                "rover_malfunction",
+                "other"
+              ]
+            }
+          },
+          {
+            "in": "query",
+            "name": "rating",
+            "schema": {
+              "type": "integer",
+              "enum": [
+                1,
+                2,
+                3
+              ]
+            }
+          },
+          {
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "type": "integer",
+              "default": 1
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer",
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Same structure as GET /admin/order-issues",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "total": {
+                      "type": "integer"
+                    },
+                    "open": {
+                      "type": "integer"
+                    },
+                    "issues": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/OrderIssue"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/rovers/{roverId}/reviews": {
+      "get": {
+        "summary": "Get all service reviews from deliveries by a specific rover",
+        "tags": [
+          "Admin — Reviews"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "roverId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "rating",
+            "schema": {
+              "type": "integer",
+              "enum": [
+                4,
+                5
+              ]
+            }
+          },
+          {
+            "in": "query",
+            "name": "is_visible",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "type": "integer",
+              "default": 1
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer",
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Same structure as GET /admin/service-reviews",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "reviews": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ServiceReview"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/dashboard/feedback-stats": {
+      "get": {
+        "summary": "Aggregated stats powering all dashboard widgets",
+        "tags": [
+          "Admin — Dashboard"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Full dashboard feedback statistics",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "averageRating": {
+                      "type": "number",
+                      "example": 4.3
+                    },
+                    "totalReviews": {
+                      "type": "integer",
+                      "example": 520
+                    },
+                    "totalIssues": {
+                      "type": "integer",
+                      "example": 41
+                    },
+                    "openIssues": {
+                      "type": "integer",
+                      "example": 29
+                    },
+                    "resolvedIssues": {
+                      "type": "integer",
+                      "example": 12
+                    },
+                    "mostCommonIssue": {
+                      "type": "string",
+                      "example": "rover_slow"
+                    },
+                    "roverMostIssues": {
+                      "type": "object",
+                      "properties": {
+                        "roverId": {
+                          "type": "string"
+                        },
+                        "roverName": {
+                          "type": "string",
+                          "example": "ROVEX-07"
+                        },
+                        "count": {
+                          "type": "integer",
+                          "example": 9
+                        }
+                      }
+                    },
+                    "issueBreakdown": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "type": {
+                            "type": "string"
+                          },
+                          "count": {
+                            "type": "integer"
+                          }
+                        }
+                      }
+                    },
+                    "ratingBreakdown": {
+                      "type": "object",
+                      "properties": {
+                        "1": {
+                          "type": "integer"
+                        },
+                        "2": {
+                          "type": "integer"
+                        },
+                        "3": {
+                          "type": "integer"
+                        },
+                        "4": {
+                          "type": "integer"
+                        },
+                        "5": {
+                          "type": "integer"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/cart": {
       "get": {
         "summary": "Get the authenticated user's cart",
@@ -1367,6 +2267,194 @@
         }
       }
     },
+    "/orders/{orderId}/issue": {
+      "post": {
+        "summary": "Report an issue with an order",
+        "tags": [
+          "Order Issues"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "orderId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The order being reported"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "rating",
+                  "issueType"
+                ],
+                "properties": {
+                  "roverId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "description": "Optional rover linked to this order"
+                  },
+                  "userName": {
+                    "type": "string"
+                  },
+                  "userAvatarUrl": {
+                    "type": "string"
+                  },
+                  "rating": {
+                    "type": "integer",
+                    "enum": [
+                      1,
+                      2,
+                      3
+                    ],
+                    "description": "Only 1, 2, or 3 allowed"
+                  },
+                  "issueType": {
+                    "type": "string",
+                    "enum": [
+                      "rover_slow",
+                      "package_damaged",
+                      "wrong_delivery",
+                      "rover_malfunction",
+                      "other"
+                    ]
+                  },
+                  "comment": {
+                    "type": "string",
+                    "description": "Optional description of the issue"
+                  },
+                  "images": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "binary"
+                    },
+                    "maxItems": 5,
+                    "description": "Upload via POST /uploads first, then pass URLs here"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Issue reported successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Issue reported successfully"
+                    },
+                    "issueId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "status": {
+                      "type": "string",
+                      "example": "open"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "409": {
+            "description": "An issue for this order already exists",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Rating is 4 or above — not a valid issue rating",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "Get the issue the current user submitted for an order",
+        "tags": [
+          "Order Issues"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "orderId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Issue details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderIssue"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden — you do not own this issue",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No issue found for this order",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/products": {
       "get": {
         "summary": "Get all products for a specific company (you can filter by any property using the same query structure propery[gte]=number, propery[lte]=number, etc.  property=string )",
@@ -1643,6 +2731,189 @@
         }
       }
     },
+    "/service-reviews": {
+      "post": {
+        "summary": "Submit a public service review",
+        "tags": [
+          "Service Reviews"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "rating",
+                  "orderId"
+                ],
+                "properties": {
+                  "userName": {
+                    "type": "string"
+                  },
+                  "userAvatarUrl": {
+                    "type": "string"
+                  },
+                  "rating": {
+                    "type": "integer",
+                    "enum": [
+                      4,
+                      5
+                    ],
+                    "description": "Only 4 or 5 allowed"
+                  },
+                  "comment": {
+                    "type": "string",
+                    "description": "Optional feedback text"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Review submitted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Review submitted successfully"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized — missing or invalid token"
+          },
+          "409": {
+            "description": "A review for this order already exists",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Rating is less than 4",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "Get all public reviews (shown in app)",
+        "tags": [
+          "Service Reviews"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "type": "integer",
+              "default": 1
+            },
+            "description": "Page number"
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer",
+              "default": 20
+            },
+            "description": "Items per page"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated public reviews with average rating",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "averageRating": {
+                      "type": "number",
+                      "example": 4.4
+                    },
+                    "totalReviews": {
+                      "type": "integer",
+                      "example": 215
+                    },
+                    "reviews": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "userName": {
+                            "type": "string"
+                          },
+                          "rating": {
+                            "type": "integer"
+                          },
+                          "comment": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/service-reviews/stats": {
+      "get": {
+        "summary": "Get quick rating stats for the in-app widget",
+        "tags": [
+          "Service Reviews"
+        ],
+        "responses": {
+          "200": {
+            "description": "Average rating and total review count",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "averageRating": {
+                      "type": "number",
+                      "example": 4.3
+                    },
+                    "totalReviews": {
+                      "type": "integer",
+                      "example": 300
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/wishlist": {
       "get": {
         "summary": "Get the authenticated user's wishlist",
@@ -1882,5 +3153,26 @@
       }
     }
   },
-  "tags": []
+  "tags": [
+    {
+      "name": "Admin — Reviews",
+      "description": "Admin management of public service reviews"
+    },
+    {
+      "name": "Admin — Issues",
+      "description": "Admin management of private order issues"
+    },
+    {
+      "name": "Admin — Dashboard",
+      "description": "Aggregated stats for dashboard widgets"
+    },
+    {
+      "name": "Order Issues",
+      "description": "Private order issue reporting"
+    },
+    {
+      "name": "Service Reviews",
+      "description": "Public service review endpoints"
+    }
+  ]
 }
