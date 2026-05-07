@@ -67,75 +67,6 @@ const router = Router();
 
 /**
  * @swagger
- * /connect/{companyId}/status:
- *   get:
- *     summary: Get company Stripe connect status
- *     description: >
- *       Returns whether the company has connected their Stripe account
- *       and whether it is fully activated (charges & payouts enabled).
- *     tags: [Stripe Connect]
- *     security:
- *       - BearerAuth: []
- *     parameters:
- *       - in: path
- *         name: companyId
- *         required: true
- *         schema:
- *           type: string
- *           example: "664f1b2c3d4e5f6a7b8c9d0e"
- *     responses:
- *       200:
- *         description: Connect status retrieved successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 isConnected:
- *                   type: boolean
- *                   example: true
- *                 isFullyActivated:
- *                   type: boolean
- *                   example: false
- *                 status:
- *                   type: string
- *                   enum: [pending_connect, active, restricted, disconnected]
- *                   example: "pending_connect"
- *                 details:
- *                   type: object
- *                   properties:
- *                     accountId:
- *                       type: string
- *                       example: "acct_1TSP9pEIEOJ4Ilwq"
- *                     chargesEnabled:
- *                       type: boolean
- *                       example: false
- *                     payoutsEnabled:
- *                       type: boolean
- *                       example: false
- *                     detailsSubmitted:
- *                       type: boolean
- *                       example: false
- *                     livemode:
- *                       type: boolean
- *                       example: false
- *       404:
- *         description: Company not found
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
- *       500:
- *         description: Internal server error
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
- */
-router.get("/:companyId/status", authMiddleware, connectCtrl.getConnectStatus);
-
-/**
- * @swagger
  * /connect/authorize:
  *   post:
  *     summary: Generate Stripe OAuth Link
@@ -425,5 +356,79 @@ router.get(
  *               $ref: '#/components/schemas/ErrorResponse'
  */
 router.get("/onboarding-link/refresh", connectCtrl.refreshOnboardingLink);
+
+/**
+ * @swagger
+ * /connect/{companyId}/status:
+ *   get:
+ *     summary: Get company Stripe connect status
+ *     description: >
+ *       Returns whether the company has connected their Stripe account
+ *       and whether it is fully activated (charges & payouts enabled).
+ *     tags: [Stripe Connect]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: companyId
+ *         required: true
+ *         schema:
+ *           type: string
+ *           example: "664f1b2c3d4e5f6a7b8c9d0e"
+ *     responses:
+ *       200:
+ *         description: Connect status retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 isConnected:
+ *                   type: boolean
+ *                   example: true
+ *                 isFullyActivated:
+ *                   type: boolean
+ *                   example: false
+ *                 status:
+ *                   type: string
+ *                   enum: [pending_connect, active, restricted, disconnected]
+ *                   example: "pending_connect"
+ *                 details:
+ *                   type: object
+ *                   properties:
+ *                     accountId:
+ *                       type: string
+ *                       example: "acct_1TSP9pEIEOJ4Ilwq"
+ *                     chargesEnabled:
+ *                       type: boolean
+ *                       example: false
+ *                     payoutsEnabled:
+ *                       type: boolean
+ *                       example: false
+ *                     detailsSubmitted:
+ *                       type: boolean
+ *                       example: false
+ *                     livemode:
+ *                       type: boolean
+ *                       example: false
+ *       404:
+ *         description: Company not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
+router.get(
+  "/:companyId/status",
+  authMiddleware,
+  restrictTo(...MANAGEMENT_ROLES),
+  connectCtrl.getConnectStatus,
+);
 
 export default router;
