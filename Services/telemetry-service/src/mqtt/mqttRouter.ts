@@ -1,49 +1,41 @@
-type Handler = (req: any, payload: any) => void;
+type Handler = (req: { params: Record<string, string> }, payload: any) => void;
 
 class MqttRouter {
-  private routes: { pattern: string; parts: string[]; handler: Handler }[] = [];
+  private routes: { parts: string[]; handler: Handler }[] = [];
 
   topic(pattern: string, handler: Handler) {
-    this.routes.push({
-      pattern,
-      parts: pattern.split("/"),
-      handler,
-    });
+    this.routes.push({ parts: pattern.split("/"), handler });
   }
 
-  handle(topic: string, payload: string) {
+  handle(topic: string, rawPayload: string) {
     const topicParts = topic.split("/");
+    let payload: any;
+    try {
+      payload = JSON.parse(rawPayload);
+    } catch {
+      payload = rawPayload;
+    }
 
     for (const route of this.routes) {
       if (route.parts.length !== topicParts.length) continue;
 
-      let params: any = {};
+      const params: Record<string, string> = {};
       let matched = true;
 
       for (let i = 0; i < route.parts.length; i++) {
         const routePart = route.parts[i]!;
-        const topicPart = topicParts[i];
+        const topicPart = topicParts[i]!;
 
-        if (routePart.startsWith(":")) {
-          const key = routePart.substring(1);
-          params[key] = topicPart;
+        if (routePart === "+") continue;              
+        if (routePart.startsWith(":")) {              
+          params[routePart.substring(1)] = topicPart;
           continue;
         }
-
-        if (routePart !== topicPart) {
-          matched = false;
-          break;
-        }
+        if (routePart !== topicPart) { matched = false; break; }
       }
 
       if (matched) {
-        route.handler(
-          {
-            topic,
-            params,
-          },
-          JSON.parse(payload)
-        );
+        route.handler({ params }, payload);
         return;
       }
     }

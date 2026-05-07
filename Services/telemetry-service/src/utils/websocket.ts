@@ -1,5 +1,6 @@
 import { Server, Socket } from "socket.io";
 import { getLatestRoverData, getLatestRoversData } from "./influxdbReader";
+import { publish } from "../mqtt/mqttClient";
 
 let io: Server;
 
@@ -29,24 +30,24 @@ export function initSocket(server: any) {
       `[Socket.IO] Connected: socketId=${socket.id} userId=${userId}`,
     );
 
-    socket.on("join_global_rovers", async () => {
+    socket.on("join:globalrovers", async () => {
       try {
-        socket.join("global_rovers");
-        const data = await getLatestRoversData();
-        socket.emit("rovers_data", data);
-        console.log(`[Socket.IO] ${userId} joined global_rovers`);
+        socket.join("globalrovers");
+        // const data = await getLatestRoversData();
+        // socket.emit("roversdata", data);
+        console.log(`[Socket.IO] ${userId} joined globalrovers`);
       } catch (err) {
-        console.error("[Socket.IO] join_global_rovers error:", err);
+        console.error("[Socket.IO] join:globalrovers error:", err);
         socket.emit("error", { message: "Failed to fetch rovers data" });
       }
     });
 
-    socket.on("leave_global_rovers", () => {
-      socket.leave("global_rovers");
-      console.log(`[Socket.IO] ${userId} left global_rovers`);
+    socket.on("leave:globalrovers", () => {
+      socket.leave("globalrovers");
+      console.log(`[Socket.IO] ${userId} left globalrovers`);
     });
 
-    socket.on("join_rover", async ({ roverId }: { roverId: string }) => {
+    socket.on("join:rover", async ({ roverId }: { roverId: string }) => {
       if (!roverId) {
         socket.emit("error", { message: "roverId is required" });
         return;
@@ -54,19 +55,30 @@ export function initSocket(server: any) {
 
       try {
         socket.join(`rover:${roverId}`);
-        const data = await getLatestRoverData(roverId);
-        socket.emit("rover_data", { roverId, ...data });
+        // const data = await getLatestRoverData(roverId);
+        // socket.emit("roverdata", { roverId, ...data });
         console.log(`[Socket.IO] ${userId} joined rover:${roverId}`);
       } catch (err) {
-        console.error(`[Socket.IO] join_rover error for ${roverId}:`, err);
+        console.error(`[Socket.IO] join:rover error for ${roverId}:`, err);
         socket.emit("error", { message: "Failed to fetch rover data" });
       }
     });
 
-    socket.on("leave_rover", ({ roverId }: { roverId: string }) => {
+    socket.on("leave:rover", ({ roverId }: { roverId: string }) => {
       socket.leave(`rover:${roverId}`);
       console.log(`[Socket.IO] ${userId} left rover:${roverId}`);
     });
+
+    socket.on(
+      "rover:command",
+      (data: { roverId: string; cmd: string; value?: number }) => {
+        const topic = `rovex/${data.roverId}/command`;
+        const payload = JSON.stringify({ cmd: data.cmd, value: data.value });
+
+        publish(topic, payload);
+        console.log(`Command → ${topic}:`, data.cmd);
+      },
+    );
 
     socket.on("disconnect", () => {
       usersData.delete(userId);
@@ -81,13 +93,13 @@ export function initSocket(server: any) {
 
 export function roverTelemetry(roverId: string, data: any) {
   if (!io) return;
-  io.to(`rover:${roverId}`).emit("rover_data", { roverId, ...data });
-  io.to("global_rovers").emit("rover_data", { roverId, ...data });
+  io.to(`rover:${roverId}`).emit("roverdata", { roverId, ...data });
+  // io.to("globalrovers").emit("roversdata", { roverId, ...data });
 }
 
 export function broadcastTelemetry(data: any) {
   if (!io) return;
-  io.to("global_rovers").emit("rovers_data", data);
+  io.to("globalrovers").emit("roversdata", data);
 }
 
 export function notifyUser(userId: string, event: string, data: any) {
