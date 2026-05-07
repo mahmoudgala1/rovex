@@ -8,6 +8,37 @@ import { env } from "../config/environment";
 
 const stripe = new Stripe(env.STRIPE_SECRET_KEY!);
 
+export const getConnectStatus = async (
+  req: Request<{ companyId: string }>,
+  res: Response
+): Promise<void> => {
+  const { companyId } = req.params;
+
+  const company = await Company.findOne({ companyId });
+
+  if (!company) {
+    res.status(404).json({ error: "Company not found" });
+    return;
+  }
+
+  const isConnected = !!company.stripe?.accountId;
+  const isFullyActivated =
+    !!company.stripe?.chargesEnabled && !!company.stripe?.detailsSubmitted;
+
+  res.json({
+    isConnected,
+    isFullyActivated,
+    status: company.status,
+    details: {
+      accountId:        company.stripe?.accountId ?? null,
+      chargesEnabled:   company.stripe?.chargesEnabled ?? false,
+      payoutsEnabled:   company.stripe?.payoutsEnabled ?? false,
+      detailsSubmitted: company.stripe?.detailsSubmitted ?? false,
+      livemode:         company.stripe?.livemode ?? false,
+    },
+  });
+};
+
 export const generateOAuthLink = async (
   req: Request,
   res: Response,
