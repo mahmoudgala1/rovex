@@ -14,6 +14,7 @@ export function initSocket(server: any) {
     cors: {
       origin: process.env.CLIENT_URL || "*",
     },
+    transports: ["websocket", "polling"],
   });
 
   io.on("connection", async (socket: Socket) => {
