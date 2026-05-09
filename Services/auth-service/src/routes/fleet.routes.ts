@@ -510,8 +510,8 @@ router.get(
  *                 description: Phone number
  *               role:
  *                 type: string
- *                 enum: [super_admin, admin, manager, dispatcher]
- *                 example: admin
+ *                 enum: [super_admin,fleet_manager,operations_manager,support_engineer,analyst]
+ *                 example: super_admin
  *                 description: Operator role
  *               permissions:
  *                 type: array

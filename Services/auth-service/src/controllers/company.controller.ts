@@ -35,7 +35,7 @@ class CompanyController {
   async createCompany(
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ): Promise<void> {
     try {
       const {
@@ -91,8 +91,8 @@ class CompanyController {
             subscription.tier === "starter"
               ? 60
               : subscription.tier === "professional"
-              ? 300
-              : 1000,
+                ? 300
+                : 1000,
         },
         settings: {
           auto_dispatch: true,
@@ -113,21 +113,21 @@ class CompanyController {
             subscription.tier === "starter"
               ? 5
               : subscription.tier === "professional"
-              ? 20
-              : 100,
+                ? 20
+                : 100,
           max_monthly_deliveries: subscription.pricing.included_deliveries,
           max_locations:
             subscription.tier === "starter"
               ? 1
               : subscription.tier === "professional"
-              ? 5
-              : 999,
+                ? 5
+                : 999,
           max_users:
             subscription.tier === "starter"
               ? 3
               : subscription.tier === "professional"
-              ? 20
-              : 999,
+                ? 20
+                : 999,
         },
         stats: {
           total_deliveries: 0,
@@ -162,18 +162,18 @@ class CompanyController {
       } catch (adminError) {
         logger.error(
           `Failed to create admin user for company ${company.company_id}, rolling back...`,
-          adminError
+          adminError,
         );
 
         await Company.deleteOne({ company_id: company.company_id });
 
         logger.info(
-          `Company ${company.company_id} deleted due to admin creation failure`
+          `Company ${company.company_id} deleted due to admin creation failure`,
         );
 
         throw new AppError(
           "Failed to create admin user. Company creation rolled back.",
-          500
+          500,
         );
       }
 
@@ -218,7 +218,7 @@ class CompanyController {
       });
 
       logger.info(
-        `Company created: ${company.company_id} by ${req.user!.user_id}`
+        `Company created: ${company.company_id} by ${req.user!.user_id}`,
       );
 
       successResponse(
@@ -248,7 +248,7 @@ class CompanyController {
           },
         },
         "Company created successfully",
-        201
+        201,
       );
     } catch (error) {
       next(error);
@@ -258,13 +258,13 @@ class CompanyController {
   async listCompanies(
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ): Promise<void> {
     try {
       const {
         business_type,
         status,
-        tier,
+        subscription_tier,
         search,
         page = 1,
         limit = 20,
@@ -276,7 +276,7 @@ class CompanyController {
 
       if (business_type) filter.business_type = business_type;
       if (status) filter.status = status;
-      if (tier) filter["subscription.tier"] = tier;
+      if (subscription_tier) filter["subscription.tier"] = subscription_tier;
 
       if (search) {
         filter.$or = [
@@ -310,13 +310,13 @@ class CompanyController {
   async getCompany(
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ): Promise<void> {
     try {
       const { company_id } = req.params;
 
       const company = await Company.findOne({ company_id }).select(
-        "-api_credentials.api_secret_hash"
+        "-api_credentials.api_secret_hash",
       );
 
       if (!company) {
@@ -342,7 +342,7 @@ class CompanyController {
   async updateCompany(
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ): Promise<void> {
     try {
       const { company_id } = req.params;
@@ -365,7 +365,7 @@ class CompanyController {
       const company = await Company.findOneAndUpdate(
         { company_id },
         { $set: updates },
-        { new: true, runValidators: true }
+        { new: true, runValidators: true },
       ).select("-api_credentials.api_secret_hash");
 
       await AuditLog.create({
@@ -395,7 +395,7 @@ class CompanyController {
   async updateCompanyStatus(
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ): Promise<void> {
     try {
       const { company_id } = req.params;
@@ -405,7 +405,7 @@ class CompanyController {
       if (!validStatuses.includes(status)) {
         throw new AppError(
           `Invalid status. Must be one of: ${validStatuses.join(", ")}`,
-          400
+          400,
         );
       }
 
@@ -434,7 +434,7 @@ class CompanyController {
       });
 
       logger.info(
-        `Company status changed: ${company_id} from ${oldStatus} to ${status}`
+        `Company status changed: ${company_id} from ${oldStatus} to ${status}`,
       );
 
       successResponse(
@@ -446,7 +446,7 @@ class CompanyController {
             status: company.status,
           },
         },
-        `Company ${status} successfully`
+        `Company ${status} successfully`,
       );
     } catch (error) {
       next(error);
@@ -456,7 +456,7 @@ class CompanyController {
   async activateCompany(
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ): Promise<void> {
     try {
       const { company_id } = req.params;
@@ -467,7 +467,7 @@ class CompanyController {
           status: "active",
           "subscription.status": "active",
         },
-        { new: true }
+        { new: true },
       ).select("-api_credentials.api_secret_hash");
 
       if (!company) {
@@ -494,7 +494,7 @@ class CompanyController {
   async suspendCompany(
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ): Promise<void> {
     try {
       const { company_id } = req.params;
@@ -506,7 +506,7 @@ class CompanyController {
           status: "suspended",
           "subscription.status": "suspended",
         },
-        { new: true }
+        { new: true },
       ).select("-api_credentials.api_secret_hash");
 
       if (!company) {
@@ -556,7 +556,7 @@ class CompanyController {
       }
 
       logger.info(
-        `Company suspended: ${company_id}. Reason: ${reason || "N/A"}`
+        `Company suspended: ${company_id}. Reason: ${reason || "N/A"}`,
       );
 
       successResponse(res, { company }, "Company suspended successfully");
@@ -568,7 +568,7 @@ class CompanyController {
   async cancelCompany(
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ): Promise<void> {
     try {
       const { company_id } = req.params;
@@ -579,7 +579,7 @@ class CompanyController {
           status: "cancelled",
           "subscription.status": "cancelled",
         },
-        { new: true }
+        { new: true },
       ).select("-api_credentials.api_secret_hash");
 
       if (!company) {
@@ -608,7 +608,7 @@ class CompanyController {
   async addLocation(
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ): Promise<void> {
     try {
       const { company_id } = req.params;
@@ -622,7 +622,7 @@ class CompanyController {
       if (company.locations.length >= company.usage_limits.max_locations) {
         throw new AppError(
           "Maximum locations limit reached. Upgrade your plan.",
-          400
+          400,
         );
       }
 
@@ -655,14 +655,14 @@ class CompanyController {
       });
 
       logger.info(
-        `Location added to company ${company_id}: ${newLocation.location_id}`
+        `Location added to company ${company_id}: ${newLocation.location_id}`,
       );
 
       successResponse(
         res,
         { location: newLocation },
         "Location added successfully",
-        201
+        201,
       );
     } catch (error) {
       next(error);
@@ -672,7 +672,7 @@ class CompanyController {
   async updateLocation(
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ): Promise<void> {
     try {
       const { company_id, location_id } = req.params;
@@ -686,11 +686,21 @@ class CompanyController {
       }
 
       const locationIndex = company.locations.findIndex(
-        (loc) => loc.location_id === location_id
+        (loc) => loc.location_id === location_id,
       );
 
       if (locationIndex === -1) {
         throw new AppError("Location not found", 404);
+      }
+
+      if (
+        updates.active === false &&
+        company.locations[locationIndex].is_primary
+      ) {
+        throw new AppError(
+          "Cannot deactivate a primary location. Set another location as primary first.",
+          400,
+        );
       }
 
       if (updates.is_primary === true) {
@@ -699,15 +709,16 @@ class CompanyController {
             loc.is_primary = false;
           }
         });
+        updates.active = true;
       } else if (updates.is_primary === false) {
         if (company.locations[locationIndex].is_primary) {
           const hasAnotherPrimary = company.locations.some(
-            (loc, idx) => idx !== locationIndex && loc.is_primary
+            (loc, idx) => idx !== locationIndex && loc.is_primary,
           );
           if (!hasAnotherPrimary) {
             throw new AppError(
               "Cannot unset the only primary location. Set another location as primary first.",
-              400
+              400,
             );
           }
         }
@@ -735,7 +746,7 @@ class CompanyController {
         {
           location: company.locations[locationIndex],
         },
-        "Location updated successfully"
+        "Location updated successfully",
       );
     } catch (error) {
       next(error);
@@ -745,7 +756,7 @@ class CompanyController {
   async deleteLocation(
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ): Promise<void> {
     try {
       const { company_id, location_id } = req.params;
@@ -756,7 +767,7 @@ class CompanyController {
       }
 
       const locationIndex = company.locations.findIndex(
-        (loc) => loc.location_id === location_id
+        (loc) => loc.location_id === location_id,
       );
 
       if (locationIndex === -1) {
@@ -775,7 +786,7 @@ class CompanyController {
         company.locations.length > 1
       ) {
         const nextActiveLocation = company.locations.find(
-          (loc, idx) => idx !== locationIndex && loc.active
+          (loc, idx) => idx !== locationIndex && loc.active,
         );
         if (nextActiveLocation) {
           nextActiveLocation.is_primary = true;
@@ -796,7 +807,7 @@ class CompanyController {
       });
 
       logger.info(
-        `Location deleted: ${location_id} from company ${company_id}`
+        `Location deleted: ${location_id} from company ${company_id}`,
       );
 
       successResponse(res, { message: "Location deleted successfully" });
@@ -808,7 +819,7 @@ class CompanyController {
   async assignRovers(
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ): Promise<void> {
     try {
       const { company_id } = req.params;
@@ -824,7 +835,7 @@ class CompanyController {
       }
 
       const newRovers = rover_ids.filter(
-        (id) => !company.assigned_rovers.includes(id)
+        (id) => !company.assigned_rovers.includes(id),
       );
 
       company.assigned_rovers.push(...newRovers);
@@ -841,7 +852,7 @@ class CompanyController {
       });
 
       logger.info(
-        `Rovers assigned to company ${company_id}: ${newRovers.join(", ")}`
+        `Rovers assigned to company ${company_id}: ${newRovers.join(", ")}`,
       );
 
       successResponse(
@@ -849,7 +860,7 @@ class CompanyController {
         {
           assigned_rovers: company.assigned_rovers,
         },
-        "Rovers assigned successfully"
+        "Rovers assigned successfully",
       );
     } catch (error) {
       next(error);
@@ -859,7 +870,7 @@ class CompanyController {
   async unassignRovers(
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ): Promise<void> {
     try {
       const { company_id } = req.params;
@@ -875,7 +886,7 @@ class CompanyController {
       }
 
       company.assigned_rovers = company.assigned_rovers.filter(
-        (id) => !rover_ids.includes(id)
+        (id) => !rover_ids.includes(id),
       );
       await company.save();
 
@@ -890,7 +901,7 @@ class CompanyController {
       });
 
       logger.info(
-        `Rovers unassigned from company ${company_id}: ${rover_ids.join(", ")}`
+        `Rovers unassigned from company ${company_id}: ${rover_ids.join(", ")}`,
       );
 
       successResponse(
@@ -898,7 +909,7 @@ class CompanyController {
         {
           assigned_rovers: company.assigned_rovers,
         },
-        "Rovers unassigned successfully"
+        "Rovers unassigned successfully",
       );
     } catch (error) {
       next(error);
@@ -908,7 +919,7 @@ class CompanyController {
   async regenerateApiCredentials(
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ): Promise<void> {
     try {
       const { company_id } = req.params;
@@ -946,7 +957,7 @@ class CompanyController {
             rate_limit: company.api_credentials.rate_limit,
           },
         },
-        "API credentials regenerated successfully. Save the secret securely - it will not be shown again."
+        "API credentials regenerated successfully. Save the secret securely - it will not be shown again.",
       );
     } catch (error) {
       next(error);
@@ -956,7 +967,7 @@ class CompanyController {
   async updateSettings(
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ): Promise<void> {
     try {
       const { company_id } = req.params;
@@ -989,7 +1000,7 @@ class CompanyController {
       successResponse(
         res,
         { settings: company.settings },
-        "Settings updated successfully"
+        "Settings updated successfully",
       );
     } catch (error) {
       next(error);
@@ -999,7 +1010,7 @@ class CompanyController {
   async getCompanyStats(
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ): Promise<void> {
     try {
       const { company_id } = req.params;
@@ -1030,7 +1041,7 @@ class CompanyController {
               ? Math.round(
                   (company.stats.successful_deliveries /
                     company.stats.total_deliveries) *
-                    100
+                    100,
                 )
               : 0,
           failure_rate:
@@ -1038,7 +1049,7 @@ class CompanyController {
               ? Math.round(
                   (company.stats.failed_deliveries /
                     company.stats.total_deliveries) *
-                    100
+                    100,
                 )
               : 0,
           active_users: activeUsers,
