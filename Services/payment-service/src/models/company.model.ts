@@ -12,6 +12,12 @@ export interface ICompanyStripe {
   chargesEnabled: boolean;
   payoutsEnabled: boolean;
   detailsSubmitted: boolean;
+  onboardingComplete: boolean;
+  onboardedAt?: Date;
+  capabilities?: {
+    cardPayments?: string;
+    transfers?: string;
+  };
 }
 
 export interface ICompany extends Document {
@@ -20,7 +26,7 @@ export interface ICompany extends Document {
   status: "pending_connect" | "active" | "restricted" | "disconnected";
   platformFeePercent: number;
   currency: string;
-  canAcceptPayments: boolean; 
+  canAcceptPayments: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -40,6 +46,12 @@ const CompanySchema = new Schema<ICompany>(
       chargesEnabled: { type: Boolean, default: false },
       payoutsEnabled: { type: Boolean, default: false },
       detailsSubmitted: { type: Boolean, default: false },
+      onboardingComplete: { type: Boolean, default: false },
+      onboardedAt: { type: Date },
+      capabilities: {
+        cardPayments: { type: String },
+        transfers: { type: String },
+      },
     },
     status: {
       type: String,
@@ -51,13 +63,17 @@ const CompanySchema = new Schema<ICompany>(
   },
   {
     timestamps: true,
-    toJSON: { virtuals: true }, 
+    toJSON: { virtuals: true },
     toObject: { virtuals: true },
   },
 );
 
 CompanySchema.virtual("canAcceptPayments").get(function () {
-  return this.stripe?.chargesEnabled && this.stripe?.detailsSubmitted;
+  return (
+    this.stripe?.chargesEnabled &&
+    this.stripe?.detailsSubmitted &&
+    this.stripe?.onboardingComplete
+  );
 });
 
 export const Company = model<ICompany>("Company", CompanySchema);
