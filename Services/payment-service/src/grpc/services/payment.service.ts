@@ -27,7 +27,10 @@ export class PaymentGrpcService {
       });
 
       if (!customer) {
-        const { user } = await authGrpcClient.getUser(String(customer_id));
+        const { user } = await authGrpcClient.getUser(
+          String(customer_id),
+          "customer",
+        );
 
         const stripeCustomer = await new CustomerService().createCustomer({
           customerId: user!.customer_id,

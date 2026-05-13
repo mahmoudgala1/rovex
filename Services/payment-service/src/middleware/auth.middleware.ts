@@ -28,18 +28,23 @@ export async function authMiddleware(
 
     console.log(user_id, user_role, user_type, company_id);
 
-    if (user_role == "customer") {
+    if (user_type === "customer" || user_type === "company_user") {
       const customer = await CustomerModel.findOne({
-        // customerId: "CUST_MNH5J2FNOFG6C",
-        customerId: user_id,
+        customerId: user_type === "customer" ? user_id : company_id,
       });
 
       if (!customer) {
-        const { user } = await authGrpcClient.getUser(String(user_id));
+        const { user } = await authGrpcClient.getUser(
+          user_type === "customer" ? String(user_id) : String(company_id),
+          String(user_type),
+        );
+
+        console.log(user);
 
         const stripeCustomer = await new CustomerService().createCustomer({
           customerId: user!.customer_id,
-          companyId: company_id as string,
+          companyId:
+            user_type === "customer" ? (company_id as string) : "COMP_ROVEX",
           name: user!.name,
           email: user!.email,
           phone: user!.phone,
@@ -54,7 +59,7 @@ export async function authMiddleware(
       id: user_id,
       role: user_role,
       type: user_type,
-      company: company_id,
+      company: user_type === "customer" ? (company_id as string) : "COMP_ROVEX",
       stripeCustomerId,
     };
 

@@ -70,9 +70,10 @@ class AuthGrpcClient {
 
   async getUser(
     userId: string,
+    userType: string,
   ): Promise<{ success: boolean; user?: User; error?: string }> {
     return new Promise((resolve, reject) => {
-      this.client.getUser({ user_id: userId }, (error: any, response: any) => {
+      this.client.getUser({ user_id: userId, user_type: userType }, (error: any, response: any) => {
         if (error) {
           this.logger.error("gRPC getUser error:", error);
           reject(error);
