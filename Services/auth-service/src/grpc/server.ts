@@ -27,9 +27,7 @@ export const startGrpcServer = (): void => {
   const authService = new AuthGrpcService();
 
   server.addService(authProto.AuthService.service, {
-    // verifyToken: authService.verifyToken.bind(authService),
     getUser: authService.getUser.bind(authService),
-    // checkPermission: authService.checkPermission.bind(authService),
   });
 
   server.bindAsync(

@@ -13,7 +13,7 @@ import routes from "./routes";
 import swaggerUi from "swagger-ui-express";
 import { swaggerSpec } from "./config/swagger";
 import jwt from "jsonwebtoken";
-import { JWTPayload } from "types";
+import { JWTPayload } from "./types/index";
 import rabbitmq from "./config/rabbitmq";
 import { AppError } from "./utils/errors";
 import { startGrpcServer } from "./grpc/server";
