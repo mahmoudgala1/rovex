@@ -168,14 +168,14 @@ process.on("SIGTERM", () => {
 const server = new Server();
 server.start();
 
-const push = new PushChannel();
-const data = {
-  title: "Test Notification",
-  body: "Hi there! This is a test notification from ROVEX.",
-};
-push.send(
-  "czYPaSsMQ82Ip8KcdCglco:APA91bFuaaBa6nMRqkVAj1WUapC707vg_48_7-wzMwVPQG_FD37xYjvPON4UpG9xYkr27xYvaMt6Pk9gmjfr3B44xVrAT7Rl_Hpsf1e_XVQPOw4WncoQDdE",
-  data,
-);
+// const push = new PushChannel();
+// const data = {
+//   title: "Test Notification",
+//   body: "Hi there! This is a test notification from ROVEX.",
+// };
+// push.send(
+//   "eXm5doY1RUeydvgOl46I_q:APA91bGcbHmnv7f2IuNpEFwLcvfmHtihJ3iegxk10HjUJIp678H-XjwCvewFrcUq4Uh2nComIROOjVfvHBFFd8QMTFurHr7lm-brVg_xRYEafZQu9f7vPHQ",
+//   data,
+// );
 
 export default server.app;

@@ -48,26 +48,26 @@ export function initSocket(server: any) {
       console.log(`[Socket.IO] ${userId} left globalrovers`);
     });
 
-    socket.on("join:rover", async ({ roverId }: { roverId: string }) => {
-      if (!roverId) {
+    socket.on("join:rover", async ({ userId }: { userId: string}) => {
+      if (!userId) {
         socket.emit("error", { message: "roverId is required" });
         return;
       }
 
       try {
-        socket.join(`rover:${roverId}`);
-        // const data = await getLatestRoverData(roverId);
-        // socket.emit("roverdata", { roverId, ...data });
-        console.log(`[Socket.IO] ${userId} joined rover:${roverId}`);
+        socket.join(`rover:${userId}`);
+        // const data = await getLatestRoverData(userId);
+        // socket.emit("roverdata", { userId, ...data });
+        console.log(`[Socket.IO] ${userId} joined rover:${userId}`);
       } catch (err) {
-        console.error(`[Socket.IO] join:rover error for ${roverId}:`, err);
+        console.error(`[Socket.IO] join:rover error for ${userId}:`, err);
         socket.emit("error", { message: "Failed to fetch rover data" });
       }
     });
 
-    socket.on("leave:rover", ({ roverId }: { roverId: string }) => {
-      socket.leave(`rover:${roverId}`);
-      console.log(`[Socket.IO] ${userId} left rover:${roverId}`);
+    socket.on("leave:rover", ({ userId }: { userId: string }) => {
+      socket.leave(`rover:${userId}`);
+      console.log(`[Socket.IO] ${userId} left rover:${userId}`);
     });
 
     socket.on(
@@ -94,7 +94,7 @@ export function initSocket(server: any) {
 
 export function roverTelemetry(roverId: string, data: any) {
   if (!io) return;
-  io.to(`rover:${roverId}`).emit("roverdata", { roverId, ...data });
+  io.to(`rover:viewer-${roverId}`).emit("roverdata", { roverId, ...data });
   // io.to("globalrovers").emit("roversdata", { roverId, ...data });
 }
 
