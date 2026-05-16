@@ -43,8 +43,7 @@ export async function authMiddleware(
 
         const stripeCustomer = await new CustomerService().createCustomer({
           customerId: user!.customer_id,
-          companyId:
-            user_type === "customer" ? (company_id as string) : "COMP_ROVEX",
+          companyId: (company_id as string),
           name: user!.name,
           email: user!.email,
           phone: user!.phone,
@@ -59,7 +58,7 @@ export async function authMiddleware(
       id: user_id,
       role: user_role,
       type: user_type,
-      company: user_type === "customer" ? (company_id as string) : "COMP_ROVEX",
+      company: company_id as string,
       stripeCustomerId,
     };
 
