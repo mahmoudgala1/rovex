@@ -49,7 +49,7 @@ export class PushChannel extends BaseNotificationChannel {
   }
 
   async send(
-    recipient: string, // FCM token
+    recipient: string,
     data: any,
     metadata?: Record<string, any>,
   ): Promise<ChannelResult> {

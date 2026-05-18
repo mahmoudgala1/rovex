@@ -4,6 +4,7 @@ import { NotificationEvent, NotificationChannel } from "../types";
 import { EmailChannel } from "../channels/email.channel";
 import { BaseNotificationChannel } from "../channels/base.channel";
 import { PushChannel } from "../channels/push.channel";
+import { FCMTokenModel, IFCMToken } from "../models/FCMToken.model";
 
 export class NotificationConsumer {
   private channels: Map<NotificationChannel, BaseNotificationChannel>;
@@ -36,29 +37,28 @@ export class NotificationConsumer {
           console.error("Error processing event:", error.message);
           const retryCount = this.getRetryCount(msg);
           if (retryCount < this.MAX_RETRIES) {
-            console.log(
-              `Retrying... (${retryCount + 1}/${this.MAX_RETRIES})`
+            console.log(`Retrying... (${retryCount + 1}/${this.MAX_RETRIES})`);
+            setTimeout(
+              () => {
+                channel.nack(msg, false, true);
+              },
+              5000 * (retryCount + 1),
             );
-            setTimeout(() => {
-              channel.nack(msg, false, true);
-            }, 5000 * (retryCount + 1));
           } else {
-            console.error(
-              `Max retries exceeded. Moving to dead letter queue.`
-            );
+            console.error(`Max retries exceeded. Moving to dead letter queue.`);
             channel.nack(msg, false, false);
           }
         }
       },
-      { noAck: false }
+      { noAck: false },
     );
   }
 
   private async processEvent(event: NotificationEvent): Promise<void> {
     const results = await Promise.allSettled(
       event.channels.map((channelType) =>
-        this.sendToChannel(channelType, event)
-      )
+        this.sendToChannel(channelType, event),
+      ),
     );
     results.forEach((result, index) => {
       const channelType = event.channels[index];
@@ -70,17 +70,16 @@ export class NotificationConsumer {
     });
   }
 
-
   private async sendToChannel(
     channelType: NotificationChannel,
-    event: NotificationEvent
+    event: NotificationEvent,
   ): Promise<void> {
     const channelHandler = this.channels.get(channelType);
     if (!channelHandler) {
       throw new Error(`Channel ${channelType} not supported`);
     }
 
-    const recipient = this.getRecipient(event, channelType);
+    const recipient = await this.getRecipient(event, channelType);
     if (!recipient) {
       throw new Error(`No recipient for channel ${channelType}`);
     }
@@ -88,7 +87,7 @@ export class NotificationConsumer {
     const result = await channelHandler.send(
       recipient,
       event.data,
-      event.metadata
+      event.metadata,
     );
 
     if (!result.success) {
@@ -96,17 +95,20 @@ export class NotificationConsumer {
     }
   }
 
-  private getRecipient(
+  private async getRecipient(
     event: NotificationEvent,
-    channel: NotificationChannel
-  ): string | null {
+    channel: NotificationChannel,
+  ): Promise<string | null> {
     switch (channel) {
       case NotificationChannel.EMAIL:
         return event.data.email || null;
       case NotificationChannel.SMS:
         return event.data.phone || null;
       case NotificationChannel.PUSH:
-        return event.data.fcmToken || null;
+        const token = await FCMTokenModel.findOne({
+          userId: event.data.userId,
+        }).lean<IFCMToken>();
+        return token?.fcmToken || null;
       default:
         return null;
     }
@@ -122,5 +124,3 @@ export class NotificationConsumer {
 }
 
 export default new NotificationConsumer();
-
-

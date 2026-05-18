@@ -2,6 +2,7 @@ import { ConsumeMessage } from "amqplib";
 import rabbitmq from "../config/rabbitmq";
 import { OrderModel } from "../models/order.model";
 import { AppError } from "../utils/AppError";
+import RabbitMQPublisher from "../services/rabbitmq.service";
 
 export class NotificationConsumer {
   private readonly MAX_RETRIES = 3;
@@ -29,8 +30,19 @@ export class NotificationConsumer {
           order.order_status = "Processing";
           order.payment_status = "Paid";
           await order.save();
-
           channel.ack(msg);
+
+          await RabbitMQPublisher.publishEvent("send-notification", {
+            channels: ["push"],
+            data: {
+              userId: order.user,
+              title: "Payment Successful",
+              body: `Your payment for order #${order._id} has been confirmed and is now being processed.`,
+            },
+            metadata: {
+              timestamp: new Date().toLocaleString(),
+            },
+          });
         } catch (error: any) {
           console.error("Error processing event:", error.message);
           const retryCount = this.getRetryCount(msg);
