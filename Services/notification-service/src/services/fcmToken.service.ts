@@ -8,23 +8,21 @@ export interface RegisterFCMTokenDTO {
 }
 
 export class FCMTokenService {
-
   async registerToken(dto: RegisterFCMTokenDTO): Promise<IFCMToken> {
     const { userId, fcmToken, platform = "android" } = dto;
 
     const token = await FCMTokenModel.findOneAndUpdate(
-      { userId, platform },
+      { fcmToken },
       {
-        $set: { fcmToken, isActive: true },
-        $setOnInsert: { userId, platform },
+        $set: { userId, platform, isActive: true },
+        $setOnInsert: { fcmToken },
       },
-      { upsert: true, returnDocument: "after", runValidators: true },
+      { upsert: true, new: true, runValidators: true },
     );
 
     return token!;
   }
 
-  
   async getTokensByUser(userId: string): Promise<IFCMToken[]> {
     return FCMTokenModel.find({
       userId,
@@ -32,10 +30,9 @@ export class FCMTokenService {
     }).lean();
   }
 
-  
   async getTokenByUserAndPlatform(
     userId: string,
-    platform: "android" | "ios" | "web"
+    platform: "android" | "ios" | "web",
   ): Promise<IFCMToken | null> {
     return FCMTokenModel.findOne({
       userId,
@@ -44,16 +41,14 @@ export class FCMTokenService {
     }).lean();
   }
 
-  
   async deactivateToken(userId: string, fcmToken: string): Promise<boolean> {
     const result = await FCMTokenModel.updateOne(
       { userId, fcmToken },
-      { $set: { isActive: false } }
+      { $set: { isActive: false } },
     );
     return result.modifiedCount > 0;
   }
 
-  
   async deleteToken(userId: string, fcmToken: string): Promise<boolean> {
     const result = await FCMTokenModel.deleteOne({
       userId,
@@ -62,7 +57,6 @@ export class FCMTokenService {
     return result.deletedCount > 0;
   }
 
-  
   async deleteAllTokensForUser(userId: string): Promise<number> {
     const result = await FCMTokenModel.deleteMany({
       userId,
