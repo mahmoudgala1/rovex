@@ -10,6 +10,8 @@ import { swaggerSpec } from "./config/swagger";
 import swaggerUi from "swagger-ui-express";
 import { errorMiddleware } from "./middleware/error.middleware";
 import routes from "./routes";
+import {  initSocket } from "./socket/socket.server";
+import http from "http";
 
 const swaggerOptions = {
   customCss: `
@@ -138,10 +140,14 @@ class Server {
       await rabbitmq.connect();
       await consumer.start();
 
+      const httpServer = http.createServer(this.app);
+      initSocket(httpServer);
+
       const PORT = env.PORT || 8002;
-      this.app.listen(PORT, () => {
+      httpServer.listen(PORT, () => {
         console.info(`Notification service running on port ${PORT}`);
       });
+
     } catch (error) {
       console.error("Failed to start server:", error);
       process.exit(1);

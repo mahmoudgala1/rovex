@@ -2,6 +2,7 @@ export enum NotificationChannel {
   EMAIL = "email",
   SMS = "sms",
   PUSH = "push",
+  SOCKET = "socket",
 }
 
 export interface NotificationEvent {

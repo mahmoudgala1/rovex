@@ -6,6 +6,7 @@ import { BaseNotificationChannel } from "../channels/base.channel";
 import { PushChannel } from "../channels/push.channel";
 import { FCMTokenModel, IFCMToken } from "../models/FCMToken.model";
 import { NotificationService } from "../services/notification.service";
+import { SocketChannel } from "../channels/socket.channel";
 
 export class NotificationConsumer {
   private channels: Map<NotificationChannel, BaseNotificationChannel>;
@@ -16,6 +17,7 @@ export class NotificationConsumer {
     this.channels = new Map<NotificationChannel, BaseNotificationChannel>([
       [NotificationChannel.EMAIL, new EmailChannel()],
       [NotificationChannel.PUSH, new PushChannel()],
+      [NotificationChannel.SOCKET, new SocketChannel()],
     ]);
     this.notificationService = new NotificationService();
   }
@@ -105,8 +107,8 @@ export class NotificationConsumer {
     switch (channel) {
       case NotificationChannel.EMAIL:
         return event.data.email || null;
-      case NotificationChannel.SMS:
-        return event.data.phone || null;
+      case NotificationChannel.SOCKET:
+        return event.data.userId || null;
       case NotificationChannel.PUSH:
         const token = await FCMTokenModel.findOne({
           userId: event.data.userId,
