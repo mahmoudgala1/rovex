@@ -5,9 +5,11 @@ import { EmailChannel } from "../channels/email.channel";
 import { BaseNotificationChannel } from "../channels/base.channel";
 import { PushChannel } from "../channels/push.channel";
 import { FCMTokenModel, IFCMToken } from "../models/FCMToken.model";
+import { NotificationService } from "../services/notification.service";
 
 export class NotificationConsumer {
   private channels: Map<NotificationChannel, BaseNotificationChannel>;
+  private notificationService;
   private readonly MAX_RETRIES = 3;
 
   constructor() {
@@ -15,6 +17,7 @@ export class NotificationConsumer {
       [NotificationChannel.EMAIL, new EmailChannel()],
       [NotificationChannel.PUSH, new PushChannel()],
     ]);
+    this.notificationService = new NotificationService();
   }
 
   async start(): Promise<void> {
@@ -108,6 +111,12 @@ export class NotificationConsumer {
         const token = await FCMTokenModel.findOne({
           userId: event.data.userId,
         }).lean<IFCMToken>();
+        await this.notificationService.store({
+          userId: event.data.userId,
+          title: event.data.title,
+          body: event.data.body,
+          metadata: event.metadata,
+        });
         return token?.fcmToken || null;
       default:
         return null;
