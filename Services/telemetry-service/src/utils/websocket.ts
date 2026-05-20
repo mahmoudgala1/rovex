@@ -15,6 +15,7 @@ export function initSocket(server: any) {
       origin: process.env.CLIENT_URL || "*",
     },
     transports: ["websocket", "polling"],
+    path: "/telemetry-socket"
   });
 
   io.on("connection", async (socket: Socket) => {
