@@ -8,20 +8,34 @@ export interface RegisterFCMTokenDTO {
 }
 
 export class FCMTokenService {
-  async registerToken(dto: RegisterFCMTokenDTO): Promise<IFCMToken> {
-    const { userId, fcmToken, platform = "android" } = dto;
+async registerToken(dto: RegisterFCMTokenDTO): Promise<IFCMToken> {
+  const { userId, fcmToken, platform = "android" } = dto;
 
-    const token = await FCMTokenModel.findOneAndUpdate(
-      { fcmToken },
-      {
-        $set: { userId, platform, isActive: true },
-        $setOnInsert: { fcmToken },
+  await FCMTokenModel.deleteMany({
+    fcmToken,
+    $or: [
+      { userId: { $ne: userId } },
+      { platform: { $ne: platform } },
+    ],
+  });
+
+  const token = await FCMTokenModel.findOneAndUpdate(
+    { userId, platform },
+    {
+      $set: {
+        fcmToken,
+        isActive: true,
       },
-      { upsert: true, new: true, runValidators: true },
-    );
+    },
+    {
+      upsert: true,
+      new: true,
+      runValidators: true,
+    }
+  );
 
-    return token!;
-  }
+  return token!;
+}
 
   async getTokensByUser(userId: string): Promise<IFCMToken[]> {
     return FCMTokenModel.find({
