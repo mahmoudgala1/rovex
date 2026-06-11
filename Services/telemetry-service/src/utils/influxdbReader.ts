@@ -1,6 +1,5 @@
 import influx from "../config/influxdb";
 import { env } from "../config/environment";
-import { InfluxDBClient } from "@influxdata/influxdb3-client";
 
 interface RoverData {
   roverId: string;
@@ -15,13 +14,32 @@ interface RoverData {
   time?: string;
 }
 
-export const querySQL = async <T = Record<string, unknown>>(
+export interface RoverBounds {
+  minLat: number;
+  maxLat: number;
+  minLon: number;
+  maxLon: number;
+}
+
+export interface AvgBatteryRow {
+  roverId: string;
+  avgBattery: number;
+}
+
+export interface StatusCountRow {
+  status: string;
+  roverCount: number;
+}
+
+type QueryScalar = string | number | boolean;
+
+const querySQL = async <T = Record<string, QueryScalar>>(
   sql: string,
 ): Promise<T[]> => {
   const rows: T[] = [];
 
   try {
-    const result = (influx as InfluxDBClient).query(sql, env.INFLUX_BUCKET!);
+    const result = influx.query(sql, env.INFLUX_BUCKET!);
     for await (const row of result) {
       rows.push(row as T);
     }
@@ -36,89 +54,218 @@ export const querySQL = async <T = Record<string, unknown>>(
   return rows;
 };
 
-export const getLatestRoverData = async (
-  roverId: string | number,
-): Promise<RoverData | null> => {
-  const sql = `
-    SELECT *
-    FROM "rover"
-    WHERE time >= now() - interval '1 hour'
-      AND "roverId" = '${roverId}'
-    ORDER BY time DESC
-    LIMIT 1
-  `;
+const escapeString = (value: string): string => {
+  return value.replace(/'/g, "''");
+};
 
-  const rows = await querySQL<any>(sql);
-  if (!rows.length) return null;
+const formatInterval = (value: string): string => {
+  return value;
+};
 
-  const row = rows[0];
-
+const mapRoverRow = (row: any): RoverData => {
   return {
-    roverId: row.roverId,
-    status: row.status,
-    battery: row.battery,
-    health: row.health,
-    busy: row.busy,
+    time: String(row.time),
+    roverId: String(row.roverId ?? row["roverId"]),
+    status: String(row.status),
+    battery: Number(row.battery),
+    health: Number(row.health),
+    busy: Boolean(row.busy),
     location: {
-      lat: row.lat,
-      lon: row.lon,
+      lat: Number(row.lat),
+      lon: Number(row.lon),
     },
-    time: row.time,
   };
 };
 
-export const getLatestRoversData = async (): Promise<RoverData[]> => {
+export const getLatestRoverRecord = async (
+  roverId: string,
+  interval = "1 hour",
+): Promise<RoverData | null> => {
   const sql = `
-    SELECT *
-    FROM (
-      SELECT *,
-        ROW_NUMBER() OVER (
-          PARTITION BY "roverId"
-          ORDER BY time DESC
-        ) AS rn
-      FROM "rover"
-      WHERE time >= now() - interval '1 hour'
-    )
-    WHERE rn = 1
-  `;
+      SELECT
+        time,
+        "roverId",
+        status,
+        battery,
+        health,
+        busy,
+        lat,
+        lon
+      FROM rover
+      WHERE "roverId" = '${escapeString(roverId)}'
+        AND time >= now() - INTERVAL '${formatInterval(interval)}'
+      ORDER BY time DESC
+      LIMIT 1;
+    `;
+
+  const rows = await querySQL<any>(sql);
+
+  if (!rows.length) return null;
+
+  return mapRoverRow(rows[0]);
+};
+
+export const getLatestRecordsForAllRovers = async (
+  interval = "1 hour",
+): Promise<RoverData[]> => {
+  const sql = `
+      SELECT *
+      FROM (
+        SELECT
+          time,
+          "roverId",
+          status,
+          battery,
+          health,
+          busy,
+          lat,
+          lon,
+          ROW_NUMBER() OVER (PARTITION BY "roverId" ORDER BY time DESC) AS rn
+        FROM rover
+        WHERE time >= now() - INTERVAL '${formatInterval(interval)}'
+      )
+      WHERE rn = 1
+      ORDER BY time DESC;
+    `;
+
+  const rows = await querySQL<any>(sql);
+  return rows.map((row) => mapRoverRow(row));
+};
+
+export const getLowBatteryRovers = async (
+  threshold = 20,
+  interval = "1 hour",
+): Promise<RoverData[]> => {
+  const sql = `
+      SELECT
+        time,
+        "roverId",
+        status,
+        battery,
+        health,
+        busy,
+        lat,
+        lon
+      FROM rover
+      WHERE battery < ${threshold}
+        AND time >= now() - INTERVAL '${formatInterval(interval)}'
+      ORDER BY time DESC;
+    `;
+
+  const rows = await querySQL<any>(sql);
+  return rows.map((row) => mapRoverRow(row));
+};
+
+export const getBusyRovers = async (
+  interval = "1 hour",
+): Promise<RoverData[]> => {
+  const sql = `
+      SELECT
+        time,
+        "roverId",
+        status,
+        battery,
+        health,
+        busy,
+        lat,
+        lon
+      FROM rover
+      WHERE busy = true
+        AND time >= now() - INTERVAL '${formatInterval(interval)}'
+      ORDER BY time DESC;
+    `;
+
+  const rows = await querySQL<any>(sql);
+  return rows.map((row) => mapRoverRow(row));
+};
+
+export const getRoversInBounds = async (
+  bounds: RoverBounds,
+  interval = "1 hour",
+): Promise<RoverData[]> => {
+  const sql = `
+      SELECT
+        time,
+        "roverId",
+        status,
+        battery,
+        health,
+        busy,
+        lat,
+        lon
+      FROM rover
+      WHERE lat BETWEEN ${bounds.minLat} AND ${bounds.maxLat}
+        AND lon BETWEEN ${bounds.minLon} AND ${bounds.maxLon}
+        AND time >= now() - INTERVAL '${formatInterval(interval)}'
+      ORDER BY time DESC;
+    `;
+
+  const rows = await querySQL<any>(sql);
+  return rows.map((row) => mapRoverRow(row));
+};
+
+export const getAverageBatteryPerRover = async (
+  interval = "1 hour",
+): Promise<AvgBatteryRow[]> => {
+  const sql = `
+    SELECT
+      "roverId",
+      AVG(battery) AS avgBattery
+    FROM rover
+      WHERE time >= now() - INTERVAL '${formatInterval(interval)}'
+      GROUP BY "roverId"
+      ORDER BY avgBattery ASC;
+    `;
 
   const rows = await querySQL<any>(sql);
 
   return rows.map((row) => ({
-    roverId: row.roverId,
-    status: row.status,
-    battery: row.battery,
-    health: row.health,
-    busy: row.busy,
-    location: {
-      lat: row.lat,
-      lon: row.lon,
-    },
-    time: row.time,
+    roverId: String(row.roverId ?? row["roverId"]),
+    avgBattery: Number(row.avgBattery),
+  }));
+};
+
+export const getRoverCountByStatus = async (
+  interval = "1 hour",
+): Promise<StatusCountRow[]> => {
+  const sql = `
+      SELECT
+        status,
+        COUNT(*) AS roverCount
+      FROM rover
+      WHERE time >= now() - INTERVAL '${formatInterval(interval)}'
+      GROUP BY status
+      ORDER BY roverCount DESC;
+    `;
+
+  const rows = await querySQL<any>(sql);
+
+  return rows.map((row) => ({
+    status: String(row.status),
+    roverCount: Number(row.roverCount),
   }));
 };
 
 export const getRoverHistory = async (
-  roverId: string | number,
-  intervalHours: number = 24,
+  roverId: string,
+  interval = "1 hour",
 ): Promise<RoverData[]> => {
   const sql = `
-    SELECT *
-    FROM "rovers"
-    WHERE time >= now() - interval '${intervalHours} hours'
-      AND roverId = '${roverId}'
-    ORDER BY time ASC
-  `;
+      SELECT
+        time,
+        "roverId",
+        status,
+        battery,
+        health,
+        busy,
+        lat,
+        lon
+      FROM rover
+      WHERE "roverId" = '${escapeString(roverId)}'
+        AND time >= now() - INTERVAL '${formatInterval(interval)}'
+      ORDER BY time DESC;
+    `;
 
   const rows = await querySQL<any>(sql);
-
-  return rows.map((row) => ({
-    roverId: row.roverId,
-    status: row.status,
-    battery: row.battery,
-    health: row.health,
-    busy: row.busy,
-    location: { lat: row.lat, lon: row.lon },
-    time: row.time,
-  }));
+  return rows.map((row) => mapRoverRow(row));
 };
