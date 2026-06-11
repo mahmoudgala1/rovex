@@ -8,6 +8,7 @@ import { initMqttClient } from "./mqtt/mqttClient";
 import "./mqtt/routes/telemetryRoutes";
 import { initSocket } from "./utils/websocket";
 import http from "http";
+import { startGrpcServer } from "./grpc/server";
 
 class Server {
   public app: Application;
@@ -53,6 +54,7 @@ class Server {
     try {
       await connectDatabase();
       initMqttClient();
+      startGrpcServer();
 
       const httpServer = http.createServer(this.app);
       initSocket(httpServer);

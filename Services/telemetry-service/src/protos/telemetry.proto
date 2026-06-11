@@ -17,32 +17,32 @@ message GetIdleRoversRequest {
 }
 
 message GetIdleRoversResponse {
-  repeated IdleRover rovers = 1;
-  int32  total_count        = 2;  // total idle rovers for the company
+  bool success              = 1;
+  repeated IdleRover rovers = 2;
+  int32  total_count        = 3;  // total idle rovers for the company
 }
 
 message Position {
   double latitude  = 1;
   double longitude = 2;
-  string address   = 3;  // optional human-readable address
 }
 
 message IdleRover {
-  string   rover_id        = 1;
-  string   company_id      = 2;
-  string   last_seen_at    = 3;  // ISO 8601 timestamp
-  Position current_position    = 4;  // where the rover is right now
-  Position destination_position = 5; // where it needs to go
+  string   rover_id            = 1;
+  Position base_position       = 2;
+  float battery_level          = 3;
 }
 
 // ─── AssignOrder ───────────────────────────────────────────────
 
-message AssignOrderkRequest {
-  string order_id   = 1;
-  string rover_id   = 2;
-  string company_id = 3;
+message AssignOrderRequest {
+  string order_id               = 1;
+  string rover_id               = 2;
+  Position destination_position = 3;
 }
 
 message AssignOrderResponse {
-  bool   success = 1;
+  bool   success           = 1;
+  string assigned_order_id = 2;
+  string message           = 3;
 }
