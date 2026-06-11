@@ -4,15 +4,18 @@ package telemetry;
 
 service TelemetryService {
     // get all idle rovers to find the best match for an order    dispatch --> telemetry 
-    rpc GetIdleRovers(GetIdleRoversRequest) returns (GetIdleRoversResponse);
+    rpc GetIdleRovers(GetIdleRoversRequest) returns (GetIdleRoversResponse); //companyId
 
     // assign a delivery task to a rover 
     // return --> success to update order information and also generate otp
     //dispatch --> telemetry 
     rpc AssignTask(AssignTaskRequest) returns (AssignTaskResponse);
+
     // OTP and Location check 
     // telemetry  --> dispatch 
     rpc OTPValidate(OTPRequest) returns (OTPResponse);
+    roverAssigned -> telemetry -> ecommerce OTP -> nfc -> rover -> telemetry -> ecommerce
+
      // Fallback  ------> if rover fail before order deleivering fall back and insert the order back into the queue with priority 1 
     // telemetry  --> dispatch 
     // partial fail after picking up  --> will handeled via controllers

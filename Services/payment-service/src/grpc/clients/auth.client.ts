@@ -39,35 +39,6 @@ class AuthGrpcClient {
     this.logger.info(`gRPC Auth Client connected to ${AUTH_SERVICE_URL}`);
   }
 
-  //   async verifyToken(
-  //     token: string,
-  //   ): Promise<{ valid: boolean; user?: User; error?: string }> {
-  //     return new Promise((resolve, reject) => {
-  //       this.client.verifyToken({ token }, (error: any, response: any) => {
-  //         if (error) {
-  //           this.logger.error("gRPC verifyToken error:", error);
-  //           reject(error);
-  //           return;
-  //         }
-
-  //         resolve({
-  //           valid: response.valid,
-  //           user: response.user
-  //             ? {
-  //                 id: response.user.id,
-  //                 email: response.user.email,
-  //                 name: response.user.name,
-  //                 role: response.user.role,
-  //                 permissions: response.user.permissions || [],
-  //                 metadata: response.user.metadata || {},
-  //               }
-  //             : undefined,
-  //           error: response.error,
-  //         });
-  //       });
-  //     });
-  //   }
-
   async getUser(
     userId: string,
     userType: string,
@@ -95,29 +66,6 @@ class AuthGrpcClient {
       });
     });
   }
-
-  //   async checkPermission(
-  //     userId: string,
-  //     permission: string,
-  //   ): Promise<{ allowed: boolean; error?: string }> {
-  //     return new Promise((resolve, reject) => {
-  //       this.client.checkPermission(
-  //         { user_id: userId, permission },
-  //         (error: any, response: any) => {
-  //           if (error) {
-  //            this.logger.error("gRPC checkPermission error:", error);
-  //             reject(error);
-  //             return;
-  //           }
-
-  //           resolve({
-  //             allowed: response.allowed,
-  //             error: response.error,
-  //           });
-  //         },
-  //       );
-  //     });
-  //   }
 
   close(): void {
     if (this.client) {

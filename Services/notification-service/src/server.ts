@@ -10,8 +10,9 @@ import { swaggerSpec } from "./config/swagger";
 import swaggerUi from "swagger-ui-express";
 import { errorMiddleware } from "./middleware/error.middleware";
 import routes from "./routes";
-import {  initSocket } from "./socket/socket.server";
+import { initSocket } from "./socket/socket.server";
 import http from "http";
+// import { PushChannel } from "./channels/push.channel";
 
 const swaggerOptions = {
   customCss: `
@@ -75,7 +76,7 @@ const swaggerPath = path.join(process.cwd(), "swagger.json");
 if (fs.existsSync(swaggerPath)) {
   swaggerDocument = JSON.parse(fs.readFileSync(swaggerPath, "utf8"));
 } else {
-  console.warn('⚠️ swagger.json not found! Run "npm run build:swagger" first.');
+  console.warn('swagger.json not found! Run "npm run build:swagger" first.');
 }
 
 class Server {
@@ -147,7 +148,6 @@ class Server {
       httpServer.listen(PORT, () => {
         console.info(`Notification service running on port ${PORT}`);
       });
-
     } catch (error) {
       console.error("Failed to start server:", error);
       process.exit(1);
@@ -179,7 +179,7 @@ server.start();
 //   body: "Hi there! This is a test notification from ROVEX.",
 // };
 // push.send(
-//   "eXm5doY1RUeydvgOl46I_q:APA91bGcbHmnv7f2IuNpEFwLcvfmHtihJ3iegxk10HjUJIp678H-XjwCvewFrcUq4Uh2nComIROOjVfvHBFFd8QMTFurHr7lm-brVg_xRYEafZQu9f7vPHQ",
+//   "ec-UQ9l5R6qXqFZrYTkWcH:APA91bGRNS-JG7PD_Vz1l0DRxS_8wl7L8utu2Ny8r5WsqYCNXByV2dOORNSC-byoZvt64c__3UDoWfMc1hECNYtxCsm71BcdJejihAxfeUkloW6SFFbJkPo",
 //   data,
 // );
 

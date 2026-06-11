@@ -55,16 +55,13 @@ export class WebhookController {
           break;
 
         case "payment_intent.payment_failed":
-          await this.handlePaymentFailed(event.data.object);
           break;
 
         case "payment_intent.canceled":
-          await this.handlePaymentCanceled(event.data.object);
           break;
 
         // Charge Events
         case "charge.succeeded":
-          await this.handleChargeSucceeded(event.data.object as Stripe.Charge);
           break;
 
         // Subscription Events
@@ -80,28 +77,6 @@ export class WebhookController {
           await this.handleSubscriptionDeleted(event.data.object);
           break;
 
-        // Invoice Events
-        case "invoice.payment_succeeded":
-          await this.handleInvoicePaymentSucceeded(event.data.object);
-          break;
-
-        case "invoice.payment_failed":
-          await this.handleInvoicePaymentFailed(event.data.object);
-          break;
-
-        // Customer Events
-        case "customer.created":
-          await this.handleCustomerCreated(event.data.object);
-          break;
-
-        case "customer.updated":
-          await this.handleCustomerUpdated(event.data.object);
-          break;
-
-        case "customer.deleted":
-          await this.handleCustomerDeleted(event.data.object);
-          break;
-
         default:
           this.logger.info(`Unhandled event type: ${event.type}`);
           this.logger.info(`-----------------------------------`);
@@ -113,25 +88,6 @@ export class WebhookController {
       return errorResponse(res, "Webhook processing failed", 500);
     }
   };
-
-  private async handlePaymentSuccess(paymentIntent: any) {
-    this.logger.info(`✅ Payment succeeded: ${paymentIntent.id}`);
-  }
-
-  private async handlePaymentFailed(paymentIntent: any) {
-    this.logger.error(`❌ Payment failed: ${paymentIntent.id}`);
-    // TODO: Notify customer, update order status
-  }
-
-  private async handlePaymentCanceled(paymentIntent: any) {
-    this.logger.info(`Payment canceled: ${paymentIntent.id}`);
-    // TODO: Update order status
-  }
-
-  private async handleChargeSucceeded(charge: Stripe.Charge) {
-    this.logger.info(`✅ Charge succeeded: ${charge.id}`);
-    // TODO: Update order status
-  }
 
   private async handleSubscriptionCreated(subscription: any) {
     this.logger.info(`✅ Subscription created: ${subscription.id}`);
@@ -148,43 +104,6 @@ export class WebhookController {
     // TODO: Revoke customer access
   }
 
-  private async handleInvoicePaymentSucceeded(invoice: any) {
-    this.logger.info(`✅ Invoice paid: ${invoice.id}`);
-
-    if (invoice.billing_reason === "subscription_cycle") {
-      this.logger.info(`Subscription renewed: ${invoice.subscription}`);
-      // TODO: Extend subscription period
-    }
-  }
-
-  private async handleInvoicePaymentFailed(invoice: any) {
-    this.logger.error(`❌ Invoice payment failed: ${invoice.id}`);
-    // TODO: Notify customer, retry payment
-  }
-
-  private async handleCustomerCreated(customer: any) {
-    this.logger.info(`Customer created: ${customer.id}`);
-    // TODO: Sync to database
-  }
-
-  private async handleCustomerUpdated(customer: any) {
-    this.logger.info(`Customer updated: ${customer.id}`);
-    // TODO: Update database
-  }
-
-  private async handleCustomerDeleted(customer: any) {
-    this.logger.info(`Customer deleted: ${customer.id}`);
-    // TODO: Clean up database
-  }
-
-  private mapStripeEventToDTO(event: Stripe.Event): WebhookEventDTO {
-    return {
-      id: event.id,
-      type: event.type,
-      createdAt: new Date(event.created * 1000).toISOString(),
-      data: event.data.object,
-    };
-  }
 
   private async handleAccountUpdated(
     stripeAccountId: string,
@@ -217,10 +136,6 @@ export class WebhookController {
       `Account updated: ${stripeAccountId} — charges: ${account.charges_enabled} | onboarded: ${isFullyOnboarded}`,
     );
   }
-
-  // ============================================================
-  // 💳 PAYMENT INTENT HANDLERS
-  // ============================================================
 
   private isSubscriptionPayment(pi: Stripe.PaymentIntent): boolean {
     const orderRef = (pi as any).payment_details?.order_reference as
@@ -313,171 +228,4 @@ export class WebhookController {
     // TODO: Cancel order
     // if (orderId) await orderRepo.cancel(orderId);
   }
-
-  // // ============================================================
-  // // ⚡ CHARGE HANDLERS
-  // // ============================================================
-
-  // private async onChargeSucceeded(charge: Stripe.Charge) {
-  //   const paymentIntentId = charge.payment_intent as string;
-  //   const isSubscription =
-  //     charge.invoice !== null && charge.invoice !== undefined;
-
-  //   this.logger.info(
-  //     `✅ Charge succeeded: ${charge.id} | PI: ${paymentIntentId} | type: ${isSubscription ? "subscription" : "one-time"}`,
-  //   );
-
-  //   // Update receipt URL in payment record
-  //   // await paymentRepo.update({
-  //   //   where: { stripePaymentIntentId: paymentIntentId },
-  //   //   data: { receiptUrl: charge.receipt_url, stripeChargeId: charge.id },
-  //   // });
-  // }
-
-  // private async onChargeFailed(charge: Stripe.Charge) {
-  //   this.logger.error(
-  //     `❌ Charge failed: ${charge.id} | ${charge.failure_code}: ${charge.failure_message}`,
-  //   );
-  //   // TODO: Update payment record
-  // }
-
-  // private async onChargeRefunded(charge: Stripe.Charge) {
-  //   this.logger.info(
-  //     `↩️ Charge refunded: ${charge.id} | refunded: ${charge.amount_refunded / 100} ${charge.currency}`,
-  //   );
-  //   // TODO: Update refund record
-  // }
-
-  // // ============================================================
-  // // 🧾 INVOICE HANDLERS
-  // // ============================================================
-
-  // private async onInvoiceCreated(invoice: Stripe.Invoice) {
-  //   this.logger.info(
-  //     `Invoice created: ${invoice.id} | reason: ${invoice.billing_reason}`,
-  //   );
-  //   // Draft invoice → لا تعمل حاجة
-  // }
-
-  // private async onInvoiceFinalized(invoice: Stripe.Invoice) {
-  //   this.logger.info(`Invoice finalized: ${invoice.id}`);
-  //   // Invoice confirmed وجاهز للدفع → لا تعمل حاجة في الغالب
-  // }
-
-  // private async onInvoicePaid(invoice: Stripe.Invoice) {
-  //   this.logger.info(`Invoice paid: ${invoice.id}`);
-  //   // يجي بعد payment_succeeded → ممكن تتجاهله
-  // }
-
-  // private async onInvoicePaymentSucceeded(invoice: Stripe.Invoice) {
-  //   const subscriptionId = invoice.subscription as string | null;
-  //   const customerId = invoice.customer as string;
-  //   const billingReason = invoice.billing_reason;
-  //   const amount = invoice.amount_paid / 100;
-
-  //   this.logger.info(
-  //     `✅ Invoice paid: ${invoice.id} | reason: ${billingReason} | ${amount} ${invoice.currency}`,
-  //   );
-
-  //   switch (billingReason) {
-  //     case "subscription_create":
-  //       // أول مرة اشتراك
-  //       this.logger.info(`🎉 New subscription activated: ${subscriptionId}`);
-  //       // TODO: Grant access, send welcome email
-  //       break;
-
-  //     case "subscription_cycle":
-  //       // تجديد شهري/سنوي
-  //       this.logger.info(`🔄 Subscription renewed: ${subscriptionId}`);
-  //       // TODO: Extend subscription period
-  //       break;
-
-  //     case "subscription_update":
-  //       // upgrade/downgrade
-  //       this.logger.info(`🔧 Subscription updated: ${subscriptionId}`);
-  //       // TODO: Update plan access
-  //       break;
-
-  //     case "manual":
-  //       // فاتورة يدوية
-  //       this.logger.info(`📄 Manual invoice paid: ${invoice.id}`);
-  //       break;
-
-  //     default:
-  //       this.logger.info(`Invoice billing_reason: ${billingReason}`);
-  //   }
-  // }
-
-  // private async onInvoicePaymentFailed(invoice: Stripe.Invoice) {
-  //   const subscriptionId = invoice.subscription as string | null;
-  //   const customerId = invoice.customer as string;
-
-  //   this.logger.error(
-  //     `❌ Invoice payment failed: ${invoice.id} | subscription: ${subscriptionId}`,
-  //   );
-
-  //   // TODO: Notify customer
-  //   // TODO: Check attempt count
-  //   // if (invoice.attempt_count >= 3) → suspend subscription
-  // }
-
-  // // ============================================================
-  // // 📦 SUBSCRIPTION HANDLERS
-  // // ============================================================
-
-  // private async onSubscriptionCreated(sub: Stripe.Subscription) {
-  //   this.logger.info(
-  //     `✅ Subscription created: ${sub.id} | status: ${sub.status}`,
-  //   );
-  //   // TODO: Save subscription to DB
-  // }
-
-  // private async onSubscriptionUpdated(sub: Stripe.Subscription) {
-  //   this.logger.info(`Subscription updated: ${sub.id} | status: ${sub.status}`);
-  //   // TODO: Update subscription in DB
-  // }
-
-  // private async onSubscriptionDeleted(sub: Stripe.Subscription) {
-  //   this.logger.info(`❌ Subscription deleted: ${sub.id}`);
-  //   // TODO: Revoke access, notify customer
-  // }
-
-  // // ============================================================
-  // // 👤 CUSTOMER HANDLERS
-  // // ============================================================
-
-  // private async onCustomerCreated(customer: Stripe.Customer) {
-  //   this.logger.info(`Customer created: ${customer.id}`);
-  //   // TODO: Sync to DB
-  // }
-
-  // private async onCustomerUpdated(customer: Stripe.Customer) {
-  //   this.logger.info(`Customer updated: ${customer.id}`);
-  //   // TODO: Update in DB
-  // }
-
-  // private async onCustomerDeleted(customer: Stripe.DeletedCustomer) {
-  //   this.logger.info(`Customer deleted: ${customer.id}`);
-  //   // TODO: Mark as deleted in DB
-  // }
-
-  // // ============================================================
-  // // 🔁 IDEMPOTENCY
-  // // ============================================================
-
-  // private async isAlreadyProcessed(eventId: string): Promise<boolean> {
-  //   // TODO: Check in DB
-  //   // const event = await db.webhookEvent.findUnique({ where: { stripeEventId: eventId } });
-  //   // return event?.processed ?? false;
-  //   return false;
-  // }
-
-  // private async markAsProcessed(event: Stripe.Event): Promise<void> {
-  //   // TODO: Save to DB
-  //   // await db.webhookEvent.upsert({
-  //   //   where: { stripeEventId: event.id },
-  //   //   create: { stripeEventId: event.id, type: event.type, processed: true, processedAt: new Date() },
-  //   //   update: { processed: true, processedAt: new Date() },
-  //   // });
-  // }
 }
