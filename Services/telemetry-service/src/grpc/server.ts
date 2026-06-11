@@ -11,7 +11,7 @@ const PROTO_PATH = path.join(
   process.cwd(),
   `${isDevelopment ? "src" : "dist"}/protos/telemetry.proto`,
 );
-const GRPC_PORT = process.env.GRPC_PORT || "50053";
+const GRPC_PORT = process.env.GRPC_PORT || "50054";
 
 export const startGrpcServer = (): void => {
   const packageDefinition = protoLoader.loadSync(PROTO_PATH, {
