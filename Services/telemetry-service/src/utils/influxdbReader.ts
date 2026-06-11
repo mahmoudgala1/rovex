@@ -105,6 +105,69 @@ export const getLatestRoverRecord = async (
   return mapRoverRow(rows[0]);
 };
 
+export const getLatestRecordsForRoverIds = async (
+  roverIds: string[],
+  interval = "1 hour",
+): Promise<RoverData[]> => {
+  if (roverIds.length === 0) return [];
+
+  const escapedIds = roverIds.map((id) => `'${escapeString(id)}'`);
+  const orConditions = escapedIds.map((id) => `"roverId" = ${id}`).join(" OR ");
+
+  const sql = `
+    SELECT *
+    FROM (
+      SELECT
+        time,
+        "roverId",
+        status,
+        battery,
+        health,
+        busy,
+        lat,
+        lon,
+        ROW_NUMBER() OVER (PARTITION BY "roverId" ORDER BY time DESC) AS rn
+      FROM rover
+      WHERE (${orConditions})
+        AND time >= now() - INTERVAL '${formatInterval(interval)}'
+    )
+    WHERE rn = 1
+    ORDER BY time DESC;
+  `;
+
+  const rows = await querySQL<any>(sql);
+  return rows.map((row) => mapRoverRow(row));
+};
+
+export const getRoverHistoryForMultipleIds = async (
+  roverIds: string[],
+  interval = "1 hour",
+): Promise<RoverData[]> => {
+  if (roverIds.length === 0) return [];
+
+  const escapedIds = roverIds.map((id) => `'${escapeString(id)}'`);
+  const orConditions = escapedIds.map((id) => `"roverId" = ${id}`).join(" OR ");
+
+  const sql = `
+    SELECT
+      time,
+      "roverId",
+      status,
+      battery,
+      health,
+      busy,
+      lat,
+      lon
+    FROM rover
+    WHERE (${orConditions})
+      AND time >= now() - INTERVAL '${formatInterval(interval)}'
+    ORDER BY time DESC;
+  `;
+
+  const rows = await querySQL<any>(sql);
+  return rows.map((row) => mapRoverRow(row));
+};
+
 export const getLatestRecordsForAllRovers = async (
   interval = "1 hour",
 ): Promise<RoverData[]> => {

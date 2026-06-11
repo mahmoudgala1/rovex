@@ -1,6 +1,7 @@
 import { Task, TaskStatus } from "../../models/task.model";
 import { Rover } from "../../models/rover.model";
 import * as grpc from "@grpc/grpc-js";
+import { getLatestRecordsForRoverIds } from "../../utils/influxdbReader";
 
 export function generateId(prefix: string): string {
   const timestamp = Date.now().toString(36).toUpperCase();
@@ -26,6 +27,7 @@ export class TelemetryGrpcService {
         companyId: company_id,
         isConnected: true,
       });
+
 
       const responseRovers = rovers.map((rover) => ({
         rover_id: rover.roverId,

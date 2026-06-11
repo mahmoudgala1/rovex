@@ -25,7 +25,7 @@ const flushBuffer = async (): Promise<void> => {
 
   const batch = buffer.splice(0, buffer.length);
   try {
-    await (influx as InfluxDBClient).write(batch, env.INFLUX_BUCKET!);
+    await influx.write(batch, env.INFLUX_BUCKET!);
   } catch (err) {
     console.error("[InfluxDB] Flush error:", err);
     buffer.unshift(...batch);
