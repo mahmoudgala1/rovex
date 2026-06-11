@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package dispatch;
+
+service DispatchService {
+  // Handles fallback logic when an order cannot be fulfilled
+  rpc OrderFallbackHandler(FallbackRequest) returns (FallbackResponse);
+}
+
+// ─── OrderFallbackHandler ─────────────────────────────────────
+
+message FallbackRequest {
+  string order_id   = 1;
+  string company_id = 2;
+  string reason     = 3;  // e.g. "NO_ROVER_AVAILABLE", "ROVER_OFFLINE"
+}
+
+message FallbackResponse {
+  bool   handled         = 1;
+  string fallback_action = 2;  // e.g. "REASSIGNED", "QUEUED", "CANCELLED"
+  string message         = 3;
+}
