@@ -62,12 +62,11 @@ export async function startDispatchWorker() {
 
 async function processOrder() {
   try {
-    // Fetch available rovers from your DB here
     const rovers =  [
-        { rover_id: "r1", latitude: 29.9575, longitude: 31.2820, status: "broken", battery_level: 0 },
-        { rover_id: "r2", latitude: 29.9600, longitude: 31.2850, status: "idle", battery_level: 0.7 },
+       { rover_id: "r1", latitude: 29.9500, longitude: 31.2800, status: "idle", battery_level: 100, health_level:100},
+       { rover_id: "r0", latitude: 29.9500, longitude: 31.2800, status: "idle", battery_level: 100 ,health_level :100}
       ]
-
+    
     if (!rovers || rovers.length === 0) {
       throw new Error("No available rovers");
     }
@@ -84,6 +83,7 @@ async function processOrder() {
         longitude: r.longitude,
         status: r.status,
         battery_level: r.battery_level,
+        health_level :r.health_level
       })),
       order.latitude,
       order.longitude
