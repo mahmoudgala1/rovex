@@ -24,7 +24,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x08rl.proto\x12\x02rl\"e\n\x05Rover\x12\x10\n\x08rover_id\x18\x01 \x01(\t\x12\x10\n\x08latitude\x18\x02 \x01(\x01\x12\x11\n\tlongitude\x18\x03 \x01(\x01\x12\x0e\n\x06status\x18\x04 \x01(\t\x12\x15\n\rbattery_level\x18\x05 \x01(\x02\"`\n\x12\x41ssignRoverRequest\x12\x19\n\x06rovers\x18\x01 \x03(\x0b\x32\t.rl.Rover\x12\x16\n\x0eorder_latitude\x18\x02 \x01(\x01\x12\x17\n\x0forder_longitude\x18\x03 \x01(\x01\"G\n\x13\x41ssignRoverResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\x10\n\x08rover_id\x18\x02 \x01(\t\x12\r\n\x05\x65rror\x18\x03 \x01(\t2K\n\tRLService\x12>\n\x0b\x41ssignRover\x12\x16.rl.AssignRoverRequest\x1a\x17.rl.AssignRoverResponseb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x08rl.proto\x12\x02rl\"{\n\x05Rover\x12\x10\n\x08rover_id\x18\x01 \x01(\t\x12\x10\n\x08latitude\x18\x02 \x01(\x01\x12\x11\n\tlongitude\x18\x03 \x01(\x01\x12\x0e\n\x06status\x18\x04 \x01(\t\x12\x15\n\rbattery_level\x18\x05 \x01(\x02\x12\x14\n\x0chealth_level\x18\x06 \x01(\x02\"`\n\x12\x41ssignRoverRequest\x12\x19\n\x06rovers\x18\x01 \x03(\x0b\x32\t.rl.Rover\x12\x16\n\x0eorder_latitude\x18\x02 \x01(\x01\x12\x17\n\x0forder_longitude\x18\x03 \x01(\x01\"G\n\x13\x41ssignRoverResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\x10\n\x08rover_id\x18\x02 \x01(\t\x12\r\n\x05\x65rror\x18\x03 \x01(\t2K\n\tRLService\x12>\n\x0b\x41ssignRover\x12\x16.rl.AssignRoverRequest\x1a\x17.rl.AssignRoverResponseb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -32,11 +32,11 @@ _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'rl_pb2', _globals)
 if not _descriptor._USE_C_DESCRIPTORS:
   DESCRIPTOR._loaded_options = None
   _globals['_ROVER']._serialized_start=16
-  _globals['_ROVER']._serialized_end=117
-  _globals['_ASSIGNROVERREQUEST']._serialized_start=119
-  _globals['_ASSIGNROVERREQUEST']._serialized_end=215
-  _globals['_ASSIGNROVERRESPONSE']._serialized_start=217
-  _globals['_ASSIGNROVERRESPONSE']._serialized_end=288
-  _globals['_RLSERVICE']._serialized_start=290
-  _globals['_RLSERVICE']._serialized_end=365
+  _globals['_ROVER']._serialized_end=139
+  _globals['_ASSIGNROVERREQUEST']._serialized_start=141
+  _globals['_ASSIGNROVERREQUEST']._serialized_end=237
+  _globals['_ASSIGNROVERRESPONSE']._serialized_start=239
+  _globals['_ASSIGNROVERRESPONSE']._serialized_end=310
+  _globals['_RLSERVICE']._serialized_start=312
+  _globals['_RLSERVICE']._serialized_end=387
 # @@protoc_insertion_point(module_scope)

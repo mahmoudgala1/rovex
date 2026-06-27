@@ -12,6 +12,7 @@ message Rover {
     double longitude = 3;
     string status = 4;
     float battery_level = 5;
+    float health_level  = 6;
 }
 
 message AssignRoverRequest {
