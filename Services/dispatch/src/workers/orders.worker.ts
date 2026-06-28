@@ -1,6 +1,7 @@
 import amqp from "amqplib";
 import { logger } from "../utils/logger"; 
 import { rlGrpcClient } from "../gRPC/clients/RL.client"
+import { telemetryGrpcClient } from "../gRPC/clients/telemetry.client";
 
 const RABBITMQ_URL = process.env.RABBITMQ_URL || "amqp://localhost";
 const EXCHANGE_NAME = "ecommerce_exchange";
@@ -30,10 +31,9 @@ export async function startDispatchWorker() {
 
       const orderData = JSON.parse(msg.content.toString());
       logger.info(` Received Order: ${orderData._id} from ${msg.fields.routingKey}`);
-      processOrder()
+      processOrder(orderData)
 
       try {
-        processOrder()
 
         channel.ack(msg);
         logger.info(`Order ${orderData._id} Processed & Ack'd`);
@@ -59,46 +59,62 @@ export async function startDispatchWorker() {
 
 
 
-
-async function processOrder() {
+async function processOrder(orderData: any) {
   try {
-    const rovers =  [
-       { rover_id: "r1", latitude: 29.9500, longitude: 31.2800, status: "idle", battery_level: 100, health_level:100},
-       { rover_id: "r0", latitude: 29.9500, longitude: 31.2800, status: "idle", battery_level: 100 ,health_level :100}
-      ]
-    
-    if (!rovers || rovers.length === 0) {
+    // 1. Fetch idle rovers from Telemetry via gRPC
+    const telemetryResponse = await telemetryGrpcClient.getIdleRovers(orderData.company);
+ 
+    if (!telemetryResponse.success || !telemetryResponse.rovers?.length) {
       throw new Error("No available rovers");
     }
-
-    const order = {
-      latitude :  29.9650,
-      longitude : 31.2900   
-
+ 
+    const rovers = telemetryResponse.rovers.map((r: any) => ({
+      rover_id: r.rover_id,
+      latitude: r.base_position.latitude,
+      longitude: r.base_position.longitude,
+      status: "idle",
+      battery_level: r.battery_level,
+      health_level:  r.health_level,
+    }));
+ 
+    // 2. Tournament loop: compare rovers two-by-two, winner advances 
+    let champion = rovers[0];
+ 
+    for (let i = 1; i < rovers.length; i++) {
+      const result = await rlGrpcClient.assignRover(
+        [champion, rovers[i]],
+        orderData.destination.latitude,
+        orderData.destination.longitude,
+      );
+ 
+      if (!result.success || !result.roverId) {
+        throw new Error(result.error || "RL model failed to pick a rover");
+      }
+ 
+      champion = rovers.find((r: any) => r.rover_id === result.roverId) ?? champion;
     }
-    const result = await rlGrpcClient.assignRover(
-      rovers.map((r) => ({
-        rover_id: r.rover_id,
-        latitude: r.latitude,
-        longitude: r.longitude,
-        status: r.status,
-        battery_level: r.battery_level,
-        health_level :r.health_level
-      })),
-      order.latitude,
-      order.longitude
+ 
+    logger.info(`Best rover selected: ${champion.rover_id}`);
+ 
+    // 3. Assign the order to the winning rover via Telemetry gRPC 
+    const assignResponse = await telemetryGrpcClient.assignOrder(
+      orderData._id,
+      champion.rover_id,
+      {
+        latitude: orderData.latitude,
+        longitude: orderData.longitude,
+      },
     );
-
-    if (!result.success || !result.roverId) {
-      throw new Error(result.error || "RL model failed to assign a rover");
+ 
+    if (!assignResponse.success) {
+      throw new Error(assignResponse.message || "Failed to assign order");
     }
-
-    console.log( result.roverId)
-    return result.roverId;
-
+ 
+    logger.info(`Order ${orderData._id} assigned to rover ${champion.rover_id} — task: ${assignResponse.assigned_order_id}`);
+    return champion.rover_id;
+ 
   } catch (error) {
     throw new Error(`processOrder failed: ${(error as Error).message}`);
   }
 }
-
-processOrder();
+ 

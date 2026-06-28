@@ -3,79 +3,46 @@ syntax = "proto3";
 package telemetry;
 
 service TelemetryService {
-    // get all idle rovers to find the best match for an order    dispatch --> telemetry 
-    rpc GetIdleRovers(GetIdleRoversRequest) returns (GetIdleRoversResponse);
+  // Returns idle rovers for a given company
+  rpc GetIdleRovers(GetIdleRoversRequest) returns (GetIdleRoversResponse);
 
-    // assign a delivery task to a rover 
-    // return --> success to update order information and also generate otp
-    //dispatch --> telemetry 
-    rpc AssignTask(AssignTaskRequest) returns (AssignTaskResponse);
-    // OTP and Location check 
-    // telemetry  --> dispatch 
-    rpc OTPValidate(OTPRequest) returns (OTPResponse);
-     // Fallback  ------> if rover fail before order deleivering fall back and insert the order back into the queue with priority 1 
-    // telemetry  --> dispatch 
-    // partial fail after picking up  --> will handeled via controllers
-    rpc OrderFallbackHandler(FallbackRequest) returns (FallbackResponse);
+  // Assigns a order to a rover
+  rpc AssignOrder(AssignOrderRequest) returns (AssignOrderResponse);
 }
 
-// ─── GetIdleRovers ───────────────────────────────────────
+// ─── GetIdleRovers ────────────────────────────────────────────
 
 message GetIdleRoversRequest {
-   
+  string company_id = 1;
 }
-
-message RoverInfo {
-    string rover_id = 1;
-    double latitude = 2;
-    double longitude = 3;
-    string status = 4;
-    float battery_level = 5;
-}
-
 
 message GetIdleRoversResponse {
-    bool success = 1;
-    repeated RoverInfo rovers = 2;
-    string error = 3;
+  bool success              = 1;
+  repeated IdleRover rovers = 2;
+  int32  total_count        = 3;  // total idle rovers for the company
 }
 
-// ─── AssignTask ──────────────────────────────────────────
-
-message AssignTaskRequest {
-    string rover_id = 1;
-    string order_id = 2;
-    double order_lat = 3;
-    double order_lng = 4;
+message Position {
+  double latitude  = 1;
+  double longitude = 2;
 }
 
-message AssignTaskResponse {
-    bool success = 1;
-    string error = 2;
+message IdleRover {
+  string   rover_id            = 1;
+  Position base_position       = 2;
+  float battery_level          = 3;
 }
 
+// ─── AssignOrder ───────────────────────────────────────────────
 
-// ─── OTP Validation ──────────────────────────────────────────
-
-message OTPRequest {
-    RoverInfo rover = 1;
-    string order_id = 2;
-    string OTP = 3;
-   
+message AssignOrderRequest {
+  string order_id               = 1;
+  string rover_id               = 2;
+  Position destination_position = 3;
 }
 
-message OTPResponse {
-    bool success = 1;
-    string error = 2;
-}
-
-message FallbackRequest {
-    string rover_id = 1;
-    string order_id = 2;
-   
-}
-
-message FallbackResponse {
-    bool success = 1;
-    string error = 2;
+message AssignOrderResponse {
+  bool   success           = 1;
+  string assigned_order_id = 2;
+  string message           = 3;
 }
