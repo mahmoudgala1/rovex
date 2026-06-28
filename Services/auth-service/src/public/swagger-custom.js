@@ -4,9 +4,9 @@ function redirectToLogin() {
 }
 
 const observer = new MutationObserver(() => {
-  if (sessionStorage.getItem("rovex_admin_authenticated") !== "true") {
-    redirectToLogin();
-  }
+  // if (sessionStorage.getItem("rovex_admin_authenticated") !== "true") {
+  //   redirectToLogin();
+  // }
   const topbar = document.querySelector(".swagger-ui .topbar");
 
   if (topbar) {
