@@ -1,13 +1,20 @@
 import { Server, Socket } from "socket.io";
 // import { getLatestRoverData, getLatestRoversData } from "./influxdbReader";
 import { publish } from "../mqtt/mqttClient";
+import { RoverData, roverStore } from "../mqtt/routes/telemetryRoutes";
 
 let io: Server;
 
-const usersData = new Map<string, string>();
+// const usersData = new Map<string, string>();
 
-export const getUserSocket = (userId: string) => usersData.get(userId);
-export const getConnectedUsers = () => usersData.size;
+// export const getUserSocket = (userId: string) => usersData.get(userId);
+// export const getConnectedUsers = () => usersData.size;
+
+const rooms = {
+  fleetAll: () => "fleet:all",
+  fleetCompany: (companyId: string) => `fleet:company:${companyId}`,
+  trackingRover: (roverId: string) => `tracking:rover:${roverId}`,
+};
 
 export function initSocket(server: any) {
   io = new Server(server, {
@@ -15,7 +22,7 @@ export function initSocket(server: any) {
       origin: process.env.CLIENT_URL || "*",
     },
     transports: ["websocket", "polling"],
-    path: "/telemetry-socket"
+    path: "/telemetry-socket",
   });
 
   io.on("connection", async (socket: Socket) => {
@@ -27,48 +34,63 @@ export function initSocket(server: any) {
       return;
     }
 
-    usersData.set(userId, socket.id);
+    // usersData.set(userId, socket.id);
     console.log(
       `[Socket.IO] Connected: socketId=${socket.id} userId=${userId}`,
     );
 
-    socket.on("join:globalrovers", async () => {
+    socket.on("join:fleet:all", async () => {
       try {
-        socket.join("globalrovers");
+        socket.join(rooms.fleetAll());
+        console.log(`[Socket.IO] ${userId} joined fleet:all`);
         // const data = await getLatestRoversData();
-        // socket.emit("roversdata", data);
-        console.log(`[Socket.IO] ${userId} joined globalrovers`);
+        socket.emit("fleet:snapshot", Array.from(roverStore.values()));
       } catch (err) {
-        console.error("[Socket.IO] join:globalrovers error:", err);
+        console.error("[Socket.IO] join:fleet:all error:", err);
         socket.emit("error", { message: "Failed to fetch rovers data" });
       }
     });
 
-    socket.on("leave:globalrovers", () => {
-      socket.leave("globalrovers");
-      console.log(`[Socket.IO] ${userId} left globalrovers`);
+    socket.on(
+      "join:fleet:company",
+      async ({ companyId }: { companyId: string }) => {
+        if (!companyId) {
+          socket.emit("error", { message: "companyId is required" });
+          return;
+        }
+        try {
+          socket.join(rooms.fleetCompany(companyId));
+          console.log(
+            `[Socket.IO] ${userId} joined fleet:company:${companyId}`,
+          );
+          // const data = await getLatestRoversData();
+          const companyRovers = Array.from(roverStore.values()).filter(
+            (r) => r.companyId === companyId,
+          );
+          socket.emit("fleet:snapshot", companyRovers);
+        } catch (err) {
+          console.error(
+            `[Socket.IO] join:fleet:company error for ${companyId}:`,
+            err,
+          );
+          socket.emit("error", { message: "Failed to fetch rover data" });
+        }
+      },
+    );
+
+    socket.on("join:tracking:rover", ({ roverId }) => {
+      if (!roverId) return;
+
+      socket.join(rooms.trackingRover(roverId));
+
+      const rover = roverStore.get(roverId);
+      if (rover) {
+        socket.emit("rover:snapshot", rover);
+      }
     });
 
-    socket.on("join:rover", async ({ roverId }: { roverId: string }) => {
-      if (!roverId) {
-        socket.emit("error", { message: "roverId is required" });
-        return;
-      }
-
-      try {
-        socket.join(`rover:${roverId}`);
-        // const data = await getLatestRoverData(roverId);
-        // socket.emit("roverdata", { roverId, ...data });
-        console.log(`[Socket.IO] ${userId} joined rover:${roverId}`);
-      } catch (err) {
-        console.error(`[Socket.IO] join:rover error for ${roverId}:`, err);
-        socket.emit("error", { message: "Failed to fetch rover data" });
-      }
-    });
-
-    socket.on("leave:rover", ({ roverId }: { roverId: string }) => {
-      socket.leave(`rover:${roverId}`);
-      console.log(`[Socket.IO] ${userId} left rover:${roverId}`);
+    socket.on("leave:room", ({ room }) => {
+      if (room) socket.leave(room);
     });
 
     socket.on(
@@ -83,7 +105,7 @@ export function initSocket(server: any) {
     );
 
     socket.on("disconnect", () => {
-      usersData.delete(userId);
+      // usersData.delete(userId);
       console.log(
         `[Socket.IO] Disconnected: socketId=${socket.id} userId=${userId}`,
       );
@@ -93,24 +115,18 @@ export function initSocket(server: any) {
   return io;
 }
 
-export function roverTelemetry(roverId: string, data: any) {
-  if (!io) return;
-  io.to(`rover:${roverId}`).emit("roverdata", { roverId, ...data });
-  // io.to("globalrovers").emit("roversdata", { roverId, ...data });
-}
+export const fanoutTelemetry = (data: RoverData) => {
+  // const fleetPayload = buildFleetPayload(data);
+  // const mobilePayload = buildMobilePayload(data);
 
-export function broadcastTelemetry(data: any) {
-  if (!io) return;
-  io.to("globalrovers").emit("roversdata", data);
-}
+  io.to(rooms.fleetAll()).emit("rover:update", data);
 
-export function notifyUser(userId: string, event: string, data: any) {
-  if (!io) return;
-  const socketId = usersData.get(userId);
-  if (socketId) {
-    io.to(socketId).emit(event, data);
+  if (data.companyId !== "unknown") {
+    io.to(rooms.fleetCompany(data.companyId)).emit("rover:update", data);
   }
-}
+
+  io.to(rooms.trackingRover(data.roverId)).emit("rover:tracking", data);
+};
 
 export function getIO(): Server {
   if (!io) throw new Error("[Socket.IO] Not initialized!");

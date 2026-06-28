@@ -19,10 +19,14 @@ export const initMqttClient = () => {
   client.on("connect", () => {
     console.log("MQTT Connected");
 
-    client.subscribe(["rovex/+/gps", "rovex/+/status"], { qos: 0 }, (err) => {
-      if (err) console.error("MQTT subscribe error:", err);
-      else console.log("MQTT Subscribed → rovex/+/gps, rovex/+/status");
-    });
+    client.subscribe(
+      ["rovex/+/telemetry", "rovex/+/status"],
+      { qos: 0 },
+      (err) => {
+        if (err) console.error("MQTT subscribe error:", err);
+        else console.log("MQTT Subscribed → rovex/+/telemetry, rovex/+/status");
+      },
+    );
 
     client.publish("rovex/server/status", "online", { retain: true });
   });

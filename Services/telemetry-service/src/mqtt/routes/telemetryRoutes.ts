@@ -1,10 +1,11 @@
 // import { writeRoverData, writeRoversData } from "../../utils/influxdbWriter";
-import { broadcastTelemetry, roverTelemetry } from "../../utils/websocket";
+import { fanoutTelemetry } from "../../utils/websocket";
 import { publish } from "../mqttClient";
 import { mqttRouter } from "../mqttRouter";
 
-interface RoverData {
+export interface RoverData {
   roverId: string;
+  companyId: string;
   name?: string;
   color?: string;
   lat: number;
@@ -29,7 +30,7 @@ interface RoverData {
   lastSeen?: number;
 }
 
-const roverStore = new Map<string, RoverData>();
+export const roverStore = new Map<string, RoverData>();
 
 function toRad(d: number) {
   return (d * Math.PI) / 180;
@@ -59,7 +60,7 @@ function calcBearing(lat1: number, lng1: number, lat2: number, lng2: number) {
   return (toDeg(Math.atan2(x, y)) + 360) % 360;
 }
 
-mqttRouter.topic("rovex/:roverId/gps", async ({ params }, payload) => {
+mqttRouter.topic("rovex/:roverId/telemetry", async ({ params }, payload) => {
   const { roverId } = params;
   const prev = roverStore.get(roverId);
 
@@ -74,6 +75,7 @@ mqttRouter.topic("rovex/:roverId/gps", async ({ params }, payload) => {
 
   const rover: RoverData = {
     roverId,
+    companyId: payload.companyId ?? prev?.companyId ?? "unknown",
     name: payload.label ?? prev?.name ?? roverId,
     color: payload.color ?? prev?.color ?? "#00d4ff",
     lat: payload.lat,
@@ -100,8 +102,7 @@ mqttRouter.topic("rovex/:roverId/gps", async ({ params }, payload) => {
 
   roverStore.set(roverId, rover);
 
-  broadcastTelemetry([...roverStore.values()]); 
-  roverTelemetry(roverId, rover);            
+  fanoutTelemetry(rover);
 
   // await writeRoverData(rover);
   // await writeRoversData([...roverStore.values()]);
@@ -122,23 +123,20 @@ mqttRouter.topic("rovex/:roverId/status", async ({ params }, payload) => {
   };
 
   roverStore.set(roverId, updated);
-  roverTelemetry(roverId, updated);
-  broadcastTelemetry([...roverStore.values()]);
+  fanoutTelemetry(updated);
 });
 
 // ── Stale Rover Cleanup ───────────────────────────────────────────
 // setInterval(() => {
-//   const TIMEOUT = 30_000; 
+//   const TIMEOUT = 30_000;
 //   const now     = Date.now();
 
 //   roverStore.forEach((rover, id) => {
 //     if ((rover.lastSeen ?? 0) && now - rover.lastSeen! > TIMEOUT) {
 //       const stale: RoverData = { ...rover, status: "offline" };
 //       roverStore.set(id, stale);
-//       roverTelemetry(id, stale);
-//       broadcastTelemetry([...roverStore.values()]);
+//       fanoutTelemetry(stale);
 //       console.warn(`Rover ${id} → offline (no GPS > 30s)`);
 //     }
 //   });
 // }, 10_000);
-
