@@ -10,7 +10,7 @@ service DispatchService {
 // ─── OrderFallbackHandler ─────────────────────────────────────
 
 message FallbackRequest {
-  string order_id   = 1;
+  string orderData   = 1;
   string company_id = 2;
   string reason     = 3;  // e.g. "NO_ROVER_AVAILABLE", "ROVER_OFFLINE"
 }
