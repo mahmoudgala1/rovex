@@ -6,6 +6,7 @@ import { telemetryGrpcClient } from "../gRPC/clients/telemetry.client";
 const RABBITMQ_URL = process.env.RABBITMQ_URL || "amqp://localhost";
 const EXCHANGE_NAME = "ecommerce_exchange";
 const QUEUE_NAME = "dispatch_orders_queue";
+export let sharedChannel: amqp.Channel | null = null;
 
 export async function startDispatchWorker() {
   try {
@@ -21,7 +22,7 @@ export async function startDispatchWorker() {
     await channel.bindQueue(QUEUE_NAME, EXCHANGE_NAME, "order.ready.#");
     //load balancer one job at a time
     channel.prefetch(1);
-
+    sharedChannel = channel;
     logger.info(` Dispatch Worker started. Waiting for orders in ${QUEUE_NAME}...`);
     channel.consume(QUEUE_NAME, async (msg) => {
       if (!msg) {
@@ -47,6 +48,7 @@ export async function startDispatchWorker() {
     });
 
     connection.on("close", () => {
+      sharedChannel = null;
       logger.error("RabbitMQ connection closed. Retrying in 5s...");
       setTimeout(startDispatchWorker, 5000);
     });
