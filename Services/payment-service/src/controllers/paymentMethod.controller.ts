@@ -31,7 +31,7 @@ export class PaymentMethodController {
         return;
       }
       const companyId =
-        (req as any).type === "customer"
+        (req as any).user.type === "customer"
           ? (req as any).user.company
           : "COMP_ROVEX";
 
@@ -62,7 +62,7 @@ export class PaymentMethodController {
     try {
       const paymentMethodId = String(req.params.paymentMethodId);
       const companyId =
-        (req as any).type === "customer"
+        (req as any).user.type === "customer"
           ? (req as any).user.company
           : "COMP_ROVEX";
 
@@ -90,7 +90,7 @@ export class PaymentMethodController {
     try {
       const paymentMethodId = String(req.params.paymentMethodId);
       const companyId =
-        (req as any).type === "customer"
+        (req as any).user.type === "customer"
           ? (req as any).user.company
           : "COMP_ROVEX";
       const paymentMethod = await this.paymentMethodService.getPaymentMethod(
@@ -116,9 +116,11 @@ export class PaymentMethodController {
       const stripeCustomerId = (req as any).user.stripeCustomerId;
       const { type, limit } = req.query;
       const companyId =
-        (req as any).type === "customer"
+        (req as any).user.type === "customer"
           ? (req as any).user.company
           : "COMP_ROVEX";
+
+      console.log(companyId);
 
       const paymentMethods = await this.paymentMethodService.listPaymentMethods(
         companyId,
@@ -145,7 +147,7 @@ export class PaymentMethodController {
       const paymentMethodId = String(req.params.paymentMethodId);
       const { billingDetails, card, metadata } = req.body;
       const companyId =
-        (req as any).type === "customer"
+        (req as any).user.type === "customer"
           ? (req as any).user.company
           : "COMP_ROVEX";
 
@@ -184,7 +186,7 @@ export class PaymentMethodController {
         return;
       }
       const companyId =
-        (req as any).type === "customer"
+        (req as any).user.type === "customer"
           ? (req as any).user.company
           : "COMP_ROVEX";
 
@@ -211,9 +213,10 @@ export class PaymentMethodController {
     try {
       const stripeCustomerId = (req as any).user.stripeCustomerId;
       const companyId =
-        (req as any).type === "customer"
+        (req as any).user.type === "customer"
           ? (req as any).user.company
           : "COMP_ROVEX";
+
 
       const paymentMethod =
         await this.paymentMethodService.getDefaultPaymentMethod(
@@ -249,7 +252,7 @@ export class PaymentMethodController {
         return;
       }
       const companyId =
-        (req as any).type === "customer"
+        (req as any).user.type === "customer"
           ? (req as any).user.company
           : "COMP_ROVEX";
       const company = await Company.findOne({ companyId });
@@ -291,7 +294,7 @@ export class PaymentMethodController {
         return;
       }
       const companyId =
-        (req as any).type === "customer"
+        (req as any).user.type === "customer"
           ? (req as any).user.company
           : "COMP_ROVEX";
       const setupIntent = await this.paymentMethodService.confirmSetupIntent(
@@ -315,7 +318,7 @@ export class PaymentMethodController {
     try {
       const setupIntentId = String(req.params.setupIntentId);
       const companyId =
-        (req as any).type === "customer"
+        (req as any).user.type === "customer"
           ? (req as any).user.company
           : "COMP_ROVEX";
       const setupIntent = await this.paymentMethodService.getSetupIntent(
@@ -336,7 +339,7 @@ export class PaymentMethodController {
     try {
       const setupIntentId = String(req.params.setupIntentId);
       const companyId =
-        (req as any).type === "customer"
+        (req as any).user.type === "customer"
           ? (req as any).user.company
           : "COMP_ROVEX";
       const setupIntent = await this.paymentMethodService.cancelSetupIntent(
