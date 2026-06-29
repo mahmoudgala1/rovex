@@ -14,6 +14,7 @@ import {
 } from "../utils/validators";
 import * as companyUserController from "../controllers/user.controller";
 import { PERMISSIONS } from "../config/permissions";
+import { requireActiveSubscription } from "../middleware/requireActiveSubscription";
 
 const router = Router();
 
@@ -223,6 +224,7 @@ router.get(
  */
 router.post(
   "/",
+  requireActiveSubscription,
   requirePermission(PERMISSIONS.USER_CREATE),
   validate(createUserSchema),
   companyUserController.createCompanyUser

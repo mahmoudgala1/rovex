@@ -73,7 +73,6 @@ async function updateUserSubscription(
   userId: string,
   payload: Record<string, unknown>,
 ) {
-console.log(userId,payload);
 
   let updatedUser: any = await Company.findOneAndUpdate(
     { company_id: userId },
