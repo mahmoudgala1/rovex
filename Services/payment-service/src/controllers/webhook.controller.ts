@@ -53,29 +53,6 @@ export class WebhookController {
           await this.onPaymentIntentSucceeded(event.data.object);
           break;
 
-        case "payment_intent.payment_failed":
-          break;
-
-        case "payment_intent.canceled":
-          break;
-
-        // Charge Events
-        case "charge.succeeded":
-          break;
-
-        // Subscription Events
-        case "customer.subscription.created":
-          await this.handleSubscriptionCreated(event.data.object);
-          break;
-
-        case "customer.subscription.updated":
-          await this.handleSubscriptionUpdated(event.data.object);
-          break;
-
-        case "customer.subscription.deleted":
-          await this.handleSubscriptionDeleted(event.data.object);
-          break;
-
         default:
           this.logger.info(`Unhandled event type: ${event.type}`);
           this.logger.info(`-----------------------------------`);
@@ -87,21 +64,6 @@ export class WebhookController {
       return errorResponse(res, "Webhook processing failed", 500);
     }
   };
-
-  private async handleSubscriptionCreated(subscription: any) {
-    this.logger.info(`✅ Subscription created: ${subscription.id}`);
-    // TODO: Grant access to customer
-  }
-
-  private async handleSubscriptionUpdated(subscription: any) {
-    this.logger.info(`Subscription updated: ${subscription.id}`);
-    // TODO: Update customer access level
-  }
-
-  private async handleSubscriptionDeleted(subscription: any) {
-    this.logger.info(`❌ Subscription deleted: ${subscription.id}`);
-    // TODO: Revoke customer access
-  }
 
   private async handleAccountUpdated(
     stripeAccountId: string,
@@ -176,55 +138,5 @@ export class WebhookController {
       (await RabbitMQPublisher.publishEvent("update-order", {
         orderId: orderId,
       }));
-  }
-
-  private async onPaymentIntentFailed(pi: Stripe.PaymentIntent) {
-    const isSubscription = this.isSubscriptionPayment(pi);
-
-    if (isSubscription) {
-      const invoiceId = (pi as any).payment_details?.order_reference;
-      this.logger.error(
-        `❌ Subscription payment failed: ${pi.id} | invoice: ${invoiceId} → handled by invoice.payment_failed`,
-      );
-      return;
-    }
-
-    const orderId = pi.metadata?.orderId;
-    const failureCode = pi.last_payment_error?.code;
-    const failureMessage = pi.last_payment_error?.message;
-
-    this.logger.error(
-      `❌ One-time payment failed: ${pi.id} | orderId: ${orderId} | ${failureCode}: ${failureMessage}`,
-    );
-
-    // TODO: Update payment + fail order
-  }
-
-  private async onPaymentIntentCreated(pi: Stripe.PaymentIntent) {
-    const isSubscription = this.isSubscriptionPayment(pi);
-
-    if (isSubscription) {
-      this.logger.info(`🆕 PI created (subscription): ${pi.id} → skip`);
-      return;
-    }
-
-    this.logger.info(
-      `🆕 PI created (one-time): ${pi.id} | orderId: ${pi.metadata?.orderId}`,
-    );
-    // TODO: Create payment record as "pending"
-  }
-
-  private async onPaymentIntentCanceled(pi: Stripe.PaymentIntent) {
-    const isSubscription = this.isSubscriptionPayment(pi);
-
-    this.logger.info(
-      `Payment canceled: ${pi.id} | type: ${isSubscription ? "subscription" : "one-time"}`,
-    );
-
-    if (isSubscription) return; // handled elsewhere
-
-    const orderId = pi.metadata?.orderId;
-    // TODO: Cancel order
-    // if (orderId) await orderRepo.cancel(orderId);
   }
 }

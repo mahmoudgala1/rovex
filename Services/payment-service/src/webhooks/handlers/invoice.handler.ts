@@ -37,15 +37,15 @@ export async function handleInvoicePaid(
     cancel_at_period_end: false,
   });
 
-  await subscriptionGrpcClient.syncBillingRecord({
-    user_id: userId,
-    invoice_id: invoice.id,
-    amount_paid: invoice.amount_paid,
-    currency: invoice.currency,
-    paid_at:
-      invoice.status_transitions.paid_at ?? Math.floor(Date.now() / 1000),
-    invoice_url: invoice.hosted_invoice_url ?? "",
-  });
+  // await subscriptionGrpcClient.syncBillingRecord({
+  //   user_id: userId,
+  //   invoice_id: invoice.id,
+  //   amount_paid: invoice.amount_paid,
+  //   currency: invoice.currency,
+  //   paid_at:
+  //     invoice.status_transitions.paid_at ?? Math.floor(Date.now() / 1000),
+  //   invoice_url: invoice.hosted_invoice_url ?? "",
+  // });
 }
 
 export async function handleInvoicePaymentFailed(

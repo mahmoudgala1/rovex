@@ -2,8 +2,6 @@ import Stripe from "stripe";
 import { stripe, config } from "../config/stripe.config";
 import { Logger } from "../utils/logger";
 
-const logger = new Logger("StripeWebhookHandler");
-
 // ─── Handlers ────────────────────────────────────────────
 import { handleCheckoutCompleted } from "./handlers/checkout.handler";
 import {
@@ -20,6 +18,11 @@ import {
   handleSubscriptionResumed,
 } from "./handlers/subscription.handler";
 
+import { Request, Response } from "express";
+import { handleAccountUpdated } from "./handlers/account.handler";
+import { handlePaymentIntentSucceeded } from "./handlers/PaymentIntent.handler";
+
+const logger = new Logger("StripeWebhookHandler");
 // ─── Event Router ─────────────────────────────────────────
 const eventHandlers: Partial<
   Record<Stripe.Event["type"], (e: any) => Promise<void>>
@@ -39,9 +42,11 @@ const eventHandlers: Partial<
   // "customer.subscription.trial_will_end": handleTrialWillEnd,
   "customer.subscription.paused": handleSubscriptionPaused,
   "customer.subscription.resumed": handleSubscriptionResumed,
-};
 
-import { Request, Response } from "express";
+  "payment_intent.succeeded": handlePaymentIntentSucceeded,
+
+  "account.updated": handleAccountUpdated,
+};
 
 export async function handlePlatformWebhook(
   req: Request,
@@ -57,11 +62,7 @@ export async function handlePlatformWebhook(
   let event: Stripe.Event;
   const rawBody = (req as any).rawBody || JSON.stringify(req.body);
   try {
-    event = stripe.webhooks.constructEvent(
-      rawBody,
-      sig,
-      config.webhookSecret,
-    );
+    event = stripe.webhooks.constructEvent(rawBody, sig, config.webhookSecret);
   } catch (err: any) {
     logger.error("Webhook signature verification failed", {
       message: err.message,
