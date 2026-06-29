@@ -41,18 +41,13 @@ const eventHandlers: Partial<
   "customer.subscription.resumed": handleSubscriptionResumed,
 };
 
-// ─── Main Webhook Handler (Express raw body required) ────
 import { Request, Response } from "express";
 
-export async function stripeWebhookHandler(
+export async function handlePlatformWebhook(
   req: Request,
   res: Response,
 ): Promise<void> {
   const sig = req.headers["stripe-signature"];
-  const connectAccountId = req.headers["stripe-account"] as string | undefined;
-  const webhookSecret = connectAccountId
-    ? config.webhookSecretConnectedAccounts
-    : config.webhookSecret;
 
   if (!sig) {
     res.status(400).json({ error: "Missing stripe-signature header" });
@@ -63,9 +58,9 @@ export async function stripeWebhookHandler(
   const rawBody = (req as any).rawBody || JSON.stringify(req.body);
   try {
     event = stripe.webhooks.constructEvent(
-      rawBody, // Must be raw Buffer — use express.raw()
+      rawBody,
       sig,
-      webhookSecret,
+      config.webhookSecret,
     );
   } catch (err: any) {
     logger.error("Webhook signature verification failed", {
@@ -84,14 +79,56 @@ export async function stripeWebhookHandler(
     res.json({ received: true, handled: false });
     return;
   }
-
   try {
     await handler(event);
     res.json({ received: true, handled: true });
   } catch (err: any) {
     logger.error(`Handler failed for ${event.type}`, { error: err.message });
-    // Return 200 to prevent Stripe from retrying if error is non-recoverable
-    // Return 500 if you want Stripe to retry (e.g. gRPC user-service was down)
+    res.status(500).json({ error: "Handler failed", retry: true });
+  }
+}
+
+export async function handleConnectWebhook(
+  req: Request,
+  res: Response,
+): Promise<void> {
+  const sig = req.headers["stripe-signature"];
+
+  if (!sig) {
+    res.status(400).json({ error: "Missing stripe-signature header" });
+    return;
+  }
+
+  let event: Stripe.Event;
+  const rawBody = (req as any).rawBody || JSON.stringify(req.body);
+  try {
+    event = stripe.webhooks.constructEvent(
+      rawBody,
+      sig,
+      config.webhookSecretConnectedAccounts,
+    );
+  } catch (err: any) {
+    logger.error("Webhook signature verification failed", {
+      message: err.message,
+    });
+    res.status(400).json({ error: `Webhook Error: ${err.message}` });
+    return;
+  }
+
+  logger.info(`Received webhook: ${event.type}`, { eventId: event.id });
+
+  const handler = eventHandlers[event.type];
+
+  if (!handler) {
+    logger.warn(`Unhandled webhook event: ${event.type}`);
+    res.json({ received: true, handled: false });
+    return;
+  }
+  try {
+    await handler(event);
+    res.json({ received: true, handled: true });
+  } catch (err: any) {
+    logger.error(`Handler failed for ${event.type}`, { error: err.message });
     res.status(500).json({ error: "Handler failed", retry: true });
   }
 }

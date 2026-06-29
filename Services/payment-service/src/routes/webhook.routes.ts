@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { stripeWebhookHandler } from "../webhooks/router";
+import { handleConnectWebhook, handlePlatformWebhook } from "../webhooks/router";
 
 const router = Router();
 
@@ -39,6 +39,7 @@ const router = Router();
  *       400:
  *         description: Invalid webhook signature or payload
  */
-router.post("/stripe", stripeWebhookHandler);
+router.post("/stripe", handlePlatformWebhook);
+router.post("/stripe/connect", handleConnectWebhook);
 
 export default router;
