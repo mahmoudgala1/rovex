@@ -26,10 +26,8 @@ export async function handleSubscriptionCreated(
   event: Stripe.CustomerSubscriptionCreatedEvent,
 ): Promise<void> {
 
-  console.log("==========> handleSubscriptionCreated function <==========");
-
   const sub = event.data.object;
-  const userId = "COMP_MNHLYD2O1RE2M";//getUserIdFromSub(sub);
+  const userId = getUserIdFromSub(sub);
 
   if (!userId) {
     logger.warn("subscription.created: no userId in metadata", {
