@@ -12,5 +12,6 @@ export const stripe = new Stripe(env.STRIPE_SECRET_KEY, {
 
 export const config = {
   webhookSecret: env.STRIPE_WEBHOOK_SECRET || "",
+  webhookSecretConnectedAccounts: env.STRIPE_WEBHOOK_SECRET_CONNECTED_ACCOUNTS || "",
   publicKey: env.STRIPE_PUBLIC_KEY || "",
 };

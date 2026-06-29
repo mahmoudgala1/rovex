@@ -13,6 +13,7 @@ interface Environment {
   STRIPE_PUBLIC_KEY: string;
   STRIPE_SECRET_KEY: string;
   STRIPE_WEBHOOK_SECRET: string;
+  STRIPE_WEBHOOK_SECRET_CONNECTED_ACCOUNTS: string;
   STRIPE_CLIENT_ID: string;
   FRONTEND_URL: string;
   JWT_SECRET: string;
@@ -30,6 +31,8 @@ export const env: Environment = {
   STRIPE_PUBLIC_KEY: process.env.STRIPE_PUBLIC_KEY || "",
   STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY || "",
   STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET || "",
+  STRIPE_WEBHOOK_SECRET_CONNECTED_ACCOUNTS:
+    process.env.STRIPE_WEBHOOK_SECRET_CONNECTED_ACCOUNTS || "",
   STRIPE_CLIENT_ID: process.env.STRIPE_CLIENT_ID || "",
   FRONTEND_URL: process.env.FRONTEND_URL || "",
   JWT_SECRET: process.env.JWT_SECRET || "",

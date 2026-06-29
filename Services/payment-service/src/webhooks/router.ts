@@ -49,6 +49,10 @@ export async function stripeWebhookHandler(
   res: Response,
 ): Promise<void> {
   const sig = req.headers["stripe-signature"];
+  const connectAccountId = req.headers["stripe-account"] as string | undefined;
+  const webhookSecret = connectAccountId
+    ? config.webhookSecretConnectedAccounts
+    : config.webhookSecret;
 
   if (!sig) {
     res.status(400).json({ error: "Missing stripe-signature header" });
@@ -61,7 +65,7 @@ export async function stripeWebhookHandler(
     event = stripe.webhooks.constructEvent(
       rawBody, // Must be raw Buffer — use express.raw()
       sig,
-      config.webhookSecret,
+      webhookSecret,
     );
   } catch (err: any) {
     logger.error("Webhook signature verification failed", {
