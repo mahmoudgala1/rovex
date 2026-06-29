@@ -138,26 +138,26 @@ export async function handleSubscriptionDeleted(
   });
 }
 
-export async function handleTrialWillEnd(
-  event: Stripe.CustomerSubscriptionTrialWillEndEvent,
-): Promise<void> {
-  const sub = event.data.object;
-  const userId = getUserIdFromSub(sub);
+// export async function handleTrialWillEnd(
+//   event: Stripe.CustomerSubscriptionTrialWillEndEvent,
+// ): Promise<void> {
+//   const sub = event.data.object;
+//   const userId = getUserIdFromSub(sub);
 
-  if (!userId || !sub.trial_end) return;
+//   if (!userId || !sub.trial_end) return;
 
-  const trialEnd = sub.trial_end;
-  const now = Math.floor(Date.now() / 1000);
-  const daysRemaining = Math.ceil((trialEnd - now) / 86400);
+//   const trialEnd = sub.trial_end;
+//   const now = Math.floor(Date.now() / 1000);
+//   const daysRemaining = Math.ceil((trialEnd - now) / 86400);
 
-  logger.webhook("customer.subscription.trial_will_end", userId);
+//   logger.webhook("customer.subscription.trial_will_end", userId);
 
-  await subscriptionGrpcClient.notifyTrialEnding({
-    user_id: userId,
-    trial_end: trialEnd,
-    days_remaining: daysRemaining,
-  });
-}
+//   await subscriptionGrpcClient.notifyTrialEnding({
+//     user_id: userId,
+//     trial_end: trialEnd,
+//     days_remaining: daysRemaining,
+//   });
+// }
 
 export async function handleSubscriptionPaused(
   event: Stripe.CustomerSubscriptionPausedEvent,

@@ -192,26 +192,26 @@ class SubscriptionGrpcClient {
     );
   }
 
-  async getSubscription(
-    payload: GetSubscriptionPayload,
-  ): Promise<GetSubscriptionResponse> {
-    return this.call<GetSubscriptionResponse>("GetSubscription", payload);
-  }
+  // async getSubscription(
+  //   payload: GetSubscriptionPayload,
+  // ): Promise<GetSubscriptionResponse> {
+  //   return this.call<GetSubscriptionResponse>("GetSubscription", payload);
+  // }
 
-  async syncBillingRecord(
-    payload: SyncBillingRecordPayload,
-  ): Promise<SyncBillingRecordResponse> {
-    return this.call<SyncBillingRecordResponse>("SyncBillingRecord", payload);
-  }
+  // async syncBillingRecord(
+  //   payload: SyncBillingRecordPayload,
+  // ): Promise<SyncBillingRecordResponse> {
+  //   return this.call<SyncBillingRecordResponse>("SyncBillingRecord", payload);
+  // }
 
-  async notifyTrialEnding(
-    payload: NotifyTrialEndingPayload,
-  ): Promise<NotifyTrialEndingResponse> {
-    return this.call<NotifyTrialEndingResponse>(
-      "NotifyTrialEnding",
-      payload,
-    );
-  }
+  // async notifyTrialEnding(
+  //   payload: NotifyTrialEndingPayload,
+  // ): Promise<NotifyTrialEndingResponse> {
+  //   return this.call<NotifyTrialEndingResponse>(
+  //     "NotifyTrialEnding",
+  //     payload,
+  //   );
+  // }
 
   // ─── Lifecycle ──────────────────────────────────────────────────────────────
 

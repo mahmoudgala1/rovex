@@ -15,7 +15,7 @@ import {
   handleSubscriptionCreated,
   handleSubscriptionUpdated,
   handleSubscriptionDeleted,
-  handleTrialWillEnd,
+  // handleTrialWillEnd,
   handleSubscriptionPaused,
   handleSubscriptionResumed,
 } from "./handlers/subscription.handler";
@@ -36,7 +36,7 @@ const eventHandlers: Partial<
   "customer.subscription.created": handleSubscriptionCreated,
   "customer.subscription.updated": handleSubscriptionUpdated,
   "customer.subscription.deleted": handleSubscriptionDeleted,
-  "customer.subscription.trial_will_end": handleTrialWillEnd,
+  // "customer.subscription.trial_will_end": handleTrialWillEnd,
   "customer.subscription.paused": handleSubscriptionPaused,
   "customer.subscription.resumed": handleSubscriptionResumed,
 };
