@@ -227,7 +227,10 @@ export class PaymentMethodController {
         errorResponse(res, "Customer ID is required", 400);
         return;
       }
-      const companyId = (req as any).user.company;
+      const companyId =
+        (req as any).type === "customer"
+          ? (req as any).user.company
+          : "COMP_ROVEX";
       const company = await Company.findOne({ companyId });
 
       const setupIntent = await this.paymentMethodService.createSetupIntent(
