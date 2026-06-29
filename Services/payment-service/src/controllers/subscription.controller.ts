@@ -50,6 +50,7 @@ export class SubscriptionController {
     try {
       const { priceId, trialDays, metadata } = req.body;
       const stripeCustomerId = (req as any).user.stripeCustomerId;
+      metadata.userId = (req as any).user.id;
 
       if (!stripeCustomerId || !priceId) {
         return errorResponse(res, "Customer ID and Price ID are required", 400);

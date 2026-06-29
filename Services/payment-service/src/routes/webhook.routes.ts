@@ -1,9 +1,7 @@
 import { Router } from "express";
-import express from "express";
-import { WebhookController } from "../controllers/webhook.controller";
+import { stripeWebhookHandler } from "../webhooks/router";
 
 const router = Router();
-const webhookController = new WebhookController();
 
 /**
  * @openapi
@@ -41,6 +39,6 @@ const webhookController = new WebhookController();
  *       400:
  *         description: Invalid webhook signature or payload
  */
-router.post("/stripe", webhookController.handleWebhook);
+router.post("/stripe", stripeWebhookHandler);
 
 export default router;

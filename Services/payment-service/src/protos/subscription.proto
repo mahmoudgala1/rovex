@@ -1,0 +1,120 @@
+syntax = "proto3";
+
+package subscription;
+
+// ─── Enums ───────────────────────────────────────────────
+enum SubscriptionPlan {
+  FREE       = 0;
+  BASIC      = 1;
+  PRO        = 2;
+  ENTERPRISE = 3;
+}
+
+enum SubscriptionStatus {
+  UNKNOWN    = 0;
+  ACTIVE     = 1;
+  TRIALING   = 2;
+  PAST_DUE   = 3;
+  CANCELED   = 4;
+  PAUSED     = 5;
+  INCOMPLETE = 6;
+}
+
+enum RevokeReason {
+  PAYMENT_FAILED        = 0;
+  SUBSCRIPTION_DELETED  = 1;
+  MANUAL_REVOKE         = 2;
+  TRIAL_EXPIRED         = 3;
+}
+
+// ─── Core Messages ───────────────────────────────────────
+message GrantAccessRequest {
+  string user_id            = 1;
+  SubscriptionPlan plan     = 2;
+  string stripe_customer_id = 3;
+  string stripe_sub_id      = 4;
+  int64  current_period_end = 5;   // Unix timestamp
+  bool   is_trial           = 6;
+}
+
+message GrantAccessResponse {
+  bool   success = 1;
+  string message = 2;
+  string user_id = 3;
+}
+
+message RevokeAccessRequest {
+  string user_id       = 1;
+  RevokeReason reason  = 2;
+  string stripe_sub_id = 3;
+}
+
+message RevokeAccessResponse {
+  bool   success = 1;
+  string message = 2;
+}
+
+message UpdateSubscriptionRequest {
+  string user_id               = 1;
+  SubscriptionPlan plan        = 2;
+  SubscriptionStatus status    = 3;
+  string stripe_sub_id         = 4;
+  int64  current_period_end    = 5;
+  bool   cancel_at_period_end  = 6;
+}
+
+message UpdateSubscriptionResponse {
+  bool   success = 1;
+  string message = 2;
+}
+
+message GetSubscriptionRequest {
+  string user_id = 1;
+}
+
+message GetSubscriptionResponse {
+  string user_id               = 1;
+  SubscriptionPlan plan        = 2;
+  SubscriptionStatus status    = 3;
+  string stripe_customer_id    = 4;
+  string stripe_sub_id         = 5;
+  int64  current_period_end    = 6;
+  bool   cancel_at_period_end  = 7;
+  bool   has_access            = 8;
+}
+
+message SyncBillingRecordRequest {
+  string user_id       = 1;
+  string invoice_id    = 2;
+  int64  amount_paid   = 3;   // in cents
+  string currency      = 4;
+  int64  paid_at       = 5;   // Unix timestamp
+  string invoice_url   = 6;
+}
+
+message SyncBillingRecordResponse {
+  bool   success = 1;
+  string record_id = 2;
+}
+
+message NotifyTrialEndingRequest {
+  string user_id          = 1;
+  int64  trial_end        = 2;   // Unix timestamp
+  int32  days_remaining   = 3;
+}
+
+message NotifyTrialEndingResponse {
+  bool success = 1;
+}
+
+// ─── Service Definition ──────────────────────────────────
+// UserSubscriptionService lives in user-service
+// Payment-service calls it as a gRPC CLIENT
+service UserSubscriptionService {
+  rpc GrantAccess          (GrantAccessRequest)          returns (GrantAccessResponse);
+  rpc RevokeAccess         (RevokeAccessRequest)         returns (RevokeAccessResponse);
+  rpc UpdateSubscription   (UpdateSubscriptionRequest)   returns (UpdateSubscriptionResponse);
+  rpc GetSubscription      (GetSubscriptionRequest)      returns (GetSubscriptionResponse);
+  rpc SyncBillingRecord    (SyncBillingRecordRequest)    returns (SyncBillingRecordResponse);
+  rpc NotifyTrialEnding    (NotifyTrialEndingRequest)    returns (NotifyTrialEndingResponse);
+}

@@ -5,57 +5,57 @@ import { authMiddleware } from "../middleware/auth.middleware";
 const router = Router();
 const subscriptionController = new SubscriptionController();
 
-/**
- * @openapi
- * /subscriptions/checkout:
- *   post:
- *     tags:
- *       - Subscriptions
- *     summary: Create checkout session
- *     description: Creates a Stripe Checkout session for subscription
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - priceId
- *             properties:
- *               priceId:
- *                 type: string
- *                 example: price_xxxxx
- *               trialDays:
- *                 type: integer
- *                 example: 14
- *               successUrl:
- *                 type: string
- *                 example: https://myapp.com/success
- *               cancelUrl:
- *                 type: string
- *                 example: https://myapp.com/cancel
- *     responses:
- *       201:
- *         description: Checkout session created
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                 data:
- *                   type: object
- *                   properties:
- *                     sessionId:
- *                       type: string
- *                     url:
- *                       type: string
- *                       description: Redirect user to this URL
- */
-router.post("/checkout", authMiddleware, subscriptionController.createCheckout);
+// /**
+//  * @openapi
+//  * /subscriptions/checkout:
+//  *   post:
+//  *     tags:
+//  *       - Subscriptions
+//  *     summary: Create checkout session
+//  *     description: Creates a Stripe Checkout session for subscription
+//  *     security:
+//  *       - bearerAuth: []
+//  *     requestBody:
+//  *       required: true
+//  *       content:
+//  *         application/json:
+//  *           schema:
+//  *             type: object
+//  *             required:
+//  *               - priceId
+//  *             properties:
+//  *               priceId:
+//  *                 type: string
+//  *                 example: price_xxxxx
+//  *               trialDays:
+//  *                 type: integer
+//  *                 example: 14
+//  *               successUrl:
+//  *                 type: string
+//  *                 example: https://myapp.com/success
+//  *               cancelUrl:
+//  *                 type: string
+//  *                 example: https://myapp.com/cancel
+//  *     responses:
+//  *       201:
+//  *         description: Checkout session created
+//  *         content:
+//  *           application/json:
+//  *             schema:
+//  *               type: object
+//  *               properties:
+//  *                 success:
+//  *                   type: boolean
+//  *                 data:
+//  *                   type: object
+//  *                   properties:
+//  *                     sessionId:
+//  *                       type: string
+//  *                     url:
+//  *                       type: string
+//  *                       description: Redirect user to this URL
+//  */
+// router.post("/checkout", authMiddleware, subscriptionController.createCheckout);
 
 /**
  * @openapi
@@ -243,98 +243,98 @@ router.post(
  */
 router.get("/", authMiddleware, subscriptionController.listSubscriptions);
 
-/**
- * @openapi
- * /subscriptions/portal:
- *   post:
- *     tags:
- *       - Subscriptions
- *     summary: Create billing portal session
- *     description: Creates a session for Stripe Customer Portal
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               returnUrl:
- *                 type: string
- *                 example: https://myapp.com/account
- *     responses:
- *       201:
- *         description: Portal session created
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                 data:
- *                   type: object
- *                   properties:
- *                     url:
- *                       type: string
- *                       description: Redirect user to this URL
- */
-router.post(
-  "/portal",
-  authMiddleware,
-  subscriptionController.createPortalSession,
-);
+// /**
+//  * @openapi
+//  * /subscriptions/portal:
+//  *   post:
+//  *     tags:
+//  *       - Subscriptions
+//  *     summary: Create billing portal session
+//  *     description: Creates a session for Stripe Customer Portal
+//  *     security:
+//  *       - bearerAuth: []
+//  *     requestBody:
+//  *       required: true
+//  *       content:
+//  *         application/json:
+//  *           schema:
+//  *             type: object
+//  *             properties:
+//  *               returnUrl:
+//  *                 type: string
+//  *                 example: https://myapp.com/account
+//  *     responses:
+//  *       201:
+//  *         description: Portal session created
+//  *         content:
+//  *           application/json:
+//  *             schema:
+//  *               type: object
+//  *               properties:
+//  *                 success:
+//  *                   type: boolean
+//  *                 data:
+//  *                   type: object
+//  *                   properties:
+//  *                     url:
+//  *                       type: string
+//  *                       description: Redirect user to this URL
+//  */
+// router.post(
+//   "/portal",
+//   authMiddleware,
+//   subscriptionController.createPortalSession,
+// );
 
-/**
- * @openapi
- * /subscriptions/customer/invoices:
- *   get:
- *     tags:
- *       - Subscriptions
- *     summary: Get customer invoices
- *     description: Retrieves invoices for a customer
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: Upcoming invoice
- *       404:
- *         description: No upcoming invoice found
- */
-router.get(
-  "/customer/invoices",
-  authMiddleware,
-  subscriptionController.listInvoices,
-);
+// /**
+//  * @openapi
+//  * /subscriptions/customer/invoices:
+//  *   get:
+//  *     tags:
+//  *       - Subscriptions
+//  *     summary: Get customer invoices
+//  *     description: Retrieves invoices for a customer
+//  *     security:
+//  *       - bearerAuth: []
+//  *     responses:
+//  *       200:
+//  *         description: Upcoming invoice
+//  *       404:
+//  *         description: No upcoming invoice found
+//  */
+// router.get(
+//   "/customer/invoices",
+//   authMiddleware,
+//   subscriptionController.listInvoices,
+// );
 
-/**
- * @openapi
- * /subscriptions/invoices/{invoiceId}:
- *   get:
- *     tags:
- *       - Subscriptions
- *     summary: Get customer invoices
- *     description: Retrieves invoices for a customer
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: invoiceId
- *         required: true
- *         schema:
- *           type: string
- *         example: in_xxxxx
- *     responses:
- *       200:
- *         description: Upcoming invoice
- *       404:
- *         description: No upcoming invoice found
- */
-router.get(
-  "/invoices/:invoiceId",
-  authMiddleware,
-  subscriptionController.getInvoice,
-);
+// /**
+//  * @openapi
+//  * /subscriptions/invoices/{invoiceId}:
+//  *   get:
+//  *     tags:
+//  *       - Subscriptions
+//  *     summary: Get customer invoices
+//  *     description: Retrieves invoices for a customer
+//  *     security:
+//  *       - bearerAuth: []
+//  *     parameters:
+//  *       - in: path
+//  *         name: invoiceId
+//  *         required: true
+//  *         schema:
+//  *           type: string
+//  *         example: in_xxxxx
+//  *     responses:
+//  *       200:
+//  *         description: Upcoming invoice
+//  *       404:
+//  *         description: No upcoming invoice found
+//  */
+// router.get(
+//   "/invoices/:invoiceId",
+//   authMiddleware,
+//   subscriptionController.getInvoice,
+// );
 
 export default router;

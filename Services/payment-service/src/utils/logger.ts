@@ -34,4 +34,8 @@ export class Logger {
       );
     }
   }
+
+  webhook(event: string, userId?: string) {
+    console.log(`[WEBHOOK] ${event} | userId=${userId ?? "unknown"}`);
+  }
 }

@@ -3,7 +3,6 @@ import { stripe, config } from "../config/stripe.config";
 import { Logger } from "../utils/logger";
 import { successResponse, errorResponse } from "../utils/response";
 import Stripe from "stripe";
-import { WebhookEventDTO } from "../mappers/stripe.mapper";
 import RabbitMQPublisher from "../services/rabbitmq.service";
 import { Company } from "../models/company.model";
 
@@ -104,7 +103,6 @@ export class WebhookController {
     // TODO: Revoke customer access
   }
 
-
   private async handleAccountUpdated(
     stripeAccountId: string,
     account: Stripe.Account,
@@ -174,9 +172,10 @@ export class WebhookController {
 
     // TODO: Update payment + activate order
     // await paymentRepo.update({ stripePaymentIntentId: pi.id, status: 'succeeded' });
-    await RabbitMQPublisher.publishEvent("update-order", {
-      orderId: orderId,
-    });
+    orderId &&
+      (await RabbitMQPublisher.publishEvent("update-order", {
+        orderId: orderId,
+      }));
   }
 
   private async onPaymentIntentFailed(pi: Stripe.PaymentIntent) {
