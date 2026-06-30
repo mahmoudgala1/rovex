@@ -114,7 +114,7 @@ export class PaymentMethodController {
   ): Promise<void> => {
     try {
       const stripeCustomerId = (req as any).user.stripeCustomerId;
-      const { type, limit, startingAfter } = req.query;
+      const { type, limit, starting_after } = req.query;
       const companyId =
         (req as any).user.type === "customer"
           ? (req as any).user.company
@@ -127,7 +127,7 @@ export class PaymentMethodController {
         stripeCustomerId,
         type as string,
         limit ? parseInt(limit as string) : 10,
-        startingAfter as string,
+        starting_after as string,
       );
 
       const dto =
