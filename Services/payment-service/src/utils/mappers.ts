@@ -1,7 +1,12 @@
-import { SubscriptionPlan, SubscriptionStatus } from "../grpc/clients/subscription.client";
+import {
+  SubscriptionPlan,
+  SubscriptionStatus,
+} from "../grpc/clients/subscription.client";
 import Stripe from "stripe";
 
-export function mapStripeStatus(status: Stripe.Subscription.Status): SubscriptionStatus {
+export function mapStripeStatus(
+  status: Stripe.Subscription.Status,
+): SubscriptionStatus {
   const map: Record<Stripe.Subscription.Status, SubscriptionStatus> = {
     active: "ACTIVE",
     trialing: "TRIALING",
@@ -73,4 +78,23 @@ export function getInvoicePlan(invoice: Stripe.Invoice): SubscriptionPlan {
 export function getInvoicePeriodEnd(invoice: Stripe.Invoice): number {
   const lineItem = invoice.lines?.data?.[0] as any;
   return lineItem?.period?.end ?? Math.floor(Date.now() / 1000);
+}
+
+export function stripePaginationMeta<T extends { id: string }>(
+  data: T[],
+  limit: number,
+  hasMore: boolean,
+  startingAfter?: string,
+  endingBefore?: string,
+) {
+  return {
+    limit,
+    has_more: hasMore,
+    current_cursor: {
+      starting_after: startingAfter ?? null,
+      ending_before: endingBefore ?? null,
+    },
+    next_cursor: hasMore && data.length > 0 ? data[data.length - 1].id : null,
+    prev_cursor: data.length > 0 ? data[0].id : null,
+  };
 }

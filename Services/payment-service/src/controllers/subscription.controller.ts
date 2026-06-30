@@ -153,12 +153,13 @@ export class SubscriptionController {
 
   listSubscriptions = async (req: AuthenticatedRequest, res: Response) => {
     try {
-      const { limit } = req.query;
+      const { limit, starting_after } = req.query;
       const stripeCustomerId = (req as any).user.stripeCustomerId;
 
       const subscriptions = await this.subscriptionService.listSubscriptions(
         stripeCustomerId as string,
         limit ? parseInt(limit as string) : 10,
+        starting_after as string,
       );
 
       const dto =

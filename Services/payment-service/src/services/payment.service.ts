@@ -121,6 +121,7 @@ export class PaymentService {
     companyId: string,
     stripeCustomerId?: string,
     limit: number = 10,
+    startingAfter?: string,
   ) {
     const { accountId } = await this.getStripeAccount(companyId);
 
@@ -128,6 +129,7 @@ export class PaymentService {
       {
         // customer: stripeCustomerId,
         limit,
+        starting_after: startingAfter,
       },
       { stripeAccount: accountId },
     );

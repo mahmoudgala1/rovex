@@ -104,6 +104,11 @@ router.get(
  *         schema:
  *           type: integer
  *           default: 10
+ *       - in: query
+ *         name: starting_after
+ *         schema:
+ *           type: string
+ *         description: Customer ID to start after for pagination
  *     responses:
  *       200:
  *         description: List of payment methods

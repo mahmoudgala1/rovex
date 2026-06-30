@@ -107,10 +107,15 @@ export class SubscriptionService {
     return subscription;
   }
 
-  async listSubscriptions(customerId?: string, limit: number = 10) {
+  async listSubscriptions(
+    customerId?: string,
+    limit: number = 10,
+    startingAfter?: string,
+  ) {
     const subscriptions = await stripe.subscriptions.list({
       customer: customerId,
       limit,
+      starting_after: startingAfter,
     });
     return subscriptions;
   }

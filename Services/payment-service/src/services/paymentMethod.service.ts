@@ -71,12 +71,14 @@ export class PaymentMethodService {
     stripeCustomerId: string,
     type?: string,
     limit: number = 10,
+    startingAfter?: string,
   ): Promise<Stripe.ApiList<Stripe.PaymentMethod>> {
     const stripeAccount = await this.getStripeAccount(companyId);
 
     const params: Stripe.PaymentMethodListParams = {
       customer: stripeCustomerId,
       limit,
+      starting_after: startingAfter,
       ...(type && { type: type as Stripe.PaymentMethodListParams.Type }),
     };
 

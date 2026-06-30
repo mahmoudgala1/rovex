@@ -114,7 +114,7 @@ export class PaymentMethodController {
   ): Promise<void> => {
     try {
       const stripeCustomerId = (req as any).user.stripeCustomerId;
-      const { type, limit } = req.query;
+      const { type, limit, startingAfter } = req.query;
       const companyId =
         (req as any).user.type === "customer"
           ? (req as any).user.company
@@ -127,6 +127,7 @@ export class PaymentMethodController {
         stripeCustomerId,
         type as string,
         limit ? parseInt(limit as string) : 10,
+        startingAfter as string,
       );
 
       const dto =
@@ -216,7 +217,6 @@ export class PaymentMethodController {
         (req as any).user.type === "customer"
           ? (req as any).user.company
           : "COMP_ROVEX";
-
 
       const paymentMethod =
         await this.paymentMethodService.getDefaultPaymentMethod(
