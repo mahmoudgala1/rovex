@@ -6,6 +6,8 @@ let client: mqtt.MqttClient;
 
 export const initMqttClient = () => {
   client = mqtt.connect(env.MQTT_URL ?? "mqtt://mqtt-broker:1883", {
+    username: env.MQTT_USER,
+    password: env.MQTT_PASSWORD,
     clientId: `rovex-server-${Date.now()}`,
     clean: true,
     will: {

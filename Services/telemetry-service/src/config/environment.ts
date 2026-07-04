@@ -10,6 +10,8 @@ interface Environment {
   MONGODB_URI: string;
   RABBITMQ_URL: string;
   MQTT_URL: string;
+  MQTT_USER: string;
+  MQTT_PASSWORD: string;
   INFLUX_URL: string;
   INFLUX_TOKEN: string;
   INFLUX_ORG: string;
@@ -23,6 +25,8 @@ export const env: Environment = {
   MONGODB_URI: process.env.MONGODB_URI || "",
   RABBITMQ_URL: process.env.RABBITMQ_URL || "",
   MQTT_URL: process.env.MQTT_URL || "",
+  MQTT_USER: process.env.MQTT_USER || "",
+  MQTT_PASSWORD: process.env.MQTT_PASSWORD || "",
   INFLUX_URL: process.env.INFLUX_URL || "",
   INFLUX_TOKEN: process.env.INFLUX_TOKEN || "",
   INFLUX_ORG: process.env.INFLUX_ORG || "",
