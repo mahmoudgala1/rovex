@@ -10,8 +10,9 @@ import { swaggerSpec } from "./config/swagger";
 import swaggerUi from "swagger-ui-express";
 import { errorMiddleware } from "./middleware/error.middleware";
 import routes from "./routes";
-import { initSocket } from "./socket/socket.server";
+import { emitToUser, initSocket } from "./socket/socket.server";
 import http from "http";
+import { SocketChannel } from "./channels/socket.channel";
 // import { PushChannel } from "./channels/push.channel";
 
 const swaggerOptions = {
@@ -173,14 +174,30 @@ process.on("SIGTERM", () => {
 const server = new Server();
 server.start();
 
-// const push = new PushChannel();
-// const data = {
-//   title: "Test Notification",
-//   body: "Hi there! This is a test notification from ROVEX.",
-// };
-// push.send(
-//   "ec-UQ9l5R6qXqFZrYTkWcH:APA91bGRNS-JG7PD_Vz1l0DRxS_8wl7L8utu2Ny8r5WsqYCNXByV2dOORNSC-byoZvt64c__3UDoWfMc1hECNYtxCsm71BcdJejihAxfeUkloW6SFFbJkPo",
-//   data,
-// );
+const socket = new SocketChannel();
+
+const fleetData = {
+  userId: "fleet",
+  title: "Test Notification",
+  body: "Hi there! This is a test notification from ROVEX.",
+};
+
+const companyData = {
+  userId: "COMP_MNHLYD2O1RE2M",
+  title: "Test Notification",
+  body: "Hi there! This is a test notification from ROVEX.",
+};
+
+const metadata = {
+  timestamp: new Date().toISOString(),
+};
+
+setInterval(
+  () => {
+    socket.send("fleet", fleetData, metadata);
+    socket.send("COMP_MNHLYD2O1RE2M", companyData, metadata);
+  },
+  60 * 60 * 1000,
+);
 
 export default server.app;
