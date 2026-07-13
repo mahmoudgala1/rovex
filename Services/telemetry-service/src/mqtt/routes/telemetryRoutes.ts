@@ -107,6 +107,17 @@ mqttRouter.topic("rovex/:roverId/telemetry", async ({ params }, payload) => {
   fanoutTelemetry(rover);
 
   if (rover.status === "arrived") {
+    const task = await Task.findOne({ taskId: payload.missionId });
+    if (!task) {
+      console.error(`Task with missionId ${payload.missionId} not found`);
+      return;
+    }
+    if (task.status === "DELIVERED") {
+      console.warn(
+        `Task with missionId ${payload.missionId} is already marked as DELIVERED`,
+      );
+      return;
+    }
     const OTP = Math.floor(100000 + Math.random() * 900000).toString();
     await Task.findOneAndUpdate(
       { taskId: payload.missionId },
