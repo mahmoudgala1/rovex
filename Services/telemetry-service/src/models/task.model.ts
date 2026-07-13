@@ -1,4 +1,4 @@
-import mongoose, { Document, Schema } from "mongoose";
+import mongoose, { Document, Schema, Types } from "mongoose";
 
 export enum TaskStatus {
   PENDING = "PENDING", // assigned, rover not yet moving
@@ -15,7 +15,7 @@ export interface IPosition {
 }
 
 export interface ITask extends Document {
-  taskId: string;
+  taskId: mongoose.Types.ObjectId;
   orderId: string;
   roverId: string;
   status: TaskStatus;
@@ -39,7 +39,12 @@ const PositionSchema = new Schema<IPosition>(
 
 const TaskSchema = new Schema<ITask>(
   {
-    taskId: { type: String, required: true, unique: true, index: true },
+    taskId: {
+      type: Schema.Types.ObjectId,
+      default: () => new Types.ObjectId(),
+      unique: true,
+      index: true,
+    },
     orderId: { type: String, required: true, index: true },
     roverId: { type: String, required: true, index: true },
 

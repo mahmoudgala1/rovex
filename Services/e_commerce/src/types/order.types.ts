@@ -12,6 +12,7 @@ export interface IOrderItem {
 export interface IOrder extends BaseDocument {
   user: string;
   company: string ;
+  roverId: string;
   items: IOrderItem[];
   
   location: {

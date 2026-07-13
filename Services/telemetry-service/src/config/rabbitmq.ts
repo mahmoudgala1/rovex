@@ -1,4 +1,5 @@
 import * as amqp from "amqplib";
+import { env } from "./environment";
 
 class RabbitMQConfig {
   private connection: any = null;
@@ -7,10 +8,10 @@ class RabbitMQConfig {
 
   private readonly EXCHANGE_NAME = "rovex.direct";
   private readonly EXCHANGE_TYPE = "direct";
-  private readonly NOTIFICATION_QUEUE = "ecommerce";
+  private readonly NOTIFICATION_QUEUE = "process-order";
 
   constructor() {
-    this.url = process.env.RABBITMQ_URL!;
+    this.url = env.RABBITMQ_URL;
   }
 
   async connect(): Promise<void> {
@@ -25,24 +26,18 @@ class RabbitMQConfig {
         this.EXCHANGE_TYPE,
         {
           durable: true,
-        },
+        }
       );
 
       await this.channel.assertQueue(this.NOTIFICATION_QUEUE, {
         durable: true,
       });
 
-      await this.channel.bindQueue(
-        this.NOTIFICATION_QUEUE,
-        this.EXCHANGE_NAME,
-        "update-order",
-      );
-
-      await this.channel.bindQueue(
-        this.NOTIFICATION_QUEUE,
-        this.EXCHANGE_NAME,
-        "process-order-ecommerce",
-      );
+        await this.channel.bindQueue(
+          this.NOTIFICATION_QUEUE,
+          this.EXCHANGE_NAME,
+          "process-order-telemetry",
+        );
 
       console.log("Connected to RabbitMQ");
       console.log(`Listening on queue: ${this.NOTIFICATION_QUEUE}`);

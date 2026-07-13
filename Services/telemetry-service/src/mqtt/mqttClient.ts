@@ -6,8 +6,8 @@ let client: mqtt.MqttClient;
 
 export const initMqttClient = () => {
   client = mqtt.connect(env.MQTT_URL ?? "mqtt://mqtt-broker:1883", {
-    username: env.MQTT_USER,
-    password: env.MQTT_PASSWORD,
+    // username: env.MQTT_USER,
+    // password: env.MQTT_PASSWORD,
     clientId: `rovex-server-${Date.now()}`,
     clean: true,
     will: {
@@ -22,11 +22,11 @@ export const initMqttClient = () => {
     console.log("MQTT Connected");
 
     client.subscribe(
-      ["rovex/+/telemetry", "rovex/+/status"],
+      ["rovex/+/telemetry", "rovex/+/status", "rovex/+/ready"],
       { qos: 0 },
       (err) => {
         if (err) console.error("MQTT subscribe error:", err);
-        else console.log("MQTT Subscribed → rovex/+/telemetry, rovex/+/status");
+        else console.log("MQTT Subscribed → rovex/+/telemetry, rovex/+/status, rovex/+/ready");
       },
     );
 

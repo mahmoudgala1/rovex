@@ -9,6 +9,8 @@ import "./mqtt/routes/telemetryRoutes";
 import { initSocket } from "./utils/websocket";
 import http from "http";
 import { startGrpcServer } from "./grpc/server";
+import rabbitmq from "./config/rabbitmq";
+import consumer from "./consumers/consumer";
 
 class Server {
   public app: Application;
@@ -52,12 +54,13 @@ class Server {
 
   public async start(): Promise<void> {
     try {
+      const httpServer = http.createServer(this.app);
+      initSocket(httpServer);
       await connectDatabase();
       initMqttClient();
       startGrpcServer();
-
-      const httpServer = http.createServer(this.app);
-      initSocket(httpServer);
+      await rabbitmq.connect();
+      await consumer.start();
 
       const PORT = env.PORT || 8004;
       httpServer.listen(PORT, () => {

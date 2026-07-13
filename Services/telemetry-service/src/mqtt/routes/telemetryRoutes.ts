@@ -1,7 +1,9 @@
 // import { writeRoverData, writeRoversData } from "../../utils/influxdbWriter";
+import { Task } from "../../models/task.model";
 import { fanoutTelemetry } from "../../utils/websocket";
 import { publish } from "../mqttClient";
 import { mqttRouter } from "../mqttRouter";
+import RabbitMQPublisher from "../../services/rabbitmq.service";
 
 export interface RoverData {
   roverId: string;
@@ -124,6 +126,15 @@ mqttRouter.topic("rovex/:roverId/status", async ({ params }, payload) => {
 
   roverStore.set(roverId, updated);
   fanoutTelemetry(updated);
+});
+
+mqttRouter.topic("rovex/:roverId/ready", async ({ params }, payload) => {
+  await Task.findOneAndUpdate(
+    { taskId: payload.missionId },
+    { status: "IN_TRANSIT" },
+    { new: true },
+  );
+  await RabbitMQPublisher.publishEvent("process-order-ecommerce", payload);
 });
 
 // ── Stale Rover Cleanup ───────────────────────────────────────────

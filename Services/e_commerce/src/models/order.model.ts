@@ -10,6 +10,7 @@ const OrderSchema = new Schema<IOrder>(
     },
     user: { type: String, ref: "User", required: true },
     company: { type: String, ref: "Company", required: true },
+    roverId: { type: String },
     items: [
       {
         product_id: { type: String, ref: "Product", required: true },
