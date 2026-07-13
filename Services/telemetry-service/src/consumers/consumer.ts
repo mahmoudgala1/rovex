@@ -27,8 +27,9 @@ export class NotificationConsumer {
             isConnected: true,
           });
 
-          const selectedRover =
-            companyRovers[Math.floor(Math.random() * companyRovers.length)];
+          const index = Math.floor(Math.random() * companyRovers.length);
+
+          const selectedRover = companyRovers[index];
 
           const task = await Task.create({
             orderId: event.orderId,
@@ -56,9 +57,9 @@ export class NotificationConsumer {
               lat: event.destinationPosition.latitude,
               lng: event.destinationPosition.longitude,
             },
-            label: "Rover 1",
-            color: "#00d4ff",
-            battery: 100,
+            label: `Rover ${index + 1}`,
+            color: randomColor(),
+            battery: Math.floor(Math.random() * 51) + 50,
             speedMs: 5,
           };
 
@@ -97,5 +98,10 @@ export class NotificationConsumer {
     return 0;
   }
 }
+
+const randomColor = () =>
+  `#${Math.floor(Math.random() * 0xffffff)
+    .toString(16)
+    .padStart(6, "0")}`;
 
 export default new NotificationConsumer();

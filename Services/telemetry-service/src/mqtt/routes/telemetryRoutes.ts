@@ -106,6 +106,24 @@ mqttRouter.topic("rovex/:roverId/telemetry", async ({ params }, payload) => {
 
   fanoutTelemetry(rover);
 
+  if (rover.status === "arrived") {
+    const OTP = Math.floor(100000 + Math.random() * 900000).toString();
+    await Task.findOneAndUpdate(
+      { taskId: payload.missionId },
+      {
+        status: "DELIVERED",
+        completedAt: new Date(),
+        otp: OTP,
+      },
+      { new: true },
+    );
+    await RabbitMQPublisher.publishEvent("order-arrived", {
+      orderId: payload.orderId,
+      customerId: payload.customerId,
+      otp: OTP,
+    });
+  }
+
   // await writeRoverData(rover);
   // await writeRoversData([...roverStore.values()]);
 

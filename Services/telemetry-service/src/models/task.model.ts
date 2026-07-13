@@ -20,6 +20,8 @@ export interface ITask extends Document {
   roverId: string;
   status: TaskStatus;
   destination: IPosition;
+  otp?: string;
+  otpExpiresAt?: Date;
   assignedAt: Date;
   startedAt?: Date;
   completedAt?: Date;
@@ -55,6 +57,15 @@ const TaskSchema = new Schema<ITask>(
       index: true,
     },
     destination: { type: PositionSchema, required: true },
+    otp: {
+      type: String,
+      default: null,
+    },
+
+    otpExpiresAt: {
+      type: Date,
+      default: null,
+    },
     assignedAt: { type: Date, default: Date.now },
     startedAt: { type: Date },
     completedAt: { type: Date },
