@@ -74,6 +74,25 @@ export class NotificationConsumer {
                 },
               });
               break;
+            case "order-arrived":
+              const orderToArrive = await OrderModel.findOne({
+                _id: event.orderId,
+              });
+              if (!orderToArrive) throw new AppError("Order not found", 404);
+              orderToArrive.order_status = "Delivered";
+              await orderToArrive.save();
+              await RabbitMQPublisher.publishEvent("send-notification", {
+                channels: ["push"],
+                data: {
+                  userId: orderToArrive.user,
+                  title: "Order Delivered",
+                  body: `Your order is almost here! Please provide this verification code to the rover upon delivery: ${event.otp}`,
+                },
+                metadata: {
+                  timestamp: new Date().toLocaleString(),
+                },
+              });
+              break;
             default:
               console.warn(`Unhandled routing key: ${routingKey}`);
               channel.ack(msg);

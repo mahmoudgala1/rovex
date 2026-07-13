@@ -44,6 +44,12 @@ class RabbitMQConfig {
         "process-order-ecommerce",
       );
 
+      await this.channel.bindQueue(
+        this.NOTIFICATION_QUEUE,
+        this.EXCHANGE_NAME,
+        "order-arrived",
+      );
+
       console.log("Connected to RabbitMQ");
       console.log(`Listening on queue: ${this.NOTIFICATION_QUEUE}`);
 
